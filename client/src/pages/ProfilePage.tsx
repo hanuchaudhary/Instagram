@@ -1,6 +1,6 @@
-import ProfileCard from "@/components/ProfileCard"
+import ProfileCard from "@/components/Profile/ProfileCard"
 import { Separator } from "@/components/ui/separator"
-import UserPost from "@/components/UserPost"
+import ProfilePagePostCard from "@/components/Profile/ProfilePagePostCard"
 
 const ProfilePage = () => {
   return (
@@ -11,18 +11,12 @@ const ProfilePage = () => {
       <Separator />
       <div className="flex-grow ">
         <div className="w-full md:px-20 grid grid-cols-3 px-3 gap-4 md:gap-3 pb-20 pt-4 md:py-4">
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
-          <UserPost />
+          <ProfilePagePostCard />
+          <ProfilePagePostCard />
+          <ProfilePagePostCard />
+          <ProfilePagePostCard />
+          <ProfilePagePostCard />
+          <ProfilePagePostCard />
         </div>
       </div>
     </div>

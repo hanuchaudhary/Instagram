@@ -38,8 +38,9 @@ const Signin = () => {
       const response = await axios.post(`${BACKEND_URL}/user/signin`, {
         ...values,
       });
+      localStorage.setItem("token", `Bearer ${response.data.token}`);
       toast.success(`Welcome! ${response.data.fullName}`);
-      navigate("/explore");
+      navigate("/profile");
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =

@@ -1,3 +1,4 @@
+import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
 import {
   Compass,
@@ -33,7 +34,7 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/">
-                <Home className="mr-2 h-8 w-8" /> Home
+                <Home className="mr-2 h-10 w-10" /> Home
               </Link>
             </Button>
             <Button
@@ -44,7 +45,7 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/explore">
-                <Compass className="mr-2 h-8 w-8" /> Explore
+                <Compass className="mr-2 h-10 w-10" /> Explore
               </Link>
             </Button>
             <Button
@@ -55,7 +56,7 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/messages">
-                <MessageCircle className="mr-2 h-8 w-8" /> Messages
+                <MessageCircle className="mr-2 h-10 w-10" /> Messages
               </Link>
             </Button>
             <Button
@@ -66,7 +67,7 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/search">
-                <Search className="mr-2 h-8 w-8" /> Search
+                <Search className="mr-2 h-10 w-10" /> Search
               </Link>
             </Button>
             <Button
@@ -77,7 +78,7 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/create">
-                <PlusSquare className="mr-2 h-8 w-8" /> Create
+                <PlusSquare className="mr-2 h-10 w-10" /> Create
               </Link>
             </Button>
             <Button
@@ -88,13 +89,13 @@ export default function AppLayout() {
               asChild
             >
               <Link className="text-xl py-6" to="/profile">
-                <User className="mr-2 h-8 w-8" /> Profile
+                <User className="mr-2 h-10 w-10" /> Profile
               </Link>
             </Button>
           </nav>
         </div>
         <div>
-          <Button>Menu</Button>
+          <Menu/>
         </div>
       </aside>
 
