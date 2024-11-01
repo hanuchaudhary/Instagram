@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userRouter = void 0;
+exports.userRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -20,9 +20,9 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const Validations_1 = require("../validations/Validations");
 require("dotenv/config");
 const sendEmail_1 = require("../libs/sendEmail");
-exports.userRouter = express_1.default.Router();
+exports.userRoutes = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
-exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRoutes.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { fullName, email, username, password } = req.body;
     const validation = Validations_1.signupSchema.safeParse({ fullName, email, username, password });
     if (!validation.success) {
@@ -76,13 +76,13 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
-exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRoutes.post("/verify", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { verifyCode, username } = yield req.body;
     const validation = Validations_1.verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
         return res.status(402).json({
             success: false,
-            error: validation.error.errors[0].message
+            error: validation.error.errors
         });
     }
     try {
@@ -127,7 +127,7 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
-exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRoutes.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password } = req.body;
     const validation = Validations_1.signinSchema.safeParse({ email, username, password });
     if (!validation.success) {
@@ -172,4 +172,18 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
             error: error instanceof Error ? error.message : 'An unexpected error occurred'
         });
     }
+}));
+exports.userRoutes.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const users = yield prisma.user.findMany({
+        include: {
+            posts: true,
+            followers: true,
+            following: true,
+            like: true,
+            comment: true
+        }
+    });
+    res.json({
+        users
+    });
 }));

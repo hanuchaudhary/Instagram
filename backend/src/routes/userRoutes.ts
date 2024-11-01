@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -7,10 +7,10 @@ import { UserType } from '../types/UserTypes';
 import 'dotenv/config';
 import { sendEmail } from '../libs/sendEmail';
 
-export const userRouter = express.Router();
+export const userRoutes = express.Router();
 const prisma = new PrismaClient();
 
-userRouter.post("/signup", async (req: any, res: any) => {
+userRoutes.post("/signup", async (req: Request, res: Response): Promise<any> => {
     const { fullName, email, username, password } = req.body as UserType;
 
     const validation = signupSchema.safeParse({ fullName, email, username, password });
@@ -76,13 +76,13 @@ userRouter.post("/signup", async (req: any, res: any) => {
     }
 });
 
-userRouter.post("/verify", async (req: any, res: any) => {
+userRoutes.post("/verify", async (req: Request, res: Response): Promise<any> => {
     const { verifyCode, username } = await req.body;
     const validation = verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
         return res.status(402).json({
             success: false,
-            error: validation.error.errors[0].message
+            error: validation.error.errors
         })
     }
 
@@ -134,7 +134,7 @@ userRouter.post("/verify", async (req: any, res: any) => {
     }
 })
 
-userRouter.post("/signin", async (req: any, res: any) => {
+userRoutes.post("/signin", async (req: Request, res: Response): Promise<any> => {
     const { email, username, password } = req.body as UserType;
     const validation = signinSchema.safeParse({ email, username, password });
     if (!validation.success) {
@@ -177,7 +177,7 @@ userRouter.post("/signin", async (req: any, res: any) => {
             success: true,
             message: "User logged in successfully",
             token,
-            fullName : user.fullName
+            fullName: user.fullName
         });
 
     } catch (error) {
@@ -189,5 +189,22 @@ userRouter.post("/signin", async (req: any, res: any) => {
         });
     }
 });
+
+userRoutes.get("/bulk", async (req: Request, res: Response) => {
+    const users = await prisma.user.findMany({
+        include: {
+            posts: true,
+            followers: true,
+            following: true,
+            like : true,
+            comment : true
+        }
+    });
+    res.json({
+        users
+    })
+})
+
+
 
 

@@ -34,8 +34,7 @@ export interface FollowingType {
 }
 
 export interface PostType {
-    id: number; // Auto-incremented integer
-    title: string; // String title
+    id?: number; // Auto-incremented integer// String title
     caption: string; // String caption
     location?: string; // Optional string location
     mediaURL?: string; // Optional string for media URL

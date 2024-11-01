@@ -40,15 +40,21 @@ model User {
 }
 
 model Followers {
-  id     String @id @unique @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String @id @unique @default(uuid())
+  userId    String
+  followId  String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, followId])
 }
 
 model Following {
-  id     String @id @unique @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String @id @unique @default(uuid()) 
+  userId    String
+  followId  String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, followId])
 }
 
 model Post {
@@ -66,6 +72,7 @@ model Post {
 model Comment {
   id        Int      @id @unique @default(autoincrement())
   postId    Int
+  comment   String
   userId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

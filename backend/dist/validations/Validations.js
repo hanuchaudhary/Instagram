@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyCodeSchema = exports.signinSchema = exports.signupSchema = void 0;
+exports.postSchema = exports.verifyCodeSchema = exports.signinSchema = exports.signupSchema = void 0;
 const zod_1 = require("zod");
 exports.signupSchema = zod_1.z.object({
     username: zod_1.z
@@ -44,5 +44,10 @@ exports.signinSchema = zod_1.z.object({
     // .regex(/[@$!%*?&]/, { message: "Password must contain at least one special character (@, $, !, %, *, ?, &)" })
 });
 exports.verifyCodeSchema = zod_1.z.object({
-    verifyCode: zod_1.z.string().length(6, { message: "Verify Code is of only 6 characters" })
+    verifyCode: zod_1.z.string().length(6, { message: "OTP must be exactly 6 digits" }).regex(/^\d+$/, { message: "OTP must contain only numbers" }),
+});
+exports.postSchema = zod_1.z.object({
+    caption: zod_1.z.string().min(5, { message: "Caption must have atleast 5 Charcaters" }).max(100, { message: "Caption have max 100 Characters" }),
+    location: zod_1.z.string().optional(),
+    mediaURL: zod_1.z.string().url({ message: "Please put valid image url" })
 });

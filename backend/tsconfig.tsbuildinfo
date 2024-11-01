@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/libs/emailformat.tsx","./src/libs/sendemail.ts","./src/routes/userroutes.ts","./src/types/usertypes.ts","./src/validations/validations.ts"],"version":"5.6.2"}
+{"root":["./src/index.ts","./src/middleware.ts","./src/libs/emailformat.tsx","./src/libs/sendemail.ts","./src/routes/followroutes.ts","./src/routes/postroutes.ts","./src/routes/userroutes.ts","./src/types/usertypes.ts","./src/validations/validations.ts"],"version":"5.6.2"}

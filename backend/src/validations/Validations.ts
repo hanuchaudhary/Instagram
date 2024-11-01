@@ -50,5 +50,11 @@ export const signinSchema = z.object({
 
 
 export const verifyCodeSchema = z.object({
-  verifyCode: z.string().length(6, { message: "Verify Code is of only 6 characters" })
+  verifyCode: z.string().length(6, { message: "OTP must be exactly 6 digits" }).regex(/^\d+$/, { message: "OTP must contain only numbers" }),
+})
+
+export const postSchema = z.object({
+  caption: z.string().min(5, { message: "Caption must have atleast 5 Charcaters" }).max(100, { message: "Caption have max 100 Characters" }),
+  location: z.string().optional(),
+  mediaURL: z.string().url({ message: "Please put valid image url" })
 })
