@@ -1,0 +1,161 @@
+import { Button } from "@/components/ui/button";
+import {
+  Compass,
+  Home,
+  MessageCircle,
+  PlusSquare,
+  User,
+  Search,
+} from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router-dom";
+
+export default function AppLayout() {
+  const location = useLocation();
+
+  return (
+    <div className="flex h-screen bg-background">
+      {/* Sidebar for desktop */}
+      <aside className="hidden md:flex justify-between flex-col md:max-w-64 lg:max-w-xs border-r border-r-neutral-3  00 p-4">
+        <div>
+          <Link to="/" className="flex items-center mb-10">
+            <img
+              className="w-36"
+              src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
+              alt="Instagram"
+            />
+          </Link>
+          <nav className="space-y-4">
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/">
+                <Home className="mr-2 h-8 w-8" /> Home
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/explore" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/explore">
+                <Compass className="mr-2 h-8 w-8" /> Explore
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/messages" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/messages">
+                <MessageCircle className="mr-2 h-8 w-8" /> Messages
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/search" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/search">
+                <Search className="mr-2 h-8 w-8" /> Search
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/create" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/create">
+                <PlusSquare className="mr-2 h-8 w-8" /> Create
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/profile" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/profile">
+                <User className="mr-2 h-8 w-8" /> Profile
+              </Link>
+            </Button>
+          </nav>
+        </div>
+        <div>
+          <Button>Menu</Button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <main className="w-full overflow-y-scroll">
+        <Outlet />
+      </main>
+
+      {/* Bottom navigation for mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={location.pathname === "/" ? "bg-accent" : ""}
+          asChild
+        >
+          <Link to="/">
+            <Home className="h-8 w-8" />
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={location.pathname === "/explore" ? "bg-accent" : ""}
+          asChild
+        >
+          <Link to="/explore">
+            <Compass className="h-8 w-8" />
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={location.pathname === "/create" ? "bg-accent" : ""}
+          asChild
+        >
+          <Link to="/create">
+            <PlusSquare className="h-8 w-8" />
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={location.pathname === "/search" ? "bg-accent" : ""}
+          asChild
+        >
+          <Link to="/search">
+            <Search className="h-8 w-8" />
+          </Link>
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={location.pathname === "/profile" ? "bg-accent" : ""}
+          asChild
+        >
+          <Link to="/profile">
+            <User className="h-8 w-8" />
+          </Link>
+        </Button>
+      </nav>
+    </div>
+  );
+}
