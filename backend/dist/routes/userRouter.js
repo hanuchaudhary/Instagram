@@ -23,6 +23,7 @@ const sendEmail_1 = require("../libs/sendEmail");
 const multerUpload_1 = require("../libs/multerUpload");
 const uploadCloudinary_1 = require("../libs/uploadCloudinary");
 const middleware_1 = __importDefault(require("../middleware"));
+const zod_1 = require("zod");
 exports.userRouter = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -62,11 +63,9 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
             }
         });
         yield (0, sendEmail_1.sendEmail)(user.email, verifyCode);
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
         return res.status(201).json({
             success: true,
             message: "User registered successfully",
-            token,
             username: user.username
         });
     }
@@ -131,8 +130,8 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, username, password } = req.body;
-    const validation = Validations_1.signinSchema.safeParse({ email, username, password });
+    const { credential, password } = req.body;
+    const validation = Validations_1.signinSchema.safeParse({ credential, password });
     if (!validation.success) {
         return res.status(400).json({
             success: false,
@@ -142,14 +141,19 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
     try {
         const user = yield prisma.user.findFirst({
             where: {
-                OR: [{ email }, { username }],
-                isVerified: true
+                OR: [{ email: credential }, { username: credential }],
             }
         });
+        if ((user === null || user === void 0 ? void 0 : user.isVerified) === false) {
+            return res.status(404).json({
+                success: false,
+                message: "User is not Verified!"
+            });
+        }
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User does not exist with this email or username"
+                message: "User does not Exist with this Email or Username"
             });
         }
         const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
@@ -159,7 +163,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
                 message: "Incorrect password"
             });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '3h' });
         return res.status(200).json({
             success: true,
             message: "User logged in successfully",
@@ -176,25 +180,50 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
-exports.userRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const users = yield prisma.user.findMany({
-        include: {
-            posts: true,
-            followers: true,
-            following: true,
-            like: true,
-            comment: true
+exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true,
+                    }
+                },
+                following: true,
+                followers: true,
+                posts: true
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
         }
-    });
-    res.json({
-        users
-    });
+        return res.status(200).json({
+            success: true,
+            user
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching profile details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
 }));
 exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { bio, fullName } = req.body;
+    const { bio, fullName, accountType } = req.body;
     const userId = req.userId;
-    console.log(userId);
     try {
         const user = yield prisma.user.findUnique({
             where: {
@@ -216,10 +245,11 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
             data: {
                 bio,
                 avatar: avatarURL,
-                fullName
+                fullName,
+                accountType
             }
         });
-        return res.status(500).json({
+        return res.status(200).json({
             success: false,
             message: "User Details Updated Successfully",
             updateUser
@@ -231,6 +261,37 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
             success: false,
             message: "An error occurred while updating user details",
             error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
+}));
+const filterSchema = zod_1.z.object({
+    filter: zod_1.z.string().optional(),
+});
+exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const parsed = filterSchema.safeParse(req.query);
+    if (!parsed.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid request data",
+            errors: parsed.error.errors,
+        });
+    }
+    const { filter } = parsed.data;
+    try {
+        const users = yield prisma.user.findMany({
+            where: { username: { contains: filter } },
+        });
+        return res.status(200).json({
+            success: true,
+            users,
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching users:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching users",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
         });
     }
 }));

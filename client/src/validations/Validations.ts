@@ -28,15 +28,8 @@ export const signupSchema = z.object({
 });
 
 export const signinSchema = z.object({
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters long" })
-    .max(20, { message: "Username must be at most 20 characters long" })
-    .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" }),
-
-  email: z
-    .string()
-    .email({ message: "Invalid email address" }),
+  credential: z
+    .string().min(2, { message: "Username have atleast 2 Charcters" }),
 
   password: z
     .string()
@@ -56,5 +49,17 @@ export const verifyCodeSchema = z.object({
 export const postSchema = z.object({
   caption: z.string().min(5, { message: "Caption must have atleast 5 Charcaters" }).max(100, { message: "Caption have max 100 Characters" }),
   location: z.string().optional(),
-  mediaURL: z.string().url({ message: "Please put valid image url" })
+  mediaURL: z.instanceof(File).optional(),
+})
+
+
+export const editProfileSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  bio: z.string().max(160, {
+    message: "Bio must not be longer than 160 characters.",
+  }).optional(),
+  accountType: z.enum(["private", "public"]),
+  avatar: z.instanceof(File).optional(),
 })

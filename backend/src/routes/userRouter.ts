@@ -9,6 +9,7 @@ import { sendEmail } from '../libs/sendEmail';
 import { upload } from '../libs/multerUpload';
 import { uploadOnCloudinary } from '../libs/uploadCloudinary';
 import authMiddleware from '../middleware';
+import { z } from 'zod';
 
 export const userRouter = express.Router();
 const prisma = new PrismaClient();
@@ -56,16 +57,9 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
 
         await sendEmail(user.email, verifyCode);
 
-        const token = jwt.sign(
-            { id: user.id, email: user.email, username: user.username },
-            process.env.JWT_SECRET!,
-            { expiresIn: '1h' }
-        );
-
         return res.status(201).json({
             success: true,
             message: "User registered successfully",
-            token,
             username: user.username
         });
 
@@ -138,8 +132,8 @@ userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => 
 })
 
 userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => {
-    const { email, username, password } = req.body as UserType;
-    const validation = signinSchema.safeParse({ email, username, password });
+    const { credential, password } = req.body
+    const validation = signinSchema.safeParse({ credential, password });
     if (!validation.success) {
         return res.status(400).json({
             success: false,
@@ -150,15 +144,21 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
     try {
         const user = await prisma.user.findFirst({
             where: {
-                OR: [{ email }, { username }],
-                isVerified: true
+                OR: [{ email : credential }, { username: credential }],
             }
         });
+
+        if (user?.isVerified === false) {
+            return res.status(404).json({
+                success: false,
+                message: "User is not Verified!"
+            });
+        }
 
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User does not exist with this email or username"
+                message: "User does not Exist with this Email or Username"
             });
         }
 
@@ -173,7 +173,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
         const token = jwt.sign(
             { id: user.id, email: user.email, username: user.username },
             process.env.JWT_SECRET!,
-            { expiresIn: '1h' }
+            { expiresIn: '3h' }
         );
 
         return res.status(200).json({
@@ -193,24 +193,52 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
-userRouter.get("/bulk", async (req: Request, res: Response) => {
-    const users = await prisma.user.findMany({
-        include: {
-            posts: true,
-            followers: true,
-            following: true,
-            like: true,
-            comment: true
+userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    const userId = (req as any).userId
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true,
+                    }
+                },
+                following: true,
+                followers: true,
+                posts: true
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            })
         }
-    });
-    res.json({
-        users
-    })
+
+        return res.status(200).json({
+            success: true,
+            user
+        })
+
+    } catch (error) {
+        console.error("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching profile details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
 })
 
 
 userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
-    const { bio, fullName } = req.body;
+    const { bio, fullName, accountType } = req.body;
     const userId = (req as any).userId;
     try {
         const user = await prisma.user.findUnique({
@@ -235,7 +263,8 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
             data: {
                 bio,
                 avatar: avatarURL,
-                fullName
+                fullName,
+                accountType
             }
         })
 
@@ -254,5 +283,40 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
         });
     }
 })
+
+const filterSchema = z.object({
+  filter: z.string().optional(),
+});
+
+userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+  const parsed = filterSchema.safeParse(req.query);
+  if (!parsed.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request data",
+      errors: parsed.error.errors,
+    });
+  }
+
+  const { filter } = parsed.data;
+
+  try {
+    const users = await prisma.user.findMany({
+      where: { username: { contains: filter } },
+    });
+
+    return res.status(200).json({
+      success: true,
+      users,
+    });
+  } catch (error) {
+    console.error("Error while fetching users:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching users",
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    });
+  }
+});
 
 

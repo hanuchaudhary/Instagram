@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 followRouter.post("/follow", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
-    const { toUserId } = req.body
+    const { toUserId } = req.body;
     try {
 
         const user = await prisma.user.findUnique({
@@ -20,7 +20,7 @@ followRouter.post("/follow", async (req: Request, res: Response): Promise<any> =
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "unAuthorized"
             });
         }
 

@@ -26,9 +26,8 @@ const Signin = () => {
   const form = useForm<z.infer<typeof signinSchema>>({
     resolver: zodResolver(signinSchema),
     defaultValues: {
-      email: "",
+      credential: "",
       password: "",
-      username: "",
     },
   });
 
@@ -55,9 +54,9 @@ const Signin = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen ">
       <div className="w-full mx-2 max-w-sm space-y-4">
-        <Card className="border-gray-200">
+        <Card className="">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center">
               <img
@@ -88,11 +87,11 @@ const Signin = () => {
               >
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="credential"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input placeholder="Email" {...field} />
+                        <Input placeholder="Email/Username" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -109,18 +108,6 @@ const Signin = () => {
                           placeholder="Password"
                           {...field}
                         ></Input>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input placeholder="Username" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

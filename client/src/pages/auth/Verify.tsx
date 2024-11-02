@@ -62,7 +62,7 @@ export default function VerifyAccount() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen ">
       <Card className="w-full mx-2 max-w-md">
         <CardHeader>
           <CardTitle>Verify Your Account</CardTitle>

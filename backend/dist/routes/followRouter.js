@@ -31,7 +31,7 @@ exports.followRouter.post("/follow", (req, res) => __awaiter(void 0, void 0, voi
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "unAuthorized"
             });
         }
         const otherUser = yield prisma.user.findUnique({

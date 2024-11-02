@@ -54,9 +54,9 @@ export default function Component() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen ">
       <div className="w-full max-w-sm mx-2 space-y-4">
-        <Card className="border-gray-200">
+        <Card className="rounded">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center">
               <img

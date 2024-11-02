@@ -246,3 +246,57 @@ exports.postRouter.post("/comment", (req, res) => __awaiter(void 0, void 0, void
         });
     }
 }));
+exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    try {
+        // Fetch the user to ensure they exist
+        const user = yield prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        // Get the IDs of users that the current user follows
+        const followingIds = yield prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                following: {
+                    select: {
+                        followId: true,
+                        userId: true // Assuming `id` is the userId of the followed user
+                    },
+                },
+            },
+        });
+        console.log(followingIds);
+        const followedUserIds = (followingIds === null || followingIds === void 0 ? void 0 : followingIds.following.map(follow => follow.followId)) || [];
+        const releventUserIds = [...followedUserIds, userId];
+        const posts = yield prisma.post.findMany({
+            where: {
+                userId: { in: releventUserIds },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            include: {
+                User: true
+            },
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Posts from followed users",
+            posts,
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching posts:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while fetching posts",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));

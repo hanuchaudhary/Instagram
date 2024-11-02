@@ -1,4 +1,11 @@
-import { Heart, MessageCircle, Send, MoreHorizontal } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Send,
+  MoreHorizontal,
+  UserCircle,
+  MapPin,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Card,
@@ -8,20 +15,35 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
+import { post } from "@/store/atoms/posts";
+import { useRecoilState } from "recoil";
+import { currentProfileState } from "@/store/atoms/profile";
 
-const PostCard = () => {
+const PostCard = ({ post }: { post: post }) => {
+  const profileImage = useRecoilState(currentProfileState);
   return (
     <div>
-      <Card className="rounded-none shadow-sm w-[468px]">
+      <Card className="rounded-none border-t-0 border-l-0 border-r-0 border-b pb-4 border-b-neutral-800  shadow-sm w-[468px]">
         <CardHeader className="flex flex-row items-center justify-between p-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>KC</AvatarFallback>
+              <AvatarImage src={post.User.avatar} alt="@shadcn" />
+              <AvatarFallback>
+                <UserCircle className="fill-neutral-400 text-neutral-400" />
+              </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-sm font-semibold">kushchaudhary</CardTitle>
-              <CardDescription className="text-xs">New York, USA</CardDescription>
+              <CardTitle className="text-sm font-semibold">
+                {post.User.fullName}
+              </CardTitle>
+              <CardDescription className="text-xs capitalize">
+                {post.location != "" && (
+                  <div className="items-center flex">
+                    <MapPin className="h-3 w-3" />
+                    {post.location}
+                  </div>
+                )}
+              </CardDescription>
             </div>
           </div>
           <button>
@@ -31,7 +53,7 @@ const PostCard = () => {
         <CardContent className="p-0">
           <div className="aspect-square w-full">
             <img
-              src="https://imgs.search.brave.com/HlXTmfFjmnDiU8eNLGsrCVYRH-nh2y_5uoDT3F01mt8/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzLzkwLzM0/L2ZhLzkwMzRmYWMy/MGIxMGFjYmMwZWMx/MGQyYmRmOGNmNmEw/LmpwZw"
+              src={post.mediaURL}
               alt="Post image"
               className="h-full w-full object-cover"
             />
@@ -54,16 +76,25 @@ const PostCard = () => {
           <div className="flex w-full flex-col gap-1">
             <div className="flex gap-2">
               <p className="text-sm">
-                <span className="font-semibold">kushchaudhary</span> Beautiful sunset in New York City! 🌇
+                <span className="font-semibold">{post.User.username}</span>{" "}
+                {post.caption}
               </p>
             </div>
-            <p className="text-xs text-neutral-500 uppercase">2 hours ago</p>
+            <p className="text-xs text-neutral-400">
+              {new Date(post.createdAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            })}
+            </p>
             <div className="flex items-center gap-2 mt-2">
               <Avatar className="h-6 w-6">
-                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                <AvatarFallback>KC</AvatarFallback>
+                <AvatarImage src={profileImage[0].avatar} alt="U" />
+                <AvatarFallback>
+                  <UserCircle className="fill-neutral-400 h-3 w-3 text-neutral-400" />
+                </AvatarFallback>
               </Avatar>
-              <input 
+              <input
                 type="text"
                 placeholder="Add a comment..."
                 className="w-full bg-transparent text-sm outline-none placeholder:text-neutral-500"

@@ -17,25 +17,71 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { BACKEND_URL } from "@/config/config";
 import { postSchema } from "@/validations/Validations";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const CreatePostPage = () => {
+  const navigate = useNavigate();
+  const [imagePreview, setImagePreview] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
     defaultValues: {
       caption: "",
-      mediaURL: "",
       location: "",
+      mediaURL: undefined,
     },
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      form.setValue("mediaURL", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      setSelectedFile(file);
+      reader.readAsDataURL(file);
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof postSchema>) {
-    console.log(values);
-    // Here you would typically handle the form submission,
-    // such as sending the data to an API
+    const formData = new FormData();
+    formData.append("caption", values.caption);
+    formData.append("location", values.location || "");
+    if (selectedFile) formData.append("media", selectedFile);
+
+    try {
+      setIsLoading(true);
+      await axios.post(`${BACKEND_URL}/post/create`, formData, {
+        headers: {
+          Authorization: localStorage.getItem("token")?.split(" ")[1],
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success("Post Posted Successfully");
+      navigate("/");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        const errorMessage =
+          error.response.data.message || "Error While Posting";
+        toast.error(errorMessage);
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -93,7 +139,7 @@ const CreatePostPage = () => {
                   <FormField
                     control={form.control}
                     name="mediaURL"
-                    render={({ field: { value, onChange, ...field } }) => (
+                    render={({ field }) => (
                       <FormItem>
                         <FormLabel>Upload Media</FormLabel>
                         <FormControl>
@@ -101,10 +147,9 @@ const CreatePostPage = () => {
                             type="file"
                             accept="image/*,video/*"
                             onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              onChange(file);
+                              handleFileChange(e);
+                              field.onChange(e.target.files?.[0]);
                             }}
-                            {...field}
                           />
                         </FormControl>
                         <FormDescription>
@@ -114,7 +159,16 @@ const CreatePostPage = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit">Create Post</Button>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <Loader2 className="animate-spin" />
+                        Uploading
+                      </div>
+                    ) : (
+                      "Upload Post"
+                    )}
+                  </Button>
                 </form>
               </Form>
             </CardContent>
@@ -126,8 +180,16 @@ const CreatePostPage = () => {
               <CardTitle>Preview</CardTitle>
               <CardDescription>How your post will look</CardDescription>
             </CardHeader>
-            <CardContent className="h-56 bg-slate-100">
-              <img src="" alt="" />
+            <CardContent className="h-56 bg-slate-100 flex items-center justify-center">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Image Preview"
+                  className="max-h-full max-w-full object-cover"
+                />
+              ) : (
+                <p>No media selected</p>
+              )}
             </CardContent>
             <CardFooter>
               <p>Additional details or actions can go here</p>

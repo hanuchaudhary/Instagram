@@ -26,15 +26,16 @@ const uploadOnCloudinary = (filePath) => __awaiter(void 0, void 0, void 0, funct
         if (!filePath)
             return null;
         const response = yield cloudinary_1.v2.uploader.upload(filePath, {
-            resource_type: "image"
+            resource_type: "image",
+            folder: "uploads"
         });
         console.log("Media Uploaded");
-        promises_1.default.unlink(filePath);
+        yield promises_1.default.unlink(filePath);
         return response;
     }
     catch (error) {
-        promises_1.default.unlink(filePath);
-        console.log("Error while uploading file: " + error);
+        yield promises_1.default.unlink(filePath).catch(err => console.error("Error deleting file:", err));
+        console.log("Error while uploading file:", error);
         throw error;
     }
 });
