@@ -8,8 +8,8 @@ export default function HomePage() {
   usePosts();
   const postData = useRecoilState(postsState);
   return (
-    <div className="w-full px-4 py-10">
-      <h1 className="font-semibold text-xl py-2">Posts</h1>
+    <div className="w-full md:px-4 py-2 md:py-10">
+      <h1 className="font-semibold text-xl px-4 md:px-20 py-2">Posts</h1>
       <div className="grid lg:grid-cols-5 gap-4 ">
         <div className="flex col-span-3 flex-col items-center justify-center gap-4">
           {postData[0].posts.length < 0 ? (

@@ -1,11 +1,26 @@
 import { atom } from "recoil";
 
+export interface comment {
+    id: number
+    comment: string
+    createdAt: string
+    user: {
+        username: string
+        avatar: string
+    }
+}
+
 export interface post {
     id: number
     caption: string
     location: string
     mediaURL: string
     createdAt: string
+    _count: {
+        likes: number
+        comments: number
+    }
+    comments: comment[]
     User: {
         id: string
         username: string
@@ -28,6 +43,11 @@ export const postsState = atom<Posts>({
                 location: "",
                 mediaURL: "",
                 createdAt: "",
+                _count: {
+                    likes: 0,
+                    comments: 0,
+                },
+                comments: [],
                 User: {
                     id: "",
                     username: "",

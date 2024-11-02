@@ -12,14 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.followRouter = void 0;
+exports.featureRouter = void 0;
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const middleware_1 = __importDefault(require("../middleware"));
-exports.followRouter = (0, express_1.Router)();
-exports.followRouter.use(middleware_1.default);
+exports.featureRouter = (0, express_1.Router)();
+exports.featureRouter.use(middleware_1.default);
 const prisma = new client_1.PrismaClient();
-exports.followRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     const { toUserId } = req.params;
     try {
@@ -85,7 +85,7 @@ exports.followRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, v
         });
     }
 }));
-exports.followRouter.post("/unfollow", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/unfollow", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     const { toUserId } = req.body;
     try {
@@ -140,6 +140,112 @@ exports.followRouter.post("/unfollow", (req, res) => __awaiter(void 0, void 0, v
         return res.status(500).json({
             success: false,
             message: "Error while unfollowing user",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.featureRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    const { postId } = req.params;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unAuthorized"
+            });
+        }
+        const post = yield prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+        const checkLike = yield prisma.like.findFirst({
+            where: {
+                userId,
+                postId: parseInt(postId)
+            }
+        });
+        if (checkLike) {
+            return res.status(400).json({
+                success: false,
+                message: "Already liked"
+            });
+        }
+        const likePost = yield prisma.like.create({
+            data: {
+                postId: parseInt(postId),
+                userId
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Post liked successfully"
+        });
+    }
+    catch (error) {
+        console.error("Error liking post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while liking post",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    const { postId } = req.params;
+    const { comment } = req.body;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unAuthorized"
+            });
+        }
+        const post = yield prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+        const commentPost = yield prisma.comment.create({
+            data: {
+                postId: parseInt(postId),
+                userId,
+                comment
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Commented on post successfully"
+        });
+    }
+    catch (error) {
+        console.error("Error commenting on post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while commenting on post",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }

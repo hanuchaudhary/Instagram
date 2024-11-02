@@ -16,7 +16,7 @@ export default function AppLayout() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar for desktop */}
-      <aside className="hidden md:flex justify-between flex-col md:max-w-64 lg:max-w-xs border-r border-r-neutral-3  00 p-4">
+      <aside className="hidden md:flex justify-between flex-col md:max-w-64 lg:max-w-xs border-r p-4">
         <div>
           <Link to="/" className="flex items-center mb-10">
             <img

@@ -270,7 +270,6 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
 
     try {
-        // Fetch the user to ensure they exist
         const user = await prisma.user.findUnique({
             where: { id: userId },
         });
@@ -282,20 +281,17 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
             });
         }
 
-        // Get the IDs of users that the current user follows
         const followingIds = await prisma.user.findUnique({
             where: { id: userId },
             select: {
                 following: {
                     select: {
                         followId: true,
-                        userId: true // Assuming `id` is the userId of the followed user
+                        userId: true 
                     },
                 },
             },
         });
-
-        console.log(followingIds);
 
         const followedUserIds = followingIds?.following.map(follow => follow.followId) || [];
         const releventUserIds = [...followedUserIds, userId]
@@ -308,7 +304,24 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
                 createdAt: "desc",
             },
             include: {
-                User: true
+                User: true,
+                likes: true,
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    }
+                }
             },
         });
 

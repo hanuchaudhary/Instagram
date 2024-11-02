@@ -8,13 +8,13 @@ const userRouter_1 = require("./routes/userRouter");
 require("dotenv/config");
 const cors_1 = __importDefault(require("cors"));
 const postRouter_1 = require("./routes/postRouter");
-const followRouter_1 = require("./routes/followRouter");
+const featureRouter_1 = require("./routes/featureRouter");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use("/user", userRouter_1.userRouter);
 app.use("/post", postRouter_1.postRouter);
-app.use("/follow", followRouter_1.followRouter);
+app.use("/feature", featureRouter_1.featureRouter);
 app.listen(process.env.PORT, () => {
     console.log("App is running on Port " + process.env.PORT);
 });

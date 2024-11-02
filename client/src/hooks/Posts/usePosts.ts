@@ -6,7 +6,6 @@ import { useSetRecoilState } from "recoil";
 
 export const usePosts = () => {
     const setPostState = useSetRecoilState(postsState);
-
     useEffect(() => {
         const fetchProfile = async () => {
             try {

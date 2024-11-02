@@ -1,6 +1,6 @@
 import UserTile from "@/components/userTile";
 import { Input } from "@/components/ui/input";
-import { useSearchUsers } from "@/hooks/SearchUser/useSearchUsers";
+import { useSearchUsers } from "@/hooks/Users/useSearchUsers";
 
 const SearchPage = () => {
   const {searchedUsers, setFilter } = useSearchUsers();

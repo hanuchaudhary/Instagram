@@ -249,7 +249,6 @@ exports.postRouter.post("/comment", (req, res) => __awaiter(void 0, void 0, void
 exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
-        // Fetch the user to ensure they exist
         const user = yield prisma.user.findUnique({
             where: { id: userId },
         });
@@ -259,19 +258,17 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
                 message: "User not found",
             });
         }
-        // Get the IDs of users that the current user follows
         const followingIds = yield prisma.user.findUnique({
             where: { id: userId },
             select: {
                 following: {
                     select: {
                         followId: true,
-                        userId: true // Assuming `id` is the userId of the followed user
+                        userId: true
                     },
                 },
             },
         });
-        console.log(followingIds);
         const followedUserIds = (followingIds === null || followingIds === void 0 ? void 0 : followingIds.following.map(follow => follow.followId)) || [];
         const releventUserIds = [...followedUserIds, userId];
         const posts = yield prisma.post.findMany({
@@ -282,7 +279,24 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
                 createdAt: "desc",
             },
             include: {
-                User: true
+                User: true,
+                likes: true,
+                comments: {
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true,
+                    }
+                }
             },
         });
         return res.status(200).json({

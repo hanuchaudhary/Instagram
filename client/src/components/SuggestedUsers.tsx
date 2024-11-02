@@ -1,21 +1,22 @@
 import { SearchedUser } from "@/store/atoms/users";
 import UserTile from "./userTile";
+import { useRecoilValue } from "recoil";
+import { suggestedUsersAtom } from "@/store/atoms/SuggestedUsers";
+import { useSuggestedUsers } from "@/hooks/Users/useSuggestedUsers";
 
 const SuggestedUsers = () => {
-  const user : SearchedUser = 
-    {
-      id: "1",
-      avatar: "",
-      username: "kalifa",
-      fullName: "sexa",
-    }
+  useSuggestedUsers();
+  const suggestedUsersData = useRecoilValue(suggestedUsersAtom);
+  const {users} = suggestedUsersData;
+  console.log(users);
+
 
   return (
     <div>
       <div className="w-full bg-neutral-900 p-4 rounded-xl">
-        <UserTile user={user as SearchedUser} />
-        <UserTile user={user as SearchedUser} />
-        <UserTile user={user as SearchedUser} />
+        {users.length > 0 && users.map((user) => (
+          <UserTile key={user.id} user={user as SearchedUser} />
+        ))}
       </div>
     </div>
   );

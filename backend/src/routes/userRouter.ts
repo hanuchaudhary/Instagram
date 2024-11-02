@@ -144,7 +144,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
     try {
         const user = await prisma.user.findFirst({
             where: {
-                OR: [{ email : credential }, { username: credential }],
+                OR: [{ email: credential }, { username: credential }],
             }
         });
 
@@ -236,7 +236,6 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
     }
 })
 
-
 userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
     const { bio, fullName, accountType } = req.body;
     const userId = (req as any).userId;
@@ -285,38 +284,101 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
 })
 
 const filterSchema = z.object({
-  filter: z.string().optional(),
+    filter: z.string().optional(),
 });
 
 userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Promise<any> => {
-  const parsed = filterSchema.safeParse(req.query);
-  if (!parsed.success) {
-    return res.status(400).json({
-      success: false,
-      message: "Invalid request data",
-      errors: parsed.error.errors,
-    });
-  }
+    const parsed = filterSchema.safeParse(req.query);
+    if (!parsed.success) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid request data",
+            errors: parsed.error.errors,
+        });
+    }
 
-  const { filter } = parsed.data;
+    const { filter } = parsed.data;
 
-  try {
-    const users = await prisma.user.findMany({
-      where: { username: { contains: filter } },
-    });
+    try {
+        const userId = (req as any).userId;
+        const users = await prisma.user.findMany({
+            where: { 
+                AND: [
+                    { username: { contains: filter } },
+                    { id: { not: userId } }
+                ]
+            },select :{
+                id : true,
+                avatar : true,
+                username: true,
+                fullName: true
+            }
+        });
 
-    return res.status(200).json({
-      success: true,
-      users,
-    });
-  } catch (error) {
-    console.error("Error while fetching users:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while fetching users",
-      error: error instanceof Error ? error.message : 'An unexpected error occurred',
-    });
-  }
+        return res.status(200).json({
+            success: true,
+            users,
+        });
+    } catch (error) {
+        console.error("Error while fetching users:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching users",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
 });
+
+userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    const userId = (req as any).userId;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unauthorized",
+            });
+        }
+
+        const suggestedUsers = await prisma.user.findMany({
+            where: {
+                AND: [
+                    { id: { not: userId } },
+                    {
+                        NOT: {
+                            followers: {
+                                some: {
+                                    userId: userId
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            take: 5,
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            users: suggestedUsers
+        });
+
+    } catch (error) {
+        console.error("Error while fetching suggestions:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching suggestions",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+})
 
 
