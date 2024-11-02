@@ -2,11 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import { Request, Response, Router } from 'express'
 import authMiddleware from '../middleware';
 
-export const followRoutes = Router();
-followRoutes.use(authMiddleware)
+export const followRouter = Router();
+followRouter.use(authMiddleware)
 const prisma = new PrismaClient();
 
-followRoutes.post("/follow", async (req: Request, res: Response): Promise<any> => {
+followRouter.post("/follow", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { toUserId } = req.body
     try {
@@ -68,7 +68,7 @@ followRoutes.post("/follow", async (req: Request, res: Response): Promise<any> =
     }
 })
 
-followRoutes.post("/unfollow", async (req: Request, res: Response): Promise<any> => {
+followRouter.post("/unfollow", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { toUserId } = req.body 
     try {

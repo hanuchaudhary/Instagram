@@ -16,10 +16,12 @@ exports.postRouter = void 0;
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const middleware_1 = __importDefault(require("../middleware"));
+const multerUpload_1 = require("../libs/multerUpload");
+const uploadCloudinary_1 = require("../libs/uploadCloudinary");
 exports.postRouter = (0, express_1.Router)();
 exports.postRouter.use(middleware_1.default);
 const prisma = new client_1.PrismaClient();
-exports.postRouter.post("/create", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { caption, location } = req.body;
     const userId = req.userId;
     if (!userId) {
@@ -30,22 +32,29 @@ exports.postRouter.post("/create", (req, res) => __awaiter(void 0, void 0, void 
     }
     try {
         const user = yield prisma.user.findUnique({
-            where: {
-                id: userId
-            }
+            where: { id: userId }
         });
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User Not found",
+                message: "User not found",
             });
         }
-        // TODO: Add validation for caption and location
-        // TODO: Add support for media upload
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file provided" });
+        }
+        // Check if a media file was uploaded
+        let mediaURL = "";
+        if (req.file) {
+            // Upload the file to Cloudinary
+            const cloudinaryResult = yield (0, uploadCloudinary_1.uploadOnCloudinary)(req.file.path);
+            //@ts-ignore
+            mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url; // Save the secure URL from Cloudinary
+        }
         const post = yield prisma.post.create({
             data: {
                 caption,
-                mediaURL: "",
+                mediaURL,
                 location,
                 userId,
             },

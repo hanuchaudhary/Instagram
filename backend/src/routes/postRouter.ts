@@ -1,12 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { Router, Request, Response, json } from "express";
+import { Router, Request, Response } from "express";
 import authMiddleware from "../middleware";
+import { upload } from "../libs/multerUpload";
+import { uploadOnCloudinary } from "../libs/uploadCloudinary";
 
-export const postRoutes = Router();
-postRoutes.use(authMiddleware);
+export const postRouter = Router();
+postRouter.use(authMiddleware);
 const prisma = new PrismaClient();
 
-postRoutes.post("/create", async (req: Request, res: Response): Promise<any> => {
+
+postRouter.post("/create", upload.single("media"), async (req: Request, res: Response): Promise<any> => {
     const { caption, location } = req.body;
     const userId = (req as any).userId;
 
@@ -19,24 +22,32 @@ postRoutes.post("/create", async (req: Request, res: Response): Promise<any> => 
 
     try {
         const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        })
+            where: { id: userId }
+        });
 
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User Not found",
+                message: "User not found",
             });
         }
 
-        // TODO: Add validation for caption and location
-        // TODO: Add support for media upload
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No file provided" });
+        }
+        // Check if a media file was uploaded
+        let mediaURL = "";
+        if (req.file) {
+            // Upload the file to Cloudinary
+            const cloudinaryResult = await uploadOnCloudinary(req.file.path);
+            //@ts-ignore
+            mediaURL = cloudinaryResult?.url; // Save the secure URL from Cloudinary
+        }
+
         const post = await prisma.post.create({
             data: {
                 caption,
-                mediaURL: "",
+                mediaURL,
                 location,
                 userId,
             },
@@ -58,7 +69,8 @@ postRoutes.post("/create", async (req: Request, res: Response): Promise<any> => 
 });
 
 
-postRoutes.delete("/delete", async (req: Request, res: Response): Promise<any> => {
+
+postRouter.delete("/delete", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.body;
 
     if (!postId) {
@@ -97,7 +109,7 @@ postRoutes.delete("/delete", async (req: Request, res: Response): Promise<any> =
     }
 })
 
-postRoutes.post("/like", async (req: Request, res: Response): Promise<any> => {
+postRouter.post("/like", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.body;
     const userId = (req as any).userId;
 
@@ -183,7 +195,7 @@ postRoutes.post("/like", async (req: Request, res: Response): Promise<any> => {
     }
 })
 
-postRoutes.post("/comment", async (req: Request, res: Response): Promise<any> => {
+postRouter.post("/comment", async (req: Request, res: Response): Promise<any> => {
     const { comment, postId } = req.body;
     //todo: comment validation
 

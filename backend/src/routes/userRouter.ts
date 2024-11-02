@@ -6,11 +6,14 @@ import { signinSchema, signupSchema, verifyCodeSchema } from '../validations/Val
 import { UserType } from '../types/UserTypes';
 import 'dotenv/config';
 import { sendEmail } from '../libs/sendEmail';
+import { upload } from '../libs/multerUpload';
+import { uploadOnCloudinary } from '../libs/uploadCloudinary';
+import authMiddleware from '../middleware';
 
-export const userRoutes = express.Router();
+export const userRouter = express.Router();
 const prisma = new PrismaClient();
 
-userRoutes.post("/signup", async (req: Request, res: Response): Promise<any> => {
+userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => {
     const { fullName, email, username, password } = req.body as UserType;
 
     const validation = signupSchema.safeParse({ fullName, email, username, password });
@@ -76,7 +79,7 @@ userRoutes.post("/signup", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
-userRoutes.post("/verify", async (req: Request, res: Response): Promise<any> => {
+userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => {
     const { verifyCode, username } = await req.body;
     const validation = verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
@@ -134,7 +137,7 @@ userRoutes.post("/verify", async (req: Request, res: Response): Promise<any> => 
     }
 })
 
-userRoutes.post("/signin", async (req: Request, res: Response): Promise<any> => {
+userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => {
     const { email, username, password } = req.body as UserType;
     const validation = signinSchema.safeParse({ email, username, password });
     if (!validation.success) {
@@ -190,14 +193,14 @@ userRoutes.post("/signin", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
-userRoutes.get("/bulk", async (req: Request, res: Response) => {
+userRouter.get("/bulk", async (req: Request, res: Response) => {
     const users = await prisma.user.findMany({
         include: {
             posts: true,
             followers: true,
             following: true,
-            like : true,
-            comment : true
+            like: true,
+            comment: true
         }
     });
     res.json({
@@ -206,5 +209,50 @@ userRoutes.get("/bulk", async (req: Request, res: Response) => {
 })
 
 
+userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
+    const { bio, fullName } = req.body;
+    const userId = (req as any).userId;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        const result = await uploadOnCloudinary(req.file?.path)
+        const avatarURL = result?.url
+
+        const updateUser = await prisma.user.update({
+            where: {
+                id: user.id
+            },
+            data: {
+                bio,
+                avatar: avatarURL,
+                fullName
+            }
+        })
+
+        return res.status(200).json({
+            success: false,
+            message: "User Details Updated Successfully",
+            updateUser
+        });
+
+    } catch (error) {
+        console.error("Error while updating user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while updating user details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
+})
 
 
