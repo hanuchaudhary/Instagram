@@ -56,11 +56,11 @@ export default function Component() {
   return (
     <div className="flex items-center justify-center min-h-screen ">
       <div className="w-full max-w-sm mx-2 space-y-4">
-        <Card className="rounded">
+        <Card className="rounded shadow-none">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center">
               <img
-                className="w-44"
+                className="w-44 dark:invert-[1]"
                 src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
                 alt="Instagram"
               />
@@ -173,7 +173,7 @@ export default function Component() {
             </Form>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="shadow-none">
           <CardContent className="text-center py-4">
             <p className="text-sm">
               Have an account?{" "}

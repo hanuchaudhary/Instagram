@@ -25,10 +25,10 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
         }
 
         const otherUser = await prisma.user.findUnique({
-            where : {
-                id : toUserId
-            },select : {
-                username : true
+            where: {
+                id: toUserId
+            }, select: {
+                username: true
             }
         })
 
@@ -42,13 +42,13 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
         const followOtherUser = await prisma.following.create({
             data: {
                 userId,
-                followId : toUserId
+                followId: toUserId
             }
         })
 
         const putFollower = await prisma.followers.create({
             data: {
-                userId : toUserId,
+                userId: toUserId,
                 followId: userId
             }
         })
@@ -56,7 +56,7 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
         return res.status(200).json({
             success: true,
             message: `${otherUser.username} followed successfully`
-        }); 
+        });
 
     } catch (error) {
         console.error("Error following user:", error);
@@ -78,7 +78,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
                 id: userId
             }
         })
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -87,11 +87,11 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
         }
 
         const otherUser = await prisma.user.findUnique({
-            where : {
-                id : toUserId
-            },select : {
-                id : true,
-                username : true
+            where: {
+                id: toUserId
+            }, select: {
+                id: true,
+                username: true
             }
         })
 
@@ -101,7 +101,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
                 message: "Followed user not found"
             });
         }
-         
+
         const unfollowOtherUser = await prisma.following.delete({
             where: {
                 userId_followId: {
@@ -143,21 +143,21 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
             where: {
                 id: userId
             }
-        })  
-        if(!user){
+        })
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "unAuthorized"
             });
-        }    
+        }
 
         const post = await prisma.post.findUnique({
             where: {
                 id: parseInt(postId)
             }
-        })  
+        })
 
-        if(!post){
+        if (!post) {
             return res.status(404).json({
                 success: false,
                 message: "Post not found"
@@ -167,7 +167,7 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
         const likePost = await prisma.like.create({
             data: {
                 postId: parseInt(postId),
-                isLiked: false,
+                isLiked: true,
                 userId
             }
         })
@@ -184,60 +184,76 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
             message: "Error while liking post",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
-    }   
+    }
 })
 
 featureRouter.post("/dislike/:postId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { postId } = req.params;
+
+    // Ensure postId is a valid number
+    const parsedPostId = parseInt(postId);
+    if (isNaN(parsedPostId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid post ID"
+        });
+    }
+
     try {
+        // Check if the user exists
         const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        })  
-        if(!user){
-            return res.status(404).json({
+            where: { id: userId }
+        });
+        if (!user) {
+            return res.status(401).json({
                 success: false,
-                message: "unAuthorized"
+                message: "Unauthorized"
             });
-        }    
+        }
 
+        // Check if the post exists
         const post = await prisma.post.findUnique({
-            where: {
-                id: parseInt(postId)
-            }
-        })  
-
-        if(!post){
+            where: { id: parsedPostId }
+        });
+        if (!post) {
             return res.status(404).json({
                 success: false,
                 message: "Post not found"
             });
         }
-        const dislikePost = await prisma.like.delete({
+
+        // Delete the like record (dislike action)
+        await prisma.like.delete({
             where: {
                 userId_postId: {
-                    userId: userId,
-                    postId: parseInt(postId),
+                    userId,
+                    postId: parsedPostId
                 }
             }
-        })
+        });
 
         return res.status(200).json({
             success: true,
             message: "Post disliked successfully"
         });
 
-    } catch (error) {
+    } catch (error : any) {
         console.error("Error disliking post:", error);
+        if (error.code === "P2025") {
+            return res.status(404).json({
+                success: false,
+                message: "Like not found, cannot dislike"
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message: "Error while disliking post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
+            error: error instanceof Error ? error.message : "An unexpected error occurred"
         });
-    }   
-})
+    }
+});
 
 featureRouter.post("/comment/:postId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
@@ -245,26 +261,26 @@ featureRouter.post("/comment/:postId", async (req: Request, res: Response): Prom
     const { comment } = req.body;
 
     try {
-        const user   = await prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: {
                 id: userId
-            }   
-        })    
+            }
+        })
 
-        if(!user){
+        if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "unAuthorized"
             });
         }
-        
+
         const post = await prisma.post.findUnique({
             where: {
                 id: parseInt(postId)
             }
         })
 
-        if(!post){
+        if (!post) {
             return res.status(404).json({
                 success: false,
                 message: "Post not found"

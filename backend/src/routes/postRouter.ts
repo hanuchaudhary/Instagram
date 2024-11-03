@@ -287,7 +287,7 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
                 following: {
                     select: {
                         followId: true,
-                        userId: true 
+                        userId: true
                     },
                 },
             },
@@ -352,19 +352,19 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
                     mode: "insensitive"
                 }
             },
-           orderBy: {
-            likes :{
-                _count : "desc"
-            },
-           },select :{
-            id: true,
-            mediaURL: true,
-            _count: {
-                select: {
-                    likes: true
+            orderBy: {
+                likes: {
+                    _count: "desc"
+                },
+            }, select: {
+                id: true,
+                mediaURL: true,
+                _count: {
+                    select: {
+                        likes: true
+                    }
                 }
             }
-           }
         });
 
         return res.status(200).json({
@@ -378,6 +378,45 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
         return res.status(500).json({
             success: false,
             message: "Error while fetching explore posts",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+})
+
+postRouter.delete("/delete/:postId", async (req: Request, res: Response): Promise<any> => {
+    try {
+        const userId = (req as any).userId;
+        const {postId} = req.params;
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        if (!user) {
+            return res.status(403).json({
+                success: false,
+                message: "unAuthorized"
+            })
+        }
+
+        await prisma.post.delete({
+            where: {
+                id: Number(postId)
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Post Deleted",
+        });
+
+    } catch (error) {
+        console.error("Error while deleting post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while deleting post",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }

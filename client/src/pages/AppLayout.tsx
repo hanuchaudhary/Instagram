@@ -20,7 +20,7 @@ export default function AppLayout() {
         <div>
           <Link to="/" className="flex items-center mb-10">
             <img
-              className="w-36"
+              className="w-36 dark:invert-[1] "
               src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
               alt="Instagram"
             />

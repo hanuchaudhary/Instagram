@@ -210,7 +210,18 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                 },
                 following: true,
                 followers: true,
-                posts: true
+                posts: {
+                    select: {
+                        id: true,
+                        mediaURL : true,
+                        _count: {
+                            select: {
+                                comments: true,
+                                likes: true
+                            }
+                        }
+                    }
+                },
             }
         })
 
@@ -314,7 +325,7 @@ userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Pro
         const followingIds = myFollowingUsersId.map(follow => follow.followId);
 
         const users = await prisma.user.findMany({
-            where: { 
+            where: {
                 AND: [
                     { username: { contains: filter, mode: "insensitive" } },
                     { id: { not: userId } }

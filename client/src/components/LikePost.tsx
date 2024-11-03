@@ -13,10 +13,10 @@ const LikePost = ({
   isLiked: boolean;
 }) => {
   const [liked, setLiked] = useState(isLiked);
-  const { fetchPosts } = usePosts();  
+  const { fetchPosts } = usePosts();
   const handleLikePost = async () => {
     try {
-      if (liked) {
+      if (liked == true) {
         await axios.post(
           `${BACKEND_URL}/feature/dislike/${postId}`,
           {},
@@ -56,7 +56,9 @@ const LikePost = ({
     <div>
       <button onClick={handleLikePost}>
         <Heart
-          className={`${liked ? "text-rose-600 fill-rose-600" : "fill-white"} h-6 w-6`}
+          className={`${
+            liked ? "text-rose-600 fill-rose-600" : "fill-white"
+          } h-6 w-6`}
         />
       </button>
     </div>

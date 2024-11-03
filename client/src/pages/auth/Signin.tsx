@@ -56,11 +56,11 @@ const Signin = () => {
   return (
     <div className="flex items-center justify-center min-h-screen ">
       <div className="w-full mx-2 max-w-sm space-y-4">
-        <Card className="">
+        <Card className="shadow-none">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center">
               <img
-                className="w-44"
+                className="w-44 dark:invert-[1]"
                 src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
                 alt="Instagram"
               />
@@ -149,7 +149,7 @@ const Signin = () => {
             </Form>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="shadow-none">
           <CardContent className="text-center py-4">
             <p className="text-sm">
               Dont't Have an account?{" "}

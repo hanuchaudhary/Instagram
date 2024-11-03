@@ -197,7 +197,18 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
                 },
                 following: true,
                 followers: true,
-                posts: true
+                posts: {
+                    select: {
+                        id: true,
+                        mediaURL: true,
+                        _count: {
+                            select: {
+                                comments: true,
+                                likes: true
+                            }
+                        }
+                    }
+                },
             }
         });
         if (!user) {

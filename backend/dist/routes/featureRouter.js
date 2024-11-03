@@ -161,7 +161,7 @@ exports.featureRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void
         const likePost = yield prisma.like.create({
             data: {
                 postId: parseInt(postId),
-                isLiked: false,
+                isLiked: true,
                 userId
             }
         });
@@ -182,22 +182,28 @@ exports.featureRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void
 exports.featureRouter.post("/dislike/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     const { postId } = req.params;
+    // Ensure postId is a valid number
+    const parsedPostId = parseInt(postId);
+    if (isNaN(parsedPostId)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid post ID"
+        });
+    }
     try {
+        // Check if the user exists
         const user = yield prisma.user.findUnique({
-            where: {
-                id: userId
-            }
+            where: { id: userId }
         });
         if (!user) {
-            return res.status(404).json({
+            return res.status(401).json({
                 success: false,
-                message: "unAuthorized"
+                message: "Unauthorized"
             });
         }
+        // Check if the post exists
         const post = yield prisma.post.findUnique({
-            where: {
-                id: parseInt(postId)
-            }
+            where: { id: parsedPostId }
         });
         if (!post) {
             return res.status(404).json({
@@ -205,11 +211,12 @@ exports.featureRouter.post("/dislike/:postId", (req, res) => __awaiter(void 0, v
                 message: "Post not found"
             });
         }
-        const dislikePost = yield prisma.like.delete({
+        // Delete the like record (dislike action)
+        yield prisma.like.delete({
             where: {
                 userId_postId: {
-                    userId: userId,
-                    postId: parseInt(postId),
+                    userId,
+                    postId: parsedPostId
                 }
             }
         });
@@ -220,10 +227,16 @@ exports.featureRouter.post("/dislike/:postId", (req, res) => __awaiter(void 0, v
     }
     catch (error) {
         console.error("Error disliking post:", error);
+        if (error.code === "P2025") {
+            return res.status(404).json({
+                success: false,
+                message: "Like not found, cannot dislike"
+            });
+        }
         return res.status(500).json({
             success: false,
             message: "Error while disliking post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
+            error: error instanceof Error ? error.message : "An unexpected error occurred"
         });
     }
 }));

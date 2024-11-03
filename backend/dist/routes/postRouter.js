@@ -353,3 +353,37 @@ exports.postRouter.get("/explore", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
+exports.postRouter.delete("/delete/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const userId = req.userId;
+        const { postId } = req.params;
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(403).json({
+                success: false,
+                message: "unAuthorized"
+            });
+        }
+        yield prisma.post.delete({
+            where: {
+                id: Number(postId)
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Post Deleted",
+        });
+    }
+    catch (error) {
+        console.error("Error while deleting post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while deleting post",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
