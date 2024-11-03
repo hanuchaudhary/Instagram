@@ -56,10 +56,10 @@ export const postSchema = z.object({
 export const editProfileSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
-  }),
+  }).optional(),
   bio: z.string().max(160, {
     message: "Bio must not be longer than 160 characters.",
   }).optional(),
-  accountType: z.enum(["private", "public"]),
+  accountType: z.enum(["private", "public"]).optional(),
   avatar: z.instanceof(File).optional(),
-})
+});

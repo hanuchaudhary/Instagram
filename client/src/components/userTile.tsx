@@ -21,7 +21,7 @@ const UserTile = ({ user }: { user: SearchedUser }) => {
         </div>
         <div className="flex items-center justify-center">
           <h1 className="font-semibold text-blue-500">
-            <FollowUser userId={user.id} />
+            <FollowUser userId={user.id} isFollowing={user.isFollowing} />
           </h1>
         </div>
       </div>

@@ -14,7 +14,8 @@ export const suggestedUsersAtom = atom<SuggestedUsers>({
                 id: "",
                 username: "",
                 fullName: "",
-                avatar: ""
+                avatar: "",
+                isFollowing : false
             }
         ]
     }

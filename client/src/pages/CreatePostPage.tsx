@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -18,7 +17,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { BACKEND_URL } from "@/config/config";
-import { usePosts } from "@/hooks/Posts/usePosts";
 import { postSchema } from "@/validations/Validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -181,20 +179,17 @@ const CreatePostPage = () => {
               <CardTitle>Preview</CardTitle>
               <CardDescription>How your post will look</CardDescription>
             </CardHeader>
-            <CardContent className="h-56 bg-slate-100 flex items-center justify-center">
+            <CardContent className="h-56  flex items-center justify-center">
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Image Preview"
-                  className="max-h-full max-w-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
                 <p>No media selected</p>
               )}
             </CardContent>
-            <CardFooter>
-              <p>Additional details or actions can go here</p>
-            </CardFooter>
           </Card>
         </div>
       </div>

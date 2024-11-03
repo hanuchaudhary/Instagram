@@ -163,7 +163,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
                 message: "Incorrect password"
             });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET, { expiresIn: '3h' });
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET);
         return res.status(200).json({
             success: true,
             message: "User logged in successfully",
@@ -279,22 +279,33 @@ exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(vo
     const { filter } = parsed.data;
     try {
         const userId = req.userId;
+        const myFollowingUsersId = yield prisma.following.findMany({
+            where: {
+                userId
+            },
+            select: {
+                followId: true
+            }
+        });
+        const followingIds = myFollowingUsersId.map(follow => follow.followId);
         const users = yield prisma.user.findMany({
             where: {
                 AND: [
-                    { username: { contains: filter } },
+                    { username: { contains: filter, mode: "insensitive" } },
                     { id: { not: userId } }
                 ]
-            }, select: {
+            },
+            select: {
                 id: true,
                 avatar: true,
                 username: true,
                 fullName: true
             }
         });
+        const usersWithFollowStatus = users.map(user => (Object.assign(Object.assign({}, user), { isFollowing: followingIds.includes(user.id) })));
         return res.status(200).json({
             success: true,
-            users,
+            users: usersWithFollowStatus,
         });
     }
     catch (error) {
@@ -320,6 +331,15 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
                 message: "unauthorized",
             });
         }
+        const myFollowingUsersId = yield prisma.following.findMany({
+            where: {
+                userId
+            },
+            select: {
+                followId: true
+            }
+        });
+        const followingIds = myFollowingUsersId.map(follow => follow.followId);
         const suggestedUsers = yield prisma.user.findMany({
             where: {
                 AND: [
@@ -338,11 +358,18 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
             take: 5,
             orderBy: {
                 createdAt: 'desc'
+            },
+            select: {
+                id: true,
+                username: true,
+                fullName: true,
+                avatar: true
             }
         });
+        const suggestedUsersWithFollowStatus = suggestedUsers.map(user => (Object.assign(Object.assign({}, user), { isFollowing: followingIds.includes(user.id) })));
         return res.status(200).json({
             success: true,
-            users: suggestedUsers
+            users: suggestedUsersWithFollowStatus
         });
     }
     catch (error) {

@@ -10,17 +10,18 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col h-full ">
-      <div className="w-full flex items-center justify-center mt-10 mb-20">
+      <div className="mt-10">
         <ProfileCard />
       </div>
       <Separator />
       <div className="flex-grow ">
         <div className="w-full md:px-20 grid grid-cols-3 px-3 gap-4 md:gap-3 pb-20 pt-4 md:py-4">
           {posts?.length! > 0 ? (
-            posts?.map((post) => <ProfilePagePostCard post={post} />)
+            posts?.map((post) => <ProfilePagePostCard key={post.id} post={post} />)
           ) : (
-            <div>
-              <h1>there is no post yet</h1>
+            <div className="col-span-3 text-center py-8">
+              <h1 className="text-xl text-neutral-500">No posts to display yet</h1>
+              <p className="text-neutral-400 mt-2">Share your first post to get started!</p>
             </div>
           )}
         </div>

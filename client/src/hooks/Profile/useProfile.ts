@@ -16,7 +16,6 @@ export const useProfile = () => {
                     }
                 });
                 const profileData = res.data;
-                console.log(profileData);
                 setCurrentUserProfile(profileData.user);
             } catch (error) {
                 console.error("Error fetching profile:", error);

@@ -47,6 +47,10 @@ export interface PostType {
     user?: UserType;
     userId?: string;
     createdAt: Date;
+    _count?: {
+        likes: number;
+        comments: number;
+    };
 }
 
 // Recoil atom for the current user's profile

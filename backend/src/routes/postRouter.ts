@@ -340,3 +340,45 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
         });
     }
 });
+
+postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => {
+    try {
+        const filter = req.query.filter as string;
+
+        const posts = await prisma.post.findMany({
+            where: {
+                caption: {
+                    contains: filter,
+                    mode: "insensitive"
+                }
+            },
+           orderBy: {
+            likes :{
+                _count : "desc"
+            },
+           },select :{
+            id: true,
+            mediaURL: true,
+            _count: {
+                select: {
+                    likes: true
+                }
+            }
+           }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Explore posts",
+            posts,
+        });
+
+    } catch (error) {
+        console.error("Error while fetching explore posts:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while fetching explore posts",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+})

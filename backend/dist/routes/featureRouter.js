@@ -47,18 +47,6 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
                 message: "User not found"
             });
         }
-        const checkFollow = yield prisma.following.findFirst({
-            where: {
-                userId,
-                followId: toUserId
-            }
-        });
-        if (checkFollow) {
-            return res.status(400).json({
-                success: false,
-                message: "Already following"
-            });
-        }
         const followOtherUser = yield prisma.following.create({
             data: {
                 userId,
@@ -85,9 +73,9 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
         });
     }
 }));
-exports.featureRouter.post("/unfollow", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
-    const { toUserId } = req.body;
+    const { toUserId } = req.params;
     try {
         const user = yield prisma.user.findUnique({
             where: {
@@ -170,21 +158,10 @@ exports.featureRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void
                 message: "Post not found"
             });
         }
-        const checkLike = yield prisma.like.findFirst({
-            where: {
-                userId,
-                postId: parseInt(postId)
-            }
-        });
-        if (checkLike) {
-            return res.status(400).json({
-                success: false,
-                message: "Already liked"
-            });
-        }
         const likePost = yield prisma.like.create({
             data: {
                 postId: parseInt(postId),
+                isLiked: false,
                 userId
             }
         });
@@ -198,6 +175,54 @@ exports.featureRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void
         return res.status(500).json({
             success: false,
             message: "Error while liking post",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.featureRouter.post("/dislike/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    const { postId } = req.params;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unAuthorized"
+            });
+        }
+        const post = yield prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+        const dislikePost = yield prisma.like.delete({
+            where: {
+                userId_postId: {
+                    userId: userId,
+                    postId: parseInt(postId),
+                }
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Post disliked successfully"
+        });
+    }
+    catch (error) {
+        console.error("Error disliking post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while disliking post",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }

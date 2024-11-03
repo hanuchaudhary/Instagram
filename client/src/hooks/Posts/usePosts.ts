@@ -6,21 +6,24 @@ import { useSetRecoilState } from "recoil";
 
 export const usePosts = () => {
     const setPostState = useSetRecoilState(postsState);
+    const fetchPosts = async () => {
+        try {
+            const res = await axios.get(`${BACKEND_URL}/post/bulk`, {
+                headers: {
+                    Authorization: localStorage.getItem("token")?.split(" ")[1]
+                }
+            });
+            const postsData = res.data;
+            setPostState(postsData);
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+        }
+    };
     useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const res = await axios.get(`${BACKEND_URL}/post/bulk`, {
-                    headers: {
-                        Authorization: localStorage.getItem("token")?.split(" ")[1]
-                    }
-                });
-                const postsData = res.data;
-                setPostState(postsData);
-            } catch (error) {
-                console.error("Error fetching profile:", error);
-            }
-        };
-
-        fetchProfile();
+        fetchPosts();
     }, [setPostState]);
+
+    return {
+        fetchPosts
+    }
 };

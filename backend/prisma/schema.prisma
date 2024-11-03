@@ -82,8 +82,10 @@ model Comment {
 model Like {
   id        Int      @id @unique @default(autoincrement())
   postId    Int
+  isLiked   Boolean  @default(false)
   userId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  @@unique([userId, postId])
 }

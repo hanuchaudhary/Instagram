@@ -5,6 +5,7 @@ export interface SearchedUser {
     username: string;
     fullName: string;
     avatar: string;
+    isFollowing: boolean;
 }
 
 interface SearchedUsersSchema {
@@ -19,7 +20,8 @@ export const users = atom<SearchedUsersSchema>({
                 id: "",
                 username: "",
                 fullName: "",
-                avatar: ""
+                avatar: "",
+                isFollowing: false
             }
         ] 
     }

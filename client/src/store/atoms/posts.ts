@@ -16,6 +16,7 @@ export interface post {
     location: string
     mediaURL: string
     createdAt: string
+    isLiked: boolean
     _count: {
         likes: number
         comments: number
@@ -43,6 +44,7 @@ export const postsState = atom<Posts>({
                 location: "",
                 mediaURL: "",
                 createdAt: "",
+                isLiked: false,
                 _count: {
                     likes: 0,
                     comments: 0,

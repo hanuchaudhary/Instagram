@@ -1,29 +1,48 @@
-
-import { Card, CardContent } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { useExplorePosts } from "@/hooks/Posts/useExplorePosts";
+import { Loader2, Heart } from "lucide-react";
 
 export default function ExplorePage() {
-  const posts = Array(20).fill(null).map((_, i) => ({
-    id: i,
-    imageUrl: `/placeholder.svg?height=300&width=300&text=Post ${i + 1}`,
-  }))
+  const { isLoading, explorePosts, setFilter } = useExplorePosts();
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Explore</h1>
-      <Input type="search" placeholder="Search" className="mb-6" />
+    <div className="max-w-3xl mx-auto py-4 md:px-0 px-2">
+      <h1 className="text-3xl font-bold mb-6">Explore Posts</h1>
+      <Input
+        type="search"
+        placeholder="Search posts..."
+        className="mb-6"
+        onChange={(e) => setFilter(e.target.value)}
+      />
       <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="grid grid-cols-3 gap-1 md:gap-4">
-          {posts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              <CardContent className="p-0">
-                <img src={post.imageUrl} alt={`Post ${post.id}`} className="w-full h-full object-cover aspect-square" />
-              </CardContent>
-            </Card>
-          ))}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="animate-spin" />
+            </div>
+          ) : (
+            explorePosts.map((post) => (
+              <Card key={post.id} className="overflow-hidden relative group">
+                <CardContent className="p-0">
+                  <img
+                    src={post.mediaURL}
+                    alt={`Post ${post.id}`}
+                    className="w-full h-full object-cover aspect-square"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 text-white flex items-center gap-2">
+                      <Heart className="w-6 h-6" />
+                      <span className="text-lg font-semibold">{post._count.likes}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </ScrollArea>
     </div>
-  )
+  );
 }

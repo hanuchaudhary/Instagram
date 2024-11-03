@@ -173,7 +173,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
         const token = jwt.sign(
             { id: user.id, email: user.email, username: user.username },
             process.env.JWT_SECRET!,
-            { expiresIn: '3h' }
+            // { expiresIn: '3h' }
         );
 
         return res.status(200).json({
@@ -301,23 +301,41 @@ userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Pro
 
     try {
         const userId = (req as any).userId;
+
+        const myFollowingUsersId = await prisma.following.findMany({
+            where: {
+                userId
+            },
+            select: {
+                followId: true
+            }
+        });
+
+        const followingIds = myFollowingUsersId.map(follow => follow.followId);
+
         const users = await prisma.user.findMany({
             where: { 
                 AND: [
-                    { username: { contains: filter } },
+                    { username: { contains: filter, mode: "insensitive" } },
                     { id: { not: userId } }
                 ]
-            },select :{
-                id : true,
-                avatar : true,
+            },
+            select: {
+                id: true,
+                avatar: true,
                 username: true,
                 fullName: true
             }
         });
 
+        const usersWithFollowStatus = users.map(user => ({
+            ...user,
+            isFollowing: followingIds.includes(user.id)
+        }));
+
         return res.status(200).json({
             success: true,
-            users,
+            users: usersWithFollowStatus,
         });
     } catch (error) {
         console.error("Error while fetching users:", error);
@@ -345,6 +363,17 @@ userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Respons
             });
         }
 
+        const myFollowingUsersId = await prisma.following.findMany({
+            where: {
+                userId
+            },
+            select: {
+                followId: true
+            }
+        });
+
+        const followingIds = myFollowingUsersId.map(follow => follow.followId);
+
         const suggestedUsers = await prisma.user.findMany({
             where: {
                 AND: [
@@ -363,12 +392,23 @@ userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Respons
             take: 5,
             orderBy: {
                 createdAt: 'desc'
+            },
+            select: {
+                id: true,
+                username: true,
+                fullName: true,
+                avatar: true
             }
         });
 
+        const suggestedUsersWithFollowStatus = suggestedUsers.map(user => ({
+            ...user,
+            isFollowing: followingIds.includes(user.id)
+        }));
+
         return res.status(200).json({
             success: true,
-            users: suggestedUsers
+            users: suggestedUsersWithFollowStatus
         });
 
     } catch (error) {

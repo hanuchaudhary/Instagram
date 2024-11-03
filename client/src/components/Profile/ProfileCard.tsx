@@ -41,17 +41,6 @@ import { editProfileSchema } from "@/validations/Validations";
 import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  bio: z.string().max(160, {
-    message: "Bio must not be longer than 160 characters.",
-  }),
-  accountType: z.enum(["private", "public"]),
-  avatar: z.instanceof(File).optional(),
-});
-
 export default function ProfileCard() {
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -63,18 +52,20 @@ export default function ProfileCard() {
   const profileData = useRecoilValue(currentProfileState);
 
   return (
-    <div className="flex flex-col md:flex-row items-start gap-6 p-6 rounded-lg shadow-md">
-      <div className="flex-shrink-0">
-        <Avatar className="h-32 w-32">
-          <AvatarImage src={profileData.avatar} alt={profileData.fullName} />
-          <AvatarFallback className="text-2xl uppercase font-bold">
-            <UserCircle className="fill-neutral-400 h-20 w-20 text-neutral-400" />
-          </AvatarFallback>
-        </Avatar>
-      </div>
-      <div className="flex-1 space-y-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <h1 className="text-2xl font-bold">{profileData.username}</h1>
+    <div className="md:px-40 flex flex-col rounded-none  gap-6 p-4 md:p-6 shadow-md">
+      <div className="flex md:w-96">
+        <div className="w-full">
+          <Avatar className="h-24 w-24 md:h-32 md:w-32">
+            <AvatarImage src={profileData.avatar} alt={profileData.fullName} />
+            <AvatarFallback className="text-2xl uppercase font-bold">
+              <UserCircle className="fill-neutral-400 h-16 w-16 md:h-20 md:w-20 text-neutral-400" />
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        <div className="username btn flex flex-col items-start gap-4">
+          <h1 className="text-xl md:text-2xl font-bold">
+            {profileData.username}
+          </h1>
           <div className="flex gap-2">
             <EditProfile profileData={profileData} />
             <Button onClick={handleLogout} size="sm" variant="destructive">
@@ -82,19 +73,21 @@ export default function ProfileCard() {
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-6 text-sm">
+      </div>
+      <div className=" space-y-4 w-full">
+        <div className="data flex items-start gap-4 md:gap-6 text-base md:text-lg">
           <span>
-            <strong>{profileData._count.posts}</strong> Posts
+            <strong className="font-semibold text-lg md:text-xl">{profileData._count.posts}</strong> Posts
           </span>
           <span>
-            <strong>{profileData._count.followers}</strong> Followers
+            <strong className="text-lg md:text-xl">{profileData._count.followers}</strong> Followers
           </span>
           <span>
-            <strong>{profileData._count.following}</strong> Following
+            <strong className="text-lg md:text-xl">{profileData._count.following}</strong> Following
           </span>
         </div>
-        <div className="space-y-2">
-          <div className="flex gap-2">
+        <div className="bio space-y-2">
+          <div className="flex items-start gap-2">
             <h2 className="font-semibold">{profileData.fullName}</h2>
             <Badge className="capitalize font-semibold">
               {profileData.accountType}
@@ -121,16 +114,17 @@ export default function ProfileCard() {
 }
 
 function EditProfile({ profileData }: { profileData: UserType }) {
+  const [closeDialog, setCloseDialog] = useState(false);
   const [imagePreview, setImagePreview] = useState(profileData.avatar);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(editProfileSchema),
     defaultValues: {
       name: profileData.fullName,
       bio: profileData.bio,
-      accountType: "public",
-      avatar: profileData.avatar,
+      accountType: profileData.accountType,
+      avatar: undefined,
     },
   });
 
@@ -138,7 +132,9 @@ function EditProfile({ profileData }: { profileData: UserType }) {
     const file = e.target.files?.[0] || null;
     if (file) {
       const reader = new FileReader();
-      setImagePreview((reader.result as string) || undefined);
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
       reader.readAsDataURL(file);
       setSelectedFile(file);
       form.setValue("avatar", file);
@@ -147,10 +143,16 @@ function EditProfile({ profileData }: { profileData: UserType }) {
 
   async function onSubmit(values: z.infer<typeof editProfileSchema>) {
     const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("bio", values.bio as string);
-    formData.append("accountType", values.accountType);
+    if (values.name) formData.append("name", values.name);
+    if (values.bio) formData.append("bio", values.bio);
+    if (values.accountType) formData.append("accountType", values.accountType);
     if (selectedFile) formData.append("avatar", selectedFile);
+
+    if (formData.entries().next().done) {
+      toast.error("No changes to update");
+      return;
+    }
+
     setIsLoading(true);
     try {
       await axios.post(`${BACKEND_URL}/user/edit`, formData, {
@@ -160,16 +162,18 @@ function EditProfile({ profileData }: { profileData: UserType }) {
         },
       });
       toast.success("Profile Edited Successfully");
+      setCloseDialog(false);
     } catch (error) {
       toast.error("Error while updating profile");
       console.error("Error updating profile:", error);
+      setCloseDialog(true);
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={closeDialog} onOpenChange={setCloseDialog}>
       <AlertDialogTrigger asChild>
         <Button size="sm">Edit Profile</Button>
       </AlertDialogTrigger>

@@ -100,7 +100,7 @@ export default function AppLayout() {
       </aside>
 
       {/* Main content */}
-      <main className="w-full overflow-y-scroll">
+      <main className="w-full">
         <Outlet />
       </main>
 

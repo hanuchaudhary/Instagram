@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { MessageCircle, Send, UserCircle } from 'lucide-react'
-import axios, { AxiosError } from 'axios'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { MessageCircle, Send, UserCircle } from "lucide-react";
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
 
 import {
   Drawer,
@@ -13,52 +13,95 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from '@/components/ui/drawer'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { BACKEND_URL } from '@/config/config'
-import { comment } from '@/store/atoms/posts'
-const PostComments = ({ postId, comments }: { postId: number, comments: comment[] }) => {
-    
-  const [comment, setComment] = useState('')
+import { BACKEND_URL } from "@/config/config";
+import { comment } from "@/store/atoms/posts";
+import { usePosts } from "@/hooks/Posts/usePosts";
+
+const PostComments = ({
+  postId,
+  comments,
+}: {
+  postId: number;
+  comments: comment[];
+}) => {
+  const { fetchPosts } = usePosts();
+  const [comment, setComment] = useState("");
+
+  const getTimeAgo = (date: string) => {
+    const seconds = Math.floor(
+      (new Date().getTime() - new Date(date).getTime()) / 1000
+    );
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+
+    return Math.floor(seconds) + " seconds ago";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    if (!comment.trim()) {
+      toast.error("Please enter a comment");
+      return;
+    }
     try {
       await axios.post(
         `${BACKEND_URL}/feature/comment/${postId}`,
         { comment },
         {
           headers: {
-            Authorization: localStorage.getItem('token')?.split(' ')[1],
+            Authorization: localStorage.getItem("token")?.split(" ")[1],
           },
         }
-      )
-      toast.success('Comment submitted successfully')
-      setComment('')
+      );
+      toast.success("Your comment has been added to the discussion!");
+      setComment("");
+      fetchPosts();
     } catch (error) {
       if (error instanceof AxiosError) {
-        toast.error(error.response?.data.message)
+        toast.error(
+          error.response?.data.message ||
+            "Failed to post your comment. Please try again."
+        );
       } else {
-        toast.error('Error while submitting comment')
+        toast.error(
+          "Something went wrong while posting your comment. Please try again later."
+        );
       }
     }
-  }
+  };
 
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <button className="mb-2">
           <MessageCircle className="h-6 w-6" />
           <span className="sr-only">Open comments</span>
-        </Button>
+        </button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="text-left">
           <DrawerTitle>Comments</DrawerTitle>
-          <DrawerDescription>View and add comments for this post</DrawerDescription>
+          <DrawerDescription>
+            Join the conversation and share your thoughts
+          </DrawerDescription>
         </DrawerHeader>
         <ScrollArea className="mx-auto h-[50vh] rounded-xl bg-neutral-900 p-4 md:h-[60vh]">
           <div className="w-[320px] md:w-[700px] flex flex-col gap-2">
@@ -70,36 +113,40 @@ const PostComments = ({ postId, comments }: { postId: number, comments: comment[
                 >
                   <div className="flex items-center gap-1">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={comment.user.avatar} alt={comment.user.username} />
+                      <AvatarImage
+                        src={comment.user.avatar}
+                        alt={comment.user.username}
+                      />
                       <AvatarFallback className="capitalize">
                         <UserCircle className="fill-neutral-400 text-neutral-400" />
                       </AvatarFallback>
                     </Avatar>
-                    <h1 className="text-sm font-semibold capitalize">{comment.user.username}</h1>
+                    <h1 className="text-sm font-semibold capitalize">
+                      {comment.user.username}
+                    </h1>
                   </div>
                   <div>
                     <p>{comment.comment}</p>
                     <p className="text-xs text-neutral-400">
-                      {new Date(comment.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {getTimeAgo(comment.createdAt)}
                     </p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center text-muted-foreground">No comments yet</p>
+              <p className="text-center text-muted-foreground">
+                Be the first one to comment on this post!
+              </p>
             )}
           </div>
         </ScrollArea>
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 border-t p-4">
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center gap-2 border-t p-4"
+        >
           <Input
             type="text"
-            placeholder="Add a comment..."
+            placeholder="Share your thoughts..."
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="flex-grow"
@@ -109,14 +156,14 @@ const PostComments = ({ postId, comments }: { postId: number, comments: comment[
             <span className="sr-only">Submit comment</span>
           </Button>
         </form>
-        <DrawerClose asChild>
-          <Button variant="outline" className="w-full">
+        <DrawerClose>
+          <Button variant="outline">
             Close
           </Button>
         </DrawerClose>
       </DrawerContent>
     </Drawer>
-  )
-}
+  );
+};
 
-export default PostComments
+export default PostComments;
