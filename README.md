@@ -111,6 +111,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_twitter)
+KushChaudharyOg - [@your_twitter](https://x.com/KushChaudharyOg)
 
 Project Link: [https://github.com/hanuchaudhary/Instagram](https://github.com/hanuchaudhary/Instagram)
