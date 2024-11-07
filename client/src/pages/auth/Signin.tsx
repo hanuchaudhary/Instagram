@@ -4,25 +4,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Facebook } from "lucide-react";
+import { Eye, EyeOff, Facebook } from "lucide-react";
 import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import {signinSchema} from '@hanuchaudhary/instagram'
+import { signinSchema } from "@hanuchaudhary/instagram";
+import { useSetRecoilState } from "recoil";
+import { authTokenState } from "@/store/atoms/AuthenticatedToken";
 
 const Signin = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const setAuthToken = useSetRecoilState(authTokenState);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisibility((prev) => !prev);
+  };
+
   const form = useForm<z.infer<typeof signinSchema>>({
     resolver: zodResolver(signinSchema),
     defaultValues: {
@@ -37,13 +40,17 @@ const Signin = () => {
       const response = await axios.post(`${BACKEND_URL}/user/signin`, {
         ...values,
       });
-      localStorage.setItem("token", `Bearer ${response.data.token}`);
-      toast.success(`Welcome! ${response.data.fullName}`);
-      navigate("/profile");
+      const token = `Bearer ${response.data.token}`;
+      setAuthToken(token);
+      const { fullName } = response.data;
+      localStorage.setItem("token", token);
+      toast.success(`Welcome! ${fullName}`);
+      navigate("/profile",{replace: true});
+
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
-          error.response.data.message || "An error occurred during signup";
+          error.response.data.message || "An error occurred during sign-in.";
         toast.error(errorMessage);
       } else {
         toast.error("An unexpected error occurred. Please try again.");
@@ -81,10 +88,7 @@ const Signin = () => {
               </span>
             </div>
             <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-3"
-              >
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                 <FormField
                   control={form.control}
                   name="credential"
@@ -103,11 +107,23 @@ const Signin = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          {...field}
-                        ></Input>
+                        <div className="relative">
+                          <Input
+                            type={`${passwordVisibility ? "text" : "password"}`}
+                            placeholder="Password"
+                            {...field}
+                          ></Input>
+                          <div
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                            onClick={togglePasswordVisibility}
+                          >
+                            {passwordVisibility ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,7 +168,7 @@ const Signin = () => {
         <Card className="shadow-none">
           <CardContent className="text-center py-4">
             <p className="text-sm">
-              Dont't Have an account?{" "}
+              Don't have an account?{" "}
               <a href="/auth/signup" className="text-blue-500 font-semibold">
                 Sign up
               </a>

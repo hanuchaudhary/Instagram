@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hanuchaudhary/instagram": "^1.0.0",
+    "@hanuchaudhary/instagram": "^1.0.2",
     "@prisma/client": "^5.21.1",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",

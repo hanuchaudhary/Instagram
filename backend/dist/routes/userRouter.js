@@ -104,10 +104,12 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
 }));
 exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { verifyCode, username } = req.body;
-    const validation = instagram_1.verifyCodeSchema.safeParse({ verifyCode, username });
+    console.log("verifyCode : " + verifyCode, "username : " + username);
+    const validation = instagram_1.verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
         return res.status(400).json({
             success: false,
+            errors: validation.error.errors,
             message: validation.error.errors.map((err) => err.message).join(", "),
         });
     }

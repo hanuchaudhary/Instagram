@@ -120,13 +120,13 @@ const PostComments = ({ postId }: { postId: number }) => {
             Join the conversation and share your thoughts
           </DrawerDescription>
         </DrawerHeader>
-        <ScrollArea className="mx-auto h-[50vh] rounded-xl bg-neutral-900 p-4 md:h-[60vh]">
+        <ScrollArea className="mx-auto h-[50vh] rounded-xl bg-primary-foreground my-1 p-4 md:h-[60vh]">
           <div className="w-[320px] md:w-[700px] flex flex-col gap-2">
             {comments.length > 0 ? (
               comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="flex items-center justify-between gap-2 rounded-xl bg-neutral-800 p-2"
+                  className="flex items-start justify-between gap-4 bg-secondary rounded-xl p-2"
                 >
                   <div className="flex items-center gap-1">
                     <Avatar className="h-8 w-8">
@@ -143,8 +143,8 @@ const PostComments = ({ postId }: { postId: number }) => {
                     </h1>
                   </div>
                   <div>
-                    <p>{comment.comment}</p>
-                    <p className="text-xs text-neutral-400">
+                    <p className="md:text-base text-sm ">{comment.comment}</p>
+                    <p className="text-xs text-right text-neutral-400">
                       {getTimeAgo(comment.createdAt)}
                     </p>
                   </div>

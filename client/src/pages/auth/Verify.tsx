@@ -35,20 +35,19 @@ export default function VerifyAccount() {
   const form = useForm<z.infer<typeof verifyCodeSchema>>({
     resolver: zodResolver(verifyCodeSchema),
     defaultValues: {
-      otp: "",
+      verifyCode : ""
     },
   });
 
   async function onSubmit(values: z.infer<typeof verifyCodeSchema>) {
     setIsVerifying(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/user/verify`, {
+      await axios.post(`${BACKEND_URL}/user/verify`, {
         username,
-        verifyCode: values.otp,
+        verifyCode: values.verifyCode,
       });
       toast.success("Account Verified Successfully!");
-      localStorage.setItem("token", `Bearer ${response.data.token}`);
-      navigate("/profile", { replace: true });
+      navigate("/auth/signin",{replace : true});
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
@@ -76,7 +75,7 @@ export default function VerifyAccount() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="otp"
+                name="verifyCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>

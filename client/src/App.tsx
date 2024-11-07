@@ -9,10 +9,11 @@ import MessagesPage from "./pages/MessagePage";
 import CreatePostPage from "./pages/CreatePostPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
-
+import { useRecoilValue } from "recoil";
+import { authTokenState } from "./store/atoms/AuthenticatedToken";
 
 const App = () => {
-  const token = localStorage.getItem("token");
+  const token = useRecoilValue(authTokenState);
   const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
     if (!token) {
       return <Navigate to="/auth/signin" replace />;
@@ -26,7 +27,13 @@ const App = () => {
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/auth/signin" element={<Signin />} />
         <Route path="/auth/verify/:username" element={<VerifyAccount />} />
-        <Route element={<AuthMiddleware> <AppLayout /> </AuthMiddleware>}>
+        <Route
+          element={
+            <AuthMiddleware>
+              <AppLayout />
+            </AuthMiddleware>
+          }
+        >
           <Route path="/" element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
           <Route path="messages" element={<MessagesPage />} />

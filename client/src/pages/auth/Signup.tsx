@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Facebook } from "lucide-react";
+import { Eye, EyeOff, Facebook } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
@@ -21,8 +21,14 @@ import { BACKEND_URL } from "@/config/config";
 import { signupSchema } from "@hanuchaudhary/instagram";
 
 export default function Component() {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisibility((prev) => !prev);
+  };
+
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -39,11 +45,12 @@ export default function Component() {
       const response = await axios.post(`${BACKEND_URL}/user/signup`, {
         ...values,
       });
-      toast.success("Welcome! Profile registered successfully");
+      toast.success(`Welcome, ${response.data.username}! Your account has been successfully created.`);
       navigate(`/auth/verify/${response.data.username}`);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        const errorMessage = error.response.data.message || "An error occurred during signup";
+        const errorMessage =
+          error.response.data.message || "An error occurred during signup";
         toast.error(errorMessage);
       } else {
         toast.error("An unexpected error occurred. Please try again.");
@@ -103,11 +110,23 @@ export default function Component() {
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Input
+                            type={`${passwordVisibility ? "text" : "password"}`}
+                            placeholder="Password"
+                            {...field}
+                          />
+                          <div
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
+                            onClick={togglePasswordVisibility}
+                          >
+                            {passwordVisibility ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

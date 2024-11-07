@@ -102,10 +102,12 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
 
 userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => {
     const { verifyCode, username } = req.body;
-    const validation = verifyCodeSchema.safeParse({ verifyCode, username });
+    console.log("verifyCode : "+verifyCode, "username : "+username);
+    const validation = verifyCodeSchema.safeParse({ verifyCode});
     if (!validation.success) {
         return res.status(400).json({
             success: false,
+            errors: validation.error.errors,
             message: validation.error.errors.map((err) => err.message).join(", "),
         });
     }
@@ -137,19 +139,6 @@ userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => 
             });
         }
 
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return res.status(500).json({
-                success: false,
-                message: "JWT secret is not configured. Please check the server configuration.",
-            });
-        }
-
-        const token = jwt.sign(
-            { id: user.id, email: user.email, username: user.username },
-            jwtSecret
-        );
-
         await prisma.user.update({
             where: { id: user.id },
             data: {
@@ -162,7 +151,6 @@ userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => 
         return res.status(200).json({
             success: true,
             message: "User verified successfully",
-            token
         });
 
     } catch (error) {

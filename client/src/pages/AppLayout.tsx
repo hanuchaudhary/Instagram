@@ -159,6 +159,9 @@ export default function AppLayout() {
             <User className="h-8 w-8" />
           </Link>
         </Button>
+        <div>
+          <Menu />
+        </div>
       </nav>
     </div>
   );

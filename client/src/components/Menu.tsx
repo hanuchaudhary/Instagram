@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Edit, LogOut, Menu as MenuIcon, Moon, Sun } from "lucide-react";
+import { LogOut, Menu as MenuIcon, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeProvider";
 
@@ -34,10 +34,6 @@ const Menu = () => {
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit Profile
           </DropdownMenuItem>
           <DropdownMenuItem onClick={toggleTheme}>
             {theme === 'light' ? (
