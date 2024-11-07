@@ -21,11 +21,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { verifyCodeSchema } from "@/validations/Validations";
 import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import { verifyCodeSchema } from "@hanuchaudhary/instagram";
 
 export default function VerifyAccount() {
   const { username } = useParams();
@@ -42,12 +42,13 @@ export default function VerifyAccount() {
   async function onSubmit(values: z.infer<typeof verifyCodeSchema>) {
     setIsVerifying(true);
     try {
-      await axios.post(`${BACKEND_URL}/user/verify`, {
+      const response = await axios.post(`${BACKEND_URL}/user/verify`, {
         username,
         verifyCode: values.otp,
       });
-      toast.success("Code Verified Successfylly!");
-      navigate("/auth/signin");
+      toast.success("Account Verified Successfully!");
+      localStorage.setItem("token", `Bearer ${response.data.token}`);
+      navigate("/profile", { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
@@ -90,7 +91,12 @@ export default function VerifyAccount() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isVerifying}>
+              <Button
+                type="submit"
+                variant={"blue"}
+                className="w-full"
+                disabled={isVerifying}
+              >
                 {isVerifying ? "Verifying..." : "Verify Account"}
               </Button>
             </form>

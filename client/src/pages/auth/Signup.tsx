@@ -14,11 +14,11 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Facebook } from "lucide-react";
-import { signupSchema } from "@/validations/Validations";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { BACKEND_URL } from "@/config/config";
+import { signupSchema } from "@hanuchaudhary/instagram";
 
 export default function Component() {
   const [isLoading, setIsLoading] = useState(false);

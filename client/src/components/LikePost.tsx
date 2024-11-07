@@ -2,8 +2,8 @@ import { Heart } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { BACKEND_URL } from "@/config/config";
 import { toast } from "sonner";
-import { usePosts } from "@/hooks/Posts/usePosts";
 import { useState } from "react";
+import { usePostLikes } from "@/hooks/Posts/usePostLikes";
 
 const LikePost = ({
   postId,
@@ -12,8 +12,8 @@ const LikePost = ({
   postId: number;
   isLiked: boolean;
 }) => {
-  const [liked, setLiked] = useState(isLiked);
-  const { fetchPosts } = usePosts();
+  const [liked, setLiked] = useState(isLiked); 
+  const { fetchLikeCount } = usePostLikes({ postId });
   const handleLikePost = async () => {
     try {
       if (liked == true) {
@@ -27,7 +27,7 @@ const LikePost = ({
           }
         );
         setLiked(false);
-        fetchPosts();
+        fetchLikeCount();
         toast.success("Post disliked successfully");
       } else {
         await axios.post(
@@ -40,7 +40,7 @@ const LikePost = ({
           }
         );
         setLiked(true);
-        fetchPosts();
+        fetchLikeCount();
         toast.success("Post liked successfully");
       }
     } catch (error) {
@@ -51,13 +51,14 @@ const LikePost = ({
       }
     }
   };
+  usePostLikes({ postId });
 
   return (
     <div>
       <button onClick={handleLikePost}>
         <Heart
           className={`${
-            liked ? "text-rose-600 fill-rose-600" : "fill-white"
+            liked ? "text-rose-600 fill-rose-600" : ""
           } h-6 w-6`}
         />
       </button>

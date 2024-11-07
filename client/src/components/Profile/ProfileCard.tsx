@@ -37,9 +37,9 @@ import { currentProfileState } from "@/store/atoms/profile";
 import { UserType } from "@/types/TypeInterfaces";
 import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
-import { editProfileSchema } from "@/validations/Validations";
 import { Badge } from "../ui/badge";
 import { toast } from "sonner";
+import { editProfileSchema } from "@hanuchaudhary/instagram";
 
 export default function ProfileCard() {
   const navigate = useNavigate();

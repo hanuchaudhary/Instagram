@@ -17,34 +17,58 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const Validations_1 = require("../validations/Validations");
 require("dotenv/config");
 const sendEmail_1 = require("../libs/sendEmail");
 const multerUpload_1 = require("../libs/multerUpload");
 const uploadCloudinary_1 = require("../libs/uploadCloudinary");
 const middleware_1 = __importDefault(require("../middleware"));
 const zod_1 = require("zod");
+const instagram_1 = require("@hanuchaudhary/instagram");
 exports.userRouter = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { fullName, email, username, password } = req.body;
-    const validation = Validations_1.signupSchema.safeParse({ fullName, email, username, password });
+    const validation = instagram_1.signupSchema.safeParse({ fullName, email, username, password });
     if (!validation.success) {
-        return res.status(402).json({
+        return res.status(400).json({
             success: false,
-            message: validation.error.errors
+            message: validation.error.errors.map((error) => error.message).join(', ')
+        });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid email format"
         });
     }
     try {
-        const userExist = yield prisma.user.findFirst({
-            where: {
-                OR: [{ email }, { username }]
-            }
+        const existByUsername = yield prisma.user.findFirst({
+            where: { username }
         });
-        if (userExist) {
+        if (existByUsername) {
+            if (!existByUsername.isVerified) {
+                yield prisma.user.delete({
+                    where: {
+                        id: existByUsername.id
+                    }
+                });
+                console.log(`Deleted unverified user with username: ${username}`);
+            }
+            else {
+                return res.status(409).json({
+                    success: false,
+                    message: "Username is not available"
+                });
+            }
+        }
+        const existByEmail = yield prisma.user.findFirst({
+            where: { email, isVerified: true }
+        });
+        if (existByEmail) {
             return res.status(409).json({
                 success: false,
-                message: "User already Exists with this Email or Username"
+                message: "User already exists with this email"
             });
         }
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
@@ -59,13 +83,13 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
                 password: hashedPassword,
                 verifyCode,
                 verifyCodeExpiry: (Date.now() + 3600000).toString(),
-                accountType: "public"
+                accountType: "public",
             }
         });
         yield (0, sendEmail_1.sendEmail)(user.email, verifyCode);
         return res.status(201).json({
             success: true,
-            message: "User registered successfully",
+            message: "User registered successfully. Please verify your email.",
             username: user.username
         });
     }
@@ -79,45 +103,57 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
     }
 }));
 exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { verifyCode, username } = yield req.body;
-    const validation = Validations_1.verifyCodeSchema.safeParse({ verifyCode });
+    const { verifyCode, username } = req.body;
+    const validation = instagram_1.verifyCodeSchema.safeParse({ verifyCode, username });
     if (!validation.success) {
-        return res.status(402).json({
+        return res.status(400).json({
             success: false,
-            error: validation.error.errors
+            message: validation.error.errors.map((err) => err.message).join(", "),
         });
     }
     try {
         const user = yield prisma.user.findUnique({
-            where: {
-                username
-            }
+            where: { username },
         });
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found"
+                message: "User not found",
             });
         }
-        if (verifyCode != user.verifyCode) {
+        const currentTime = Date.now();
+        if (parseInt(user.verifyCodeExpiry) < currentTime) {
             return res.status(400).json({
                 success: false,
-                message: "Wrong Verification Code",
+                message: "Verification code has expired",
             });
         }
+        if (verifyCode !== user.verifyCode) {
+            return res.status(400).json({
+                success: false,
+                message: "Wrong verification code",
+            });
+        }
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            return res.status(500).json({
+                success: false,
+                message: "JWT secret is not configured. Please check the server configuration.",
+            });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
         yield prisma.user.update({
-            where: {
-                id: user.id
-            },
+            where: { id: user.id },
             data: {
                 isVerified: true,
                 verifyCode: "",
-                verifyCodeExpiry: ""
-            }
+                verifyCodeExpiry: "",
+            },
         });
-        return res.status(201).json({
+        return res.status(200).json({
             success: true,
-            message: " User verified Successfully"
+            message: "User verified successfully",
+            token
         });
     }
     catch (error) {
@@ -125,50 +161,63 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
         return res.status(500).json({
             success: false,
             message: "Error while verifying user",
-            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
         });
     }
 }));
 exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { credential, password } = req.body;
-    const validation = Validations_1.signinSchema.safeParse({ credential, password });
+    if (!credential || !password) {
+        return res.status(400).json({
+            success: false,
+            message: "Both credential (email/username) and password are required",
+        });
+    }
+    const validation = instagram_1.signinSchema.safeParse({ credential, password });
     if (!validation.success) {
         return res.status(400).json({
             success: false,
-            message: validation.error.errors[0].message
+            message: validation.error.errors[0].message,
         });
     }
     try {
         const user = yield prisma.user.findFirst({
             where: {
                 OR: [{ email: credential }, { username: credential }],
-            }
+            },
         });
-        if ((user === null || user === void 0 ? void 0 : user.isVerified) === false) {
-            return res.status(404).json({
-                success: false,
-                message: "User is not Verified!"
-            });
-        }
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User does not Exist with this Email or Username"
+                message: "User does not exist with this email or username",
+            });
+        }
+        if (!user.isVerified) {
+            return res.status(403).json({
+                success: false,
+                message: "User is not verified. Please verify your email address.",
             });
         }
         const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
-                message: "Incorrect password"
+                message: "Incorrect password",
             });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, process.env.JWT_SECRET);
+        const jwtSecret = process.env.JWT_SECRET;
+        if (!jwtSecret) {
+            return res.status(500).json({
+                success: false,
+                message: "JWT secret is not configured. Please check the server configuration.",
+            });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
         return res.status(200).json({
             success: true,
             message: "User logged in successfully",
             token,
-            fullName: user.fullName
+            fullName: user.fullName,
         });
     }
     catch (error) {
@@ -176,7 +225,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         return res.status(500).json({
             success: false,
             message: "An error occurred while logging in",
-            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }
 }));

@@ -19,6 +19,7 @@ export const usePosts = () => {
             console.error("Error fetching profile:", error);
         }
     };
+    
     useEffect(() => {
         fetchPosts();
     }, [setPostState]);

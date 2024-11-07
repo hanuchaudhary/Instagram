@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MessageCircle, Send, UserCircle } from "lucide-react";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
@@ -20,18 +20,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { BACKEND_URL } from "@/config/config";
-import { comment } from "@/store/atoms/posts";
-import { usePosts } from "@/hooks/Posts/usePosts";
+import { useRecoilState } from "recoil";
+import commentsAtom, { CommentAtomInterface } from "@/store/atoms/CommentsAtom";
 
-const PostComments = ({
-  postId,
-  comments,
-}: {
-  postId: number;
-  comments: comment[];
-}) => {
-  const { fetchPosts } = usePosts();
-  const [comment, setComment] = useState("");
+const PostComments = ({ postId }: { postId: number }) => {
+  const [comments, setComments] =
+    useRecoilState<CommentAtomInterface[]>(commentsAtom);
+  const [input, setInput] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const getTimeAgo = (date: string) => {
     const seconds = Math.floor(
@@ -57,23 +53,21 @@ const PostComments = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!comment.trim()) {
-      toast.error("Please enter a comment");
-      return;
-    }
     try {
       await axios.post(
         `${BACKEND_URL}/feature/comment/${postId}`,
-        { comment },
+        {
+          comment: input,
+        },
         {
           headers: {
             Authorization: localStorage.getItem("token")?.split(" ")[1],
           },
         }
       );
+      setInput("");
       toast.success("Your comment has been added to the discussion!");
-      setComment("");
-      fetchPosts();
+      fetchComments();
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(
@@ -88,8 +82,31 @@ const PostComments = ({
     }
   };
 
+  const fetchComments = async () => {
+    try {
+      const response = await axios.get(
+        `${BACKEND_URL}/post/postComments/${postId}`,
+        {
+          headers: {
+            Authorization: localStorage.getItem("token")?.split(" ")[1],
+          },
+        }
+      );
+      setComments(response.data.comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      toast.error("Failed to load comments");
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchComments();
+    }
+  }, [isOpen, postId]);
+
   return (
-    <Drawer>
+    <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <button className="mb-2">
           <MessageCircle className="h-6 w-6" />
@@ -147,9 +164,10 @@ const PostComments = ({
           <Input
             type="text"
             placeholder="Share your thoughts..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
             className="flex-grow"
+            required
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
           <Button type="submit" size="icon">
             <Send className="h-4 w-4" />
@@ -157,9 +175,7 @@ const PostComments = ({
           </Button>
         </form>
         <DrawerClose>
-          <Button variant="outline">
-            Close
-          </Button>
+          <Button variant="outline">Close</Button>
         </DrawerClose>
       </DrawerContent>
     </Drawer>

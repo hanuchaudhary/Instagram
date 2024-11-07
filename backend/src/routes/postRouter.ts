@@ -68,8 +68,6 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
     }
 });
 
-
-
 postRouter.delete("/delete", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.body;
 
@@ -195,9 +193,8 @@ postRouter.post("/like", async (req: Request, res: Response): Promise<any> => {
     }
 })
 
-postRouter.post("/comment", async (req: Request, res: Response): Promise<any> => {
-    const { comment, postId } = req.body;
-    //todo: comment validation
+postRouter.get("/postComments/:postId", async (req: Request, res: Response): Promise<any> => {
+    const { postId } = req.params;
 
     if (!postId) {
         return res.status(400).json({
@@ -206,65 +203,63 @@ postRouter.post("/comment", async (req: Request, res: Response): Promise<any> =>
         });
     }
 
-    const userId = (req as any).userId;
-
     try {
-        const post = await prisma.post.findUnique({
+        const comments = await prisma.comment.findMany({
             where: {
-                id: postId
-            }
-        });
-
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: "Post not found"
-            });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        });
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        const addComment = await prisma.comment.create({
-            data: {
-                comment: comment.trim(),
-                userId,
-                postId
+                postId: Number(postId)
             },
-            select: {
-                comment: true,
-                post: {
+            include: {
+                user: {
                     select: {
-                        caption: true
+                        username: true,
+                        avatar: true
                     }
                 }
             }
-        });
+        })
 
-        return res.status(201).json({
+        return res.status(200).json({
             success: true,
-            message: `Comment "${addComment.comment}" added to post "${addComment.post.caption}"`
+            message: "Bulk comments fetched",
+            comments
+        })
+
+    } catch (error) {
+        console.error("Error while fetching bulk comments:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while fetching bulk comments",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+})
+
+postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promise<any> => {
+    const { postId } = req.params;
+    try {
+       
+        const likesCount = await prisma.like.count({
+            where: {
+                postId: parseInt(postId)
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Likes fetched successfully",
+            likesCount
         });
 
     } catch (error) {
-        console.error("Error while adding comment:", error);
+        console.error("Error getting likes:", error);
         return res.status(500).json({
             success: false,
-            message: "Error while adding comment",
-            error: error instanceof Error ? error.message : "An unexpected error occurred"
+            message: "Error while getting likes",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }
-});
+})
+
 
 postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
@@ -386,7 +381,7 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
 postRouter.delete("/delete/:postId", async (req: Request, res: Response): Promise<any> => {
     try {
         const userId = (req as any).userId;
-        const {postId} = req.params;
+        const { postId } = req.params;
 
         const user = await prisma.user.findUnique({
             where: {

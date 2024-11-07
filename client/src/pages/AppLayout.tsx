@@ -1,5 +1,6 @@
 import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Compass,
   Home,
@@ -95,13 +96,15 @@ export default function AppLayout() {
           </nav>
         </div>
         <div>
-          <Menu/>
+          <Menu />
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="w-full">
-        <Outlet />
+      <main className="w-full h-[100vh] overflow-hidden pb-16 md:pb-0">
+        <ScrollArea className=" h-full">
+          <Outlet />
+        </ScrollArea>
       </main>
 
       {/* Bottom navigation for mobile */}

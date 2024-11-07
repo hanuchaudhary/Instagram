@@ -10,14 +10,15 @@ import CreatePostPage from "./pages/CreatePostPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 
+
 const App = () => {
   const token = localStorage.getItem("token");
-  // const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  //   if (!token) {
-  //     return <Navigate to="/auth/signin" />;
-  //   }
-  //   return <>{children}</>;
-  // };
+  const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
+    if (!token) {
+      return <Navigate to="/auth/signin" replace />;
+    }
+    return <>{children}</>;
+  };
 
   return (
     <BrowserRouter>
@@ -25,8 +26,8 @@ const App = () => {
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/auth/signin" element={<Signin />} />
         <Route path="/auth/verify/:username" element={<VerifyAccount />} />
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<HomePage />} />
+        <Route element={<AuthMiddleware> <AppLayout /> </AuthMiddleware>}>
+          <Route path="/" element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
           <Route path="messages" element={<MessagesPage />} />
           <Route path="search" element={<SearchPage />} />

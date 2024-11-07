@@ -9,7 +9,7 @@ const UserTile = ({ user }: { user: SearchedUser }) => {
       <div className="shadow-sm px-2 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2 flex-row">
           <Avatar>
-            <AvatarImage src={user.avatar} />
+            <AvatarImage className="object-cover" src={user.avatar} />
             <AvatarFallback className="uppercase font-semibold">
               <UserCircle className="fill-neutral-400 text-neutral-400" />
             </AvatarFallback>

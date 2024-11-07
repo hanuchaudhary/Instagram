@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { BACKEND_URL } from "@/config/config";
-import { postSchema } from "@/validations/Validations";
+import { postSchema } from "@hanuchaudhary/instagram";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
@@ -84,7 +84,7 @@ const CreatePostPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto md:px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="md:col-span-3">
           <Card className="border-none rounded-none shadow-none">
@@ -173,18 +173,18 @@ const CreatePostPage = () => {
             </CardContent>
           </Card>
         </div>
-        <div className="md:col-span-2">
-          <Card className="rounded-none shadow-none">
+        <div className="md:col-span-2 pb-10 px-2">
+          <Card className="rounded-none  shadow-none">
             <CardHeader>
               <CardTitle>Preview</CardTitle>
               <CardDescription>How your post will look</CardDescription>
             </CardHeader>
-            <CardContent className="h-56  flex items-center justify-center">
+            <CardContent className="h-56 w-full p-0 pb-5 flex aspect-square items-center justify-center">
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Image Preview"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <p>No media selected</p>

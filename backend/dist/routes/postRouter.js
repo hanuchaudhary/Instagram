@@ -184,65 +184,63 @@ exports.postRouter.post("/like", (req, res) => __awaiter(void 0, void 0, void 0,
         });
     }
 }));
-exports.postRouter.post("/comment", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { comment, postId } = req.body;
-    //todo: comment validation
+exports.postRouter.get("/postComments/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { postId } = req.params;
     if (!postId) {
         return res.status(400).json({
             success: false,
             message: "Post ID is required"
         });
     }
-    const userId = req.userId;
     try {
-        const post = yield prisma.post.findUnique({
+        const comments = yield prisma.comment.findMany({
             where: {
-                id: postId
-            }
-        });
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: "Post not found"
-            });
-        }
-        const user = yield prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-        const addComment = yield prisma.comment.create({
-            data: {
-                comment: comment.trim(),
-                userId,
-                postId
+                postId: Number(postId)
             },
-            select: {
-                comment: true,
-                post: {
+            include: {
+                user: {
                     select: {
-                        caption: true
+                        username: true,
+                        avatar: true
                     }
                 }
             }
         });
-        return res.status(201).json({
+        return res.status(200).json({
             success: true,
-            message: `Comment "${addComment.comment}" added to post "${addComment.post.caption}"`
+            message: "Bulk comments fetched",
+            comments
         });
     }
     catch (error) {
-        console.error("Error while adding comment:", error);
+        console.error("Error while fetching bulk comments:", error);
         return res.status(500).json({
             success: false,
-            message: "Error while adding comment",
-            error: error instanceof Error ? error.message : "An unexpected error occurred"
+            message: "Error while fetching bulk comments",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { postId } = req.params;
+    try {
+        const likesCount = yield prisma.like.count({
+            where: {
+                postId: parseInt(postId)
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Likes fetched successfully",
+            likesCount
+        });
+    }
+    catch (error) {
+        console.error("Error getting likes:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while getting likes",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }
 }));
