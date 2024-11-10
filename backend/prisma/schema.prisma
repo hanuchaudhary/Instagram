@@ -37,23 +37,39 @@ model User {
   verifyCode       String
   verifyCodeExpiry String
   isVerified       Boolean     @default(false)
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model Message {
+  id         Int      @id @unique @default(autoincrement())
+  message    String
+  senderId   String
+  receiverId String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([senderId, receiverId, createdAt])
 }
 
 model Followers {
-  id        String @id @unique @default(uuid())
+  id        String   @id @unique @default(uuid())
   userId    String
   followId  String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
   @@unique([userId, followId])
 }
 
 model Following {
-  id        String @id @unique @default(uuid()) 
+  id        String   @id @unique @default(uuid())
   userId    String
   followId  String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
   @@unique([userId, followId])
 }
 
@@ -87,5 +103,6 @@ model Like {
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
   @@unique([userId, postId])
 }

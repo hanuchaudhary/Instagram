@@ -7,12 +7,12 @@ import { ThemeProvider } from "./context/ThemeProvider.tsx";
 import { RecoilRoot } from "recoil";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
+  <>
     <RecoilRoot>
       <ThemeProvider>
         <App />
         <Toaster />
       </ThemeProvider>
     </RecoilRoot>
-   </StrictMode>
+   </>
 );

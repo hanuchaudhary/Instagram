@@ -14,8 +14,6 @@ export interface UserType {
     bio?: string;
     accountType: AccountType;
     posts?: PostType[]; // Array of Post objects
-    following?: FollowingType[]; // Array of Following objects
-    followers?: FollowersType[]; // Array of Followers objects
     _count : {
         followers : number,
         following : number,

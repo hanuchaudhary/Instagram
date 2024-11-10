@@ -66,17 +66,28 @@ const PostComments = ({ postId }: { postId: number }) => {
         }
       );
       setInput("");
-      toast.success("Your comment has been added to the discussion!");
+      toast.success("Your comment has been added to the discussion!", {
+        dismissible: true,
+        duration: 1000,
+      });
       fetchComments();
     } catch (error) {
       if (error instanceof AxiosError) {
         toast.error(
           error.response?.data.message ||
-            "Failed to post your comment. Please try again."
+            "Failed to post your comment. Please try again.",
+          {
+            dismissible: true,
+            duration: 1000,
+          }
         );
       } else {
         toast.error(
-          "Something went wrong while posting your comment. Please try again later."
+          "Something went wrong while posting your comment. Please try again later.",
+          {
+            dismissible: true,
+            duration: 1000,
+          }
         );
       }
     }
@@ -131,6 +142,7 @@ const PostComments = ({ postId }: { postId: number }) => {
                   <div className="flex items-center gap-1">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
+                        className="object-cover"
                         src={comment.user.avatar}
                         alt={comment.user.username}
                       />

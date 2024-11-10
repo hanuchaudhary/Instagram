@@ -25,6 +25,7 @@ export interface post {
     User: {
         id: string
         username: string
+        bio: string
         fullName: string
         avatar: string
     }
@@ -54,6 +55,7 @@ export const postsState = atom<Posts>({
                     id: "",
                     username: "",
                     fullName: "",
+                    bio: "",
                     avatar: "",
                 }
             }

@@ -229,10 +229,17 @@ exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, voi
                 postId: parseInt(postId)
             }
         });
+        const isLiked = yield prisma.like.findFirst({
+            where: {
+                postId: parseInt(postId),
+                userId: req.userId
+            }
+        });
         return res.status(200).json({
             success: true,
             message: "Likes fetched successfully",
-            likesCount
+            likesCount,
+            isLiked
         });
     }
     catch (error) {

@@ -1,4 +1,4 @@
-import { atom, selector } from 'recoil';
+import { atom} from 'recoil';
 
 export enum AccountType {
     PRIVATE = "private",
@@ -16,7 +16,7 @@ export interface UserType {
     bio?: string;
     accountType: AccountType;
     posts?: PostType[];
-    following?: FollowingType[];
+    following?: FollowersType[];
     followers?: FollowersType[];
     _count: {
         followers: number;
@@ -29,14 +29,10 @@ export interface UserType {
 
 export interface FollowersType {
     id: string;
-    userId: string;
-    user?: UserType;
-}
-
-export interface FollowingType {
-    id: string;
-    userId: string;
-    user?: UserType;
+    user: {
+        avatar: string,
+        username: string
+    }
 }
 
 export interface PostType {
@@ -75,7 +71,7 @@ export const currentProfileState = atom<UserType>({
     },
 });
 
-export const currentProfileSelector = selector({
-    key: "currentProfileSelector",
-    get: ({ get }) => get(currentProfileState),
+export const loggedUserId = atom<string>({
+    key: "loggedUserId",
+    default: ""
 });

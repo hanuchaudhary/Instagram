@@ -12,7 +12,7 @@ const SuggestedUsers = () => {
   
   return (
     <div>
-      <Card className="w-full p-4 bg-secondary rounded-xl">
+      <Card className="w-full shadow-none p-4 bg-popover rounded-xl">
         {users.length > 0 ? (
           <div>
             <h2 className="text-lg font-semibold mb-4">Suggested Users</h2>

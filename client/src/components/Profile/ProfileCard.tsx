@@ -40,6 +40,7 @@ import { BACKEND_URL } from "@/config/config";
 import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 import { editProfileSchema } from "@hanuchaudhary/instagram";
+import FollowersDrawer from "./FollowersDrawer";
 
 export default function ProfileCard() {
   const navigate = useNavigate();
@@ -53,16 +54,16 @@ export default function ProfileCard() {
 
   return (
     <div className="md:px-40 flex flex-col rounded-none  gap-6 p-4 md:p-6 shadow-md">
-      <div className="flex md:w-96">
-        <div className="w-full">
+      <div className="flex gap-5 md:w-96">
+        <div className="">
           <Avatar className="h-24 w-24 md:h-32 md:w-32">
-            <AvatarImage src={profileData.avatar} alt={profileData.fullName} />
+            <AvatarImage className="object-cover" src={profileData.avatar} alt={profileData.fullName} />
             <AvatarFallback className="text-2xl uppercase font-bold">
               <UserCircle className="fill-neutral-400 h-16 w-16 md:h-20 md:w-20 text-neutral-400" />
             </AvatarFallback>
           </Avatar>
         </div>
-        <div className="username btn flex flex-col items-start gap-4">
+        <div className="username w-full btn flex flex-col items-start gap-4">
           <h1 className="text-xl md:text-2xl font-bold">
             {profileData.username}
           </h1>
@@ -77,13 +78,22 @@ export default function ProfileCard() {
       <div className=" space-y-4 w-full">
         <div className="data flex items-start gap-4 md:gap-6 text-base md:text-lg">
           <span>
-            <strong className="font-semibold text-lg md:text-xl">{profileData._count.posts}</strong> Posts
+            <strong className="font-semibold text-lg md:text-xl">
+              {profileData._count.posts}
+            </strong>{" "}
+            Posts
+          </span>
+          <span className="flex gap-1">
+            <strong className="text-lg md:text-xl">
+              {profileData._count.followers}
+            </strong>{" "}
+            <FollowersDrawer/>
           </span>
           <span>
-            <strong className="text-lg md:text-xl">{profileData._count.followers}</strong> Followers
-          </span>
-          <span>
-            <strong className="text-lg md:text-xl">{profileData._count.following}</strong> Following
+            <strong className="text-lg md:text-xl">
+              {profileData._count.following}
+            </strong>{" "}
+            Following
           </span>
         </div>
         <div className="bio space-y-2">

@@ -9,7 +9,7 @@ import { upload } from '../libs/multerUpload';
 import { uploadOnCloudinary } from '../libs/uploadCloudinary';
 import authMiddleware from '../middleware';
 import { z } from 'zod';
-import {signupSchema,signinSchema, verifyCodeSchema} from '@hanuchaudhary/instagram'
+import { signupSchema, signinSchema, verifyCodeSchema } from '@hanuchaudhary/instagram'
 
 export const userRouter = express.Router();
 const prisma = new PrismaClient();
@@ -102,8 +102,7 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
 
 userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => {
     const { verifyCode, username } = req.body;
-    console.log("verifyCode : "+verifyCode, "username : "+username);
-    const validation = verifyCodeSchema.safeParse({ verifyCode});
+    const validation = verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
         return res.status(400).json({
             success: false,
@@ -256,8 +255,6 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                         posts: true,
                     }
                 },
-                following: true,
-                followers: true,
                 posts: {
                     select: {
                         id: true,
@@ -270,6 +267,8 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                         }
                     }
                 },
+                sentMessages: true,
+                receivedMessages: true
             }
         })
 
@@ -475,6 +474,111 @@ userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Respons
         return res.status(500).json({
             success: false,
             message: "An error occurred while fetching suggestions",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+})
+
+userRouter.get("/bulk-followers", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    const userId = (req as any).userId;
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unauthorized",
+            });
+        }
+
+        const following = await prisma.followers.findMany({
+            where: {
+                followId: user.id
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        avatar: true,
+                        username: true
+                    }
+                }
+            }
+        })
+
+        const followers = await prisma.following.findMany({
+            where: {
+                followId: user.id,
+            },
+            include: {
+                user: {
+                    select: {
+                        avatar: true,
+                        username: true,
+                        id: true,
+                    }
+                }
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            followers,
+            following
+        })
+
+    } catch (error) {
+        console.error("Error while fetching followers:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching followers",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+})
+
+userRouter.get("/profile/:username", async (req: Request, res: Response): Promise<any> => {
+    const { username } = req.params;
+    try {
+        const user = await prisma.user.findUnique({
+            where: { username },
+            select: {
+                id: true,
+                username: true,
+                avatar: true,
+                bio: true,
+                fullName: true,
+                posts: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true,
+                    }
+                }
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user
+        })
+    } catch (error) {
+        console.error("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching profile",
             error: error instanceof Error ? error.message : 'An unexpected error occurred',
         });
     }

@@ -104,7 +104,6 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
 }));
 exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { verifyCode, username } = req.body;
-    console.log("verifyCode : " + verifyCode, "username : " + username);
     const validation = instagram_1.verifyCodeSchema.safeParse({ verifyCode });
     if (!validation.success) {
         return res.status(400).json({
@@ -136,14 +135,6 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
                 message: "Wrong verification code",
             });
         }
-        const jwtSecret = process.env.JWT_SECRET;
-        if (!jwtSecret) {
-            return res.status(500).json({
-                success: false,
-                message: "JWT secret is not configured. Please check the server configuration.",
-            });
-        }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
         yield prisma.user.update({
             where: { id: user.id },
             data: {
@@ -155,7 +146,6 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
         return res.status(200).json({
             success: true,
             message: "User verified successfully",
-            token
         });
     }
     catch (error) {
@@ -246,8 +236,6 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
                         posts: true,
                     }
                 },
-                following: true,
-                followers: true,
                 posts: {
                     select: {
                         id: true,
@@ -260,6 +248,8 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
                         }
                     }
                 },
+                sentMessages: true,
+                receivedMessages: true
             }
         });
         if (!user) {
@@ -439,6 +429,104 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
         return res.status(500).json({
             success: false,
             message: "An error occurred while fetching suggestions",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.userId;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "unauthorized",
+            });
+        }
+        const following = yield prisma.followers.findMany({
+            where: {
+                followId: user.id
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        avatar: true,
+                        username: true
+                    }
+                }
+            }
+        });
+        const followers = yield prisma.following.findMany({
+            where: {
+                followId: user.id,
+            },
+            include: {
+                user: {
+                    select: {
+                        avatar: true,
+                        username: true,
+                        id: true,
+                    }
+                }
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            followers,
+            following
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching followers:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching followers",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.userRouter.get("/profile/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username } = req.params;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: { username },
+            select: {
+                id: true,
+                username: true,
+                avatar: true,
+                bio: true,
+                fullName: true,
+                posts: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true,
+                    }
+                }
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            user
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching profile",
             error: error instanceof Error ? error.message : 'An unexpected error occurred',
         });
     }

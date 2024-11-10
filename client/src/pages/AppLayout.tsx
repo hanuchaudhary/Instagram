@@ -121,12 +121,11 @@ export default function AppLayout() {
         </Button>
         <Button
           variant="ghost"
-          size="icon"
-          className={location.pathname === "/explore" ? "bg-accent" : ""}
+          className={`${location.pathname === "/messages" ? "bg-accent" : ""}`}
           asChild
         >
-          <Link to="/explore">
-            <Compass className="h-8 w-8" />
+          <Link className="text-xl py-6" to="/messages">
+            <MessageCircle className="h-8 w-8" />
           </Link>
         </Button>
         <Button

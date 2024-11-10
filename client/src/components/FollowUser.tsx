@@ -6,53 +6,56 @@ import { useState } from "react";
 import { useSuggestedUsers } from "@/hooks/Users/useSuggestedUsers";
 import { usePosts } from "@/hooks/Posts/usePosts";
 
-const FollowUser = ({ userId, isFollowing }: { userId: string, isFollowing: boolean }) => {
-  const [following,setFollowing] = useState(isFollowing)
+const FollowUser = ({
+  userId,
+  isFollowing,
+}: {
+  userId: string;
+  isFollowing: boolean;
+}) => {
+  const [following, setFollowing] = useState(isFollowing);
   const { fetchPosts } = usePosts();
   const { fetchSuggestedUsers } = useSuggestedUsers();
+
   const handleFollow = async () => {
     try {
-      if(isFollowing){
-        const res = await axios.post(
-            `${BACKEND_URL}/feature/unfollow/${userId}`,
-            {},
-            {
-                headers: {
-                    Authorization: localStorage.getItem("token")?.split(" ")[1]
-                }
-            }
-        )
-        if(res.data.success){
-            toast.success(res.data.message)
-        }else{
-            toast.error(res.data.message)
+      const endpoint = following
+        ? `${BACKEND_URL}/feature/unfollow/${userId}`
+        : `${BACKEND_URL}/feature/follow/${userId}`;
+
+      const res = await axios.post(
+        endpoint,
+        {},
+        {
+          headers: {
+            Authorization: localStorage.getItem("token")?.split(" ")[1],
+          },
         }
-        fetchPosts();
-        fetchSuggestedUsers();
-        setFollowing(false)
-      }else{
-        const res = await axios.post(
-            `${BACKEND_URL}/feature/follow/${userId}`,
-            {},
-            {
-                headers: {
-                    Authorization: localStorage.getItem("token")?.split(" ")[1]
-                }
-            }
-        )
-        if(res.data.success){
-            toast.success(res.data.message)
-        }else{
-            toast.error(res.data.message)
-        }
-        fetchPosts();
-        fetchSuggestedUsers();
-        setFollowing(true)
+      );
+
+      if (res.data.success) {
+        toast.success(res.data.message, {
+          dismissible: true,
+          duration: 1000,
+        });
+      } else {
+        toast.error(res.data.message, {
+          dismissible: true,
+          duration: 1000,
+        });
       }
+
+      fetchPosts();
+      fetchSuggestedUsers();
+      setFollowing(!following);
     } catch (error) {
-      toast.error("Error following user");
+      toast.error("Error following user", {
+        dismissible: true,
+        duration: 1000,
+      });
     }
   };
+
   return (
     <div>
       <Button onClick={handleFollow} size="sm" variant={"blue"}>

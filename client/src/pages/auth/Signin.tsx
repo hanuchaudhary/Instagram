@@ -45,7 +45,7 @@ const Signin = () => {
       const { fullName } = response.data;
       localStorage.setItem("token", token);
       toast.success(`Welcome! ${fullName}`);
-      navigate("/profile",{replace: true});
+      navigate(`/profile`,{replace: true});
 
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

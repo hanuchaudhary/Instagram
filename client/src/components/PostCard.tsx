@@ -1,46 +1,27 @@
-import { MoreHorizontal, UserCircle, MapPin } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { MoreHorizontal} from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "./ui/card";
 import { post } from "@/store/atoms/posts";
 import LikePost from "./LikePost";
 import PostComments from "./PostComments";
-import { useRecoilValue } from "recoil";
-import { likesCountAtom } from "@/store/atoms/LikesCoutAtom";
-
+import MiniProfile from "./Profile/MiniProfile";
 const PostCard = ({ post }: { post: post }) => {
-  const likesCount = useRecoilValue(likesCountAtom);
-
   return (
     <div>
       <Card className="rounded-none border-t-0 border-l-0 border-r-0 border-b pb-4 border-b-neutral-800 w-[350px]  shadow-sm md:w-[468px]">
         <CardHeader className="flex flex-row items-center justify-between p-3">
           <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={post.User.avatar} alt="@shadcn" />
-              <AvatarFallback>
-                <UserCircle className="fill-neutral-400 text-neutral-400" />
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-sm font-semibold">
-                {post.User.fullName}
-              </CardTitle>
-              <CardDescription className="text-xs capitalize">
-                {post.location != "" && (
-                  <div className="items-center flex">
-                    <MapPin className="h-3 w-3" />
-                    {post.location}
-                  </div>
-                )}
-              </CardDescription>
-            </div>
+            <MiniProfile
+              username={post.User.username}
+              fullName={post.User.fullName}
+              avatar={post.User.avatar}
+              bio={post.User.bio}
+              location={post.location}
+            />
           </div>
           <button>
             <MoreHorizontal className="h-5 w-5" />
@@ -60,12 +41,14 @@ const PostCard = ({ post }: { post: post }) => {
         <CardFooter className="flex flex-col gap-1 p-3">
           <div className="flex w-full">
             <div className="flex gap-2  items-center">
-              <LikePost postId={post.id} isLiked={post.isLiked} />
+              <LikePost postId={post.id} />
               <PostComments postId={post.id} />
             </div>
           </div>
           <div className="flex w-full flex-col gap-1">
-            <div className="text-sm font-semibold">{likesCount} likes</div>
+            <div className="text-sm font-semibold">
+              {post._count.likes} likes
+            </div>
             <div className="flex gap-2">
               <p className="text-sm">
                 <span className="font-semibold">{post.User.username}</span>{" "}

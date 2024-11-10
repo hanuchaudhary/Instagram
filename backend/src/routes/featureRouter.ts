@@ -135,7 +135,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
     }
 })
 
-featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise<any> => {
+featureRouter.post("/like-dislike/:postId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { postId } = req.params;
     try {
@@ -157,6 +157,8 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
             }
         })
 
+
+
         if (!post) {
             return res.status(404).json({
                 success: false,
@@ -164,7 +166,26 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
             });
         }
 
-        const likePost = await prisma.like.create({
+        const userLikedPosts = await prisma.like.findFirst({
+            where: {
+                userId,
+                postId: parseInt(postId)
+            }
+        })
+
+        if (userLikedPosts) {
+            await prisma.like.delete({
+                where: {
+                    id: userLikedPosts.id
+                }
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Post disliked successfully"
+            });
+        }
+
+        await prisma.like.create({
             data: {
                 postId: parseInt(postId),
                 isLiked: true,
@@ -186,74 +207,6 @@ featureRouter.post("/like/:postId", async (req: Request, res: Response): Promise
         });
     }
 })
-
-featureRouter.post("/dislike/:postId", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
-    const { postId } = req.params;
-
-    // Ensure postId is a valid number
-    const parsedPostId = parseInt(postId);
-    if (isNaN(parsedPostId)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid post ID"
-        });
-    }
-
-    try {
-        // Check if the user exists
-        const user = await prisma.user.findUnique({
-            where: { id: userId }
-        });
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized"
-            });
-        }
-
-        // Check if the post exists
-        const post = await prisma.post.findUnique({
-            where: { id: parsedPostId }
-        });
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: "Post not found"
-            });
-        }
-
-        // Delete the like record (dislike action)
-        await prisma.like.delete({
-            where: {
-                userId_postId: {
-                    userId,
-                    postId: parsedPostId
-                }
-            }
-        });
-
-        return res.status(200).json({
-            success: true,
-            message: "Post disliked successfully"
-        });
-
-    } catch (error : any) {
-        console.error("Error disliking post:", error);
-        if (error.code === "P2025") {
-            return res.status(404).json({
-                success: false,
-                message: "Like not found, cannot dislike"
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: "Error while disliking post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred"
-        });
-    }
-});
 
 featureRouter.post("/comment/:postId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
