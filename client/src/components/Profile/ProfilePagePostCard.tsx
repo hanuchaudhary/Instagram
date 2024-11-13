@@ -27,7 +27,7 @@ const ProfilePagePostCard = ({ post }: { post: PostType }) => {
   return (
     <div>
       <div>
-        <Card className="h-36 w-36 lg:h-72 lg:w-72 rounded-none overflow-hidden relative group">
+        <Card className="aspect-square h-full w-full rounded-none overflow-hidden relative group">
           <img
             src={post.mediaURL}
             alt="Post"
@@ -35,24 +35,24 @@ const ProfilePagePostCard = ({ post }: { post: PostType }) => {
           />
           <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
             <div className="opacity-0 group-hover:opacity-100 text-white flex items-center gap-4">
-              <div className="absolute top-2 right-2 z-40">
+              <div className="absolute md:top-2 md:right-2 top-1 right-1 z-40">
                 <Button
                   onClick={handleDeletePost}
                   size={"icon"}
                   variant={"destructive"}
                 >
-                  <Trash2 />
+                  <Trash2 className="md:h-5 md:w-5 h-2 w-2" />
                 </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-6 h-6" />
-                <span className="text-lg font-semibold">
+              <div className="flex items-center md:gap-2">
+                <Heart className="md:w-6 h-4 w-4 md:h-6" />
+                <span className="md:text-lg text-xs font-semibold">
                   {post._count?.likes || 0}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-6 h-6" />
-                <span className="text-lg font-semibold">
+              <div className="flex items-center md:gap-2">
+                <MessageCircle className="md:w-6 h-4 w-4 md:h-6" />
+                <span className="md:text-lg text-xs font-semibold">
                   {post._count?.comments || 0}
                 </span>
               </div>

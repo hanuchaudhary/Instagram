@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { Button } from "@/components/ui/button";
@@ -10,6 +8,7 @@ import { useFollowData } from "@/hooks/Profile/useFollowData";
 import axios from "axios";
 import TypingLoader from "@/components/TypingLoader";
 import { Menu, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface User {
   id: string;
@@ -31,7 +30,7 @@ const MessagePage = () => {
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { following } = useFollowData();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [typingUser, setTypingUser] = useState<string | null>(null);
@@ -158,143 +157,206 @@ const MessagePage = () => {
 
   return (
     <div className="flex h-screen relative">
-    {/* Mobile Menu Button */}
-    <Button
-      variant="ghost"
-      size="icon"
-      className="absolute top-4 left-4 md:hidden z-50"
-      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-    >
-      {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-    </Button>
+      {/* Mobile Menu Button */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed lg:top-4 lg:left-4 top-2 left-2 md:hidden z-50"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        {isSidebarOpen ? (
+          <X className="h-6 w-6" />
+        ) : (
+          <Menu className="h-6 w-6" />
+        )}
+      </Button>
 
-    {/* Sidebar */}
-    <div
-      className={`${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 absolute md:relative md:translate-x-0 z-40 bg-background w-full md:w-1/3 border-r border-border h-full`}
-    >
-      <div className="p-4 flex flex-col h-full">
-        <Input type="text" placeholder="Search users..." className="mb-4 mt-12 md:mt-0" />
-        <ScrollArea className="flex-1">
-          {chatUsers.length > 0 ? (
-            chatUsers.map((user) => (
-              <div
-                key={user.user.id}
-                className={`p-3 mb-1 cursor-pointer dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-colors duration-300 rounded-lg ${
-                  selectedUser?.id === user.user.id ? "bg-muted" : ""
-                }`}
-                onClick={() => {
-                  handleSelectUser(user.user)
-                  // Close sidebar on mobile after selecting a user
-                  if (window.innerWidth < 768) {
-                    setIsSidebarOpen(false)
-                  }
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Avatar>
-                      <AvatarImage className="object-cover" src={user.user.avatar} alt={user.user.username} />
-                      <AvatarFallback>{user.user.username.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    {isUserOnline(user.user.id) && (
-                      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{user.user.username}</h3>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="bg-secondary p-4 rounded-lg">
-              <h1 className="text-neutral-400 text-center">Follow users to start chat</h1>
-            </div>
-          )}
-        </ScrollArea>
-      </div>
-    </div>
-
-    {/* Main Chat Area */}
-    <div className="flex-1 flex flex-col">
-      {selectedUser ? (
-        <>
-          <div className="p-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-semibold">{selectedUser.username}</h2>
-              {isUserOnline(selectedUser.id) && (
-                <span className="text-sm text-green-500">Online</span>
-              )}
-            </div>
-          </div>
-          <ScrollArea className="flex-1 p-4">
-            {error && (
-              <div className="mb-4 p-2 bg-destructive/10 text-destructive text-center rounded">
-                {error}
-              </div>
-            )}
-            {messages.length > 0 ? (
-              messages.map((message, index) => (
+      {/* Sidebar */}
+      <div
+        className={`${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 absolute md:relative md:translate-x-0 z-40 bg-background w-full md:w-1/3 border-r border-border h-full`}
+      >
+        <div className="p-4 flex flex-col h-full">
+          <Input
+            type="text"
+            placeholder="Search users..."
+            className="mb-4 mt-12 md:mt-0"
+          />
+          <ScrollArea className="flex-1">
+            {chatUsers.length > 0 ? (
+              chatUsers.map((user) => (
                 <div
-                  key={message.id || index}
-                  className={`mb-2 ${isCurrentUserMessage(message) ? "text-right" : "text-left"}`}
+                  key={user.user.id}
+                  className={`p-3 mb-1 cursor-pointer dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-colors duration-300 rounded-lg ${
+                    selectedUser?.id === user.user.id ? "bg-muted" : ""
+                  }`}
+                  onClick={() => {
+                    handleSelectUser(user.user);
+                    // Close sidebar on mobile after selecting a user
+                    if (window.innerWidth < 768) {
+                      setIsSidebarOpen(false);
+                    }
+                  }}
                 >
-                  <div
-                    className={`inline-block p-2 rounded-lg ${
-                      isCurrentUserMessage(message)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <div className="font-semibold flex items-end gap-2">
-                      <span>{message.message}</span>
-                      <span className="text-[10px] text-neutral-500">
-                        {message.createdAt &&
-                          new Date(message.createdAt).toLocaleTimeString("en-US", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}
-                      </span>
+                  <div className="flex items-center gap-2">
+                    <div className="relative">
+                      <Avatar>
+                        <AvatarImage
+                          className="object-cover"
+                          src={user.user.avatar}
+                          alt={user.user.username}
+                        />
+                        <AvatarFallback>
+                          {user.user.username.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {isUserOnline(user.user.id) && (
+                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{user.user.username}</h3>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center text-muted-foreground">No messages yet</div>
+              <div className="bg-secondary p-4 rounded-lg">
+                <h1 className="text-neutral-400 text-center">
+                  Follow users to start chat
+                </h1>
+              </div>
             )}
-            <div ref={messagesEndRef} />
           </ScrollArea>
-          <div className="p-4">
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedUser ? (
+          <>
+            <div className="p-2 lg:block fixed top-0 w-full bg-popover z-10 lg:p-4 lg:pl-0 pl-14 border-b border-border">
+              <div className="flex items-center gap-2">
+                <h2 className="lg:text-xl font-semibold flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage className="object-cover">
+                      {selectedUser.avatar}
+                    </AvatarImage>
+                    <AvatarFallback className="font-semibold uppercase">
+                      {selectedUser.username[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  {selectedUser.username}
+                </h2>
+                {isUserOnline(selectedUser.id) && (
+                  <Badge className="bg-green-400 text-green-950 font-semibold">
+                    Online
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <ScrollArea className="flex-1 mt-28 p-4">
+              {error && (
+                <div className="mb-4 p-2 bg-destructive/10 text-destructive text-center rounded">
+                  {error}
+                </div>
+              )}
+              {messages.length > 0 ? (
+                messages.map((message, index) => (
+                  <div
+                    key={message.id || index}
+                    className={`flex mb-2 ${
+                      isCurrentUserMessage(message)
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-center gap-2 max-w-xs ${
+                        isCurrentUserMessage(message)
+                          ? "flex-row-reverse text-right"
+                          : "text-left"
+                      }`}
+                    >
+                      <Avatar>
+                        <AvatarImage
+                          className="object-cover"
+                          src={
+                            isCurrentUserMessage(message)
+                              ? loggedUser.avatar
+                              : selectedUser.avatar
+                          }
+                          alt={
+                            isCurrentUserMessage(message)
+                              ? loggedUser.username
+                              : selectedUser.username
+                          }
+                        />
+                        <AvatarFallback>
+                          {isCurrentUserMessage(message)
+                            ? loggedUser.username.charAt(0)
+                            : selectedUser.username.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div
+                        className={`inline-block p-2 rounded-lg ${
+                          isCurrentUserMessage(message)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        }`}
+                      >
+                        <div className="font-semibold flex items-end gap-2">
+                          <span>{message.message}</span>
+                          <span className="text-[10px] text-neutral-500">
+                            {message.createdAt &&
+                              new Date(message.createdAt).toLocaleTimeString(
+                                "en-US",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground">
+                  No messages yet
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </ScrollArea>
             {typingUser && (
-              <div>
+              <div className="px-4 py-2 bg-transparent bg-opacity-0">
                 <TypingLoader />
               </div>
             )}
-          </div>
-          <div className="p-4 border-t border-border">
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                className="flex-1"
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={handleTyping}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              />
-              <Button onClick={handleSendMessage}>Send</Button>
+            <div className="p-4 border-t border-border">
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  className="flex-1"
+                  placeholder="Type a message..."
+                  value={newMessage}
+                  onChange={handleTyping}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                />
+                <Button onClick={handleSendMessage}>Send</Button>
+              </div>
             </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            Select a user to start chatting
           </div>
-        </>
-      ) : (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground">
-          Select a user to start chatting
-        </div>
-      )}
+        )}
+      </div>
     </div>
-  </div>
   );
 };
 

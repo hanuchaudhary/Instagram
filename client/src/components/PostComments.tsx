@@ -140,6 +140,7 @@ const PostComments = ({ postId }: { postId: number }) => {
                   className="flex items-start justify-between gap-4 bg-secondary rounded-xl p-2"
                 >
                   <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1">
                     <Avatar className="h-8 w-8">
                       <AvatarImage
                         className="object-cover"
@@ -153,6 +154,7 @@ const PostComments = ({ postId }: { postId: number }) => {
                     <h1 className="text-sm font-semibold capitalize">
                       {comment.user.username}
                     </h1>
+                    </div>
                   </div>
                   <div>
                     <p className="md:text-base text-sm ">{comment.comment}</p>

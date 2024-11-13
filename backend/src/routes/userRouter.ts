@@ -585,3 +585,56 @@ userRouter.get("/profile/:username", async (req: Request, res: Response): Promis
 })
 
 
+userRouter.post("/change-password", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
+    const { password, currentPassword } = req.body;
+    const userId = (req as any).userId;
+    try {
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }, select: {
+                password: true
+            }
+        })
+
+        if (!user) {
+            res.status(402).json({
+                message: "User Not Found"
+            })
+            return
+        }
+
+        const dcryptCurrentPassword = await bcrypt.compare(currentPassword, user?.password)
+        if (!dcryptCurrentPassword) {
+            res.status(402).json({
+                message: "Password didn't match"
+            })
+            return
+        }
+
+        const newPassword = await bcrypt.hash(password, 10);
+
+        const updatePassword = await prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                password: newPassword
+            }
+        })
+
+        return res.status(200).json({
+            success: false,
+            message: "Password Updated Successfully",
+        });
+
+    } catch (error) {
+        console.error("Error while updating user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while updating user details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
+})

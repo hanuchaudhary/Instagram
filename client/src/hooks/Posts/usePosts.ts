@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useSetRecoilState } from "recoil";
 
 export const usePosts = () => {
-    const setPostState = useSetRecoilState(postsState);
+    const setPostState = useSetRecoilState(postsState); 
     const fetchPosts = async () => {
         try {
             const res = await axios.get(`${BACKEND_URL}/post/bulk`, {
@@ -19,7 +19,7 @@ export const usePosts = () => {
             console.error("Error fetching profile:", error);
         }
     };
-    
+
     useEffect(() => {
         fetchPosts();
     }, [setPostState]);

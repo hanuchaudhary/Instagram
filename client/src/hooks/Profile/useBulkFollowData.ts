@@ -1,12 +1,12 @@
 import { BACKEND_URL } from "@/config/config";
-import { followerDataState, followingDataState } from "@/store/atoms/FollowDataAtom";
+import { followDatasState } from "@/store/atoms/FollowDataAtom";
 import axios from "axios";
 import { useEffect } from "react";
 import { useRecoilState } from "recoil";
 
 export const useProfile = () => {
-    const [followers, setFollowers] = useRecoilState(followerDataState)
-    const [following, setFollowing] = useRecoilState(followingDataState)
+    const [followers, setFollowers] = useRecoilState(followDatasState)
+    const [following, setFollowing] = useRecoilState(followDatasState)
     const fetchFollowData = async () => {
         try {
             const res = await axios.get(`${BACKEND_URL}/user/bulk-followers`, {
