@@ -236,8 +236,8 @@ const MessagePage = () => {
       <div className="flex-1 flex flex-col">
         {selectedUser ? (
           <>
-            <div className="p-2 lg:block fixed top-0 w-full bg-popover z-10 lg:p-4 lg:pl-0 pl-14 border-b border-border">
-              <div className="flex items-center gap-2">
+            <div className="p-2 lg:block fixed top-0 w-full bg-popover z-10 lg:p-4 lg:pl-3 pl-14 border-b border-border">
+              <div className=" flex items-center gap-2">
                 <h2 className="lg:text-xl font-semibold flex items-center gap-2">
                   <Avatar>
                     <AvatarImage className="object-cover">
@@ -256,7 +256,8 @@ const MessagePage = () => {
                 )}
               </div>
             </div>
-            <ScrollArea className="flex-1 mt-28 p-4">
+            <ScrollArea className="flex-1 p-4">
+              <div className="text-neutral-500 text-center font-semibold text-xs pt-14 pb-4">You are messaging To {selectedUser.username}</div>
               {error && (
                 <div className="mb-4 p-2 bg-destructive/10 text-destructive text-center rounded">
                   {error}

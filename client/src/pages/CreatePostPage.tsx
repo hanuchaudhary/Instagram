@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,17 +18,20 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { BACKEND_URL } from "@/config/config";
+import { currentProfileState } from "@/store/atoms/profile";
 import { postSchema } from "@hanuchaudhary/instagram";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
+import { Heart, Loader2, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
 import { toast } from "sonner";
 import { z } from "zod";
 
 const CreatePostPage = () => {
+  const profileData = useRecoilValue(currentProfileState);
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -173,22 +177,59 @@ const CreatePostPage = () => {
             </CardContent>
           </Card>
         </div>
-        <div className="md:col-span-2 pb-10 px-2">
-          <Card className="rounded-none  shadow-none">
-            <CardHeader>
-              <CardTitle>Preview</CardTitle>
-              <CardDescription>How your post will look</CardDescription>
+        <div className="md:col-span-2 px-2">
+          <Card className="rounded-none shadow-none bg-popover">
+            <CardHeader className="flex p-2 flex-row items-center space-y-0 pb-2">
+              <Avatar className="h-8 w-8">
+                <AvatarImage className="object-cover" src={profileData.avatar} alt="@username" />
+                <AvatarFallback>{profileData.fullName}</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col ml-2">
+                <CardTitle className="text-sm font-semibold">
+                  {profileData.username}
+                </CardTitle>
+                <CardDescription className="text-xs text-neutral-400">
+                  {profileData.fullName}
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="icon" className="ml-auto">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
             </CardHeader>
-            <CardContent className="h-56 w-full p-0 pb-5 flex aspect-square items-center justify-center">
+            <CardContent className="p-0 ">
               {imagePreview ? (
                 <img
                   src={imagePreview}
-                  alt="Image Preview"
-                  className="h-full w-full object-contain"
+                  alt="Post Preview"
+                  className="w-full aspect-square object-contain"
                 />
               ) : (
-                <p>No media selected</p>
+                <div className="w-full aspect-square  flex items-center justify-center bg-primary">
+                  No media selected
+                </div>
               )}
+            </CardContent>
+            <CardContent className="pt-2 p-2">
+              <div className="flex space-x-4">
+                <div>
+                  <Heart className="h-6 fill-rose-600 text-rose-600 w-6" />
+                </div>
+                <div>
+                  <MessageCircle className="h-6 w-6" />
+                </div>
+              </div>
+              <p className="font-semibold mt-2">999 likes</p>
+              <div className="mt-2">
+                <span className="font-semibold">{profileData.username}</span>
+                <span className="text-sm font-semibold"> {form.watch("caption")}</span>
+              </div>
+              <p className="text-neutral-400 text-sm mt-2">
+                {new Date().toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
             </CardContent>
           </Card>
         </div>

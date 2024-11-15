@@ -47,7 +47,7 @@ const FollowersDrawer = () => {
             Followers
           </h1>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="p-2 md:p-4" >
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-bold">
               Followers & Following
@@ -67,8 +67,8 @@ const FollowersDrawer = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent className="w-full h-full" value="followers">
-                <ScrollArea className="mx-auto h-[50vh] rounded-xl bg-primary-foreground my-1 p-4 md:h-[60vh]">
-                  <div className="w-full flex flex-col gap-4">
+                <ScrollArea className="h-[50vh] rounded-xl bg-primary-foreground my-1 md:p-4 p-2 md:h-[60vh]">
+                  <div className="w-full flex flex-col gap-2">
                     {loading ? (
                       <div className="text-center py-8 bg-secondary rounded-lg">
                         <h3 className="text-xl font-semibold mb-2">
@@ -79,7 +79,7 @@ const FollowersDrawer = () => {
                       followers.map((e) => (
                         <div
                           key={e.user.id}
-                          className="flex bg-popover justify-between items-center gap-4 p-2  rounded-lg"
+                          className="flex bg-popover justify-between items-center gap-2 p-2  rounded-lg"
                         >
                           <div className="flex items-center gap-4">
                             <Avatar>
@@ -109,8 +109,8 @@ const FollowersDrawer = () => {
                 </ScrollArea>
               </TabsContent>
               <TabsContent className="w-full h-full" value="following">
-                <ScrollArea className="mx-auto h-[50vh] rounded-xl bg-primary-foreground my-1 p-4 md:h-[60vh]">
-                  <div className="w-full flex flex-col gap-4">
+                <ScrollArea className="h-[50vh] rounded-xl bg-primary-foreground my-1 p-2 md:p-4 md:h-[60vh]">
+                  <div className="w-full flex flex-col gap-2">
                     {loading ? (
                       <div className="text-center py-8 bg-secondary rounded-lg">
                         <h3 className="text-xl font-semibold mb-2">
@@ -123,7 +123,7 @@ const FollowersDrawer = () => {
                           key={e.user.id}
                           className="flex bg-popover items-center  justify-between gap-4 p-2 rounded-lg"
                         >
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center md:gap-4 gap-2">
                             <Avatar>
                               <AvatarImage className="object-cover" src={e.user.avatar} alt={e.user.username} />
                               <AvatarFallback>
