@@ -34,6 +34,11 @@ const CreatePostPage = () => {
   const profileData = useRecoilValue(currentProfileState);
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
+  const [reelPreview, setReelPreview] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  console.log(uploadProgress);
+
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof postSchema>>({
@@ -47,11 +52,22 @@ const CreatePostPage = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file?.type.includes("image")) {
+      form.setValue("mediaURL", file);
+      const reader = new FileReader();
+      console.log(reader.result);
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      setSelectedFile(file);
+      reader.readAsDataURL(file);
+    }
+
+    if (file?.type.includes("video")) {
       form.setValue("mediaURL", file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setReelPreview(reader.result as string);
       };
       setSelectedFile(file);
       reader.readAsDataURL(file);
@@ -70,6 +86,14 @@ const CreatePostPage = () => {
         headers: {
           Authorization: localStorage.getItem("token")?.split(" ")[1],
           "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (event) => {
+          const percentageCompleted = Math.round(
+            (event.loaded * 100) / event.total!
+          );
+          if (percentageCompleted <= 100) {
+            setUploadProgress(percentageCompleted);
+          }
         },
       });
       toast.success("Post Posted Successfully");
@@ -181,7 +205,11 @@ const CreatePostPage = () => {
           <Card className="rounded-none shadow-none bg-popover">
             <CardHeader className="flex p-2 flex-row items-center space-y-0 pb-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage className="object-cover" src={profileData.avatar} alt="@username" />
+                <AvatarImage
+                  className="object-cover"
+                  src={profileData.avatar}
+                  alt="@username"
+                />
                 <AvatarFallback>{profileData.fullName}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col ml-2">
@@ -196,18 +224,21 @@ const CreatePostPage = () => {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </CardHeader>
-            <CardContent className="p-0 ">
+            <CardContent className="p-0 min-h-[50vh]">
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Post Preview"
                   className="w-full aspect-square object-contain"
                 />
-              ) : (
-                <div className="w-full aspect-square  flex items-center justify-center bg-primary">
-                  No media selected
-                </div>
-              )}
+              ) : null}
+              {reelPreview ? (
+                <video
+                  src={reelPreview}
+                  controls
+                  className="w-full aspect-square object-contain"
+                />
+              ) : null}
             </CardContent>
             <CardContent className="pt-2 p-2">
               <div className="flex space-x-4">
@@ -221,7 +252,10 @@ const CreatePostPage = () => {
               <p className="font-semibold mt-2">999 likes</p>
               <div className="mt-2">
                 <span className="font-semibold">{profileData.username}</span>
-                <span className="text-sm font-semibold"> {form.watch("caption")}</span>
+                <span className="text-sm font-semibold">
+                  {" "}
+                  {form.watch("caption")}
+                </span>
               </div>
               <p className="text-neutral-400 text-sm mt-2">
                 {new Date().toLocaleDateString("en-US", {

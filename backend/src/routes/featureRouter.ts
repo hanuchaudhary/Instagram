@@ -262,3 +262,35 @@ featureRouter.post("/comment/:postId", async (req: Request, res: Response): Prom
         });
     }
 })
+
+
+featureRouter.get("/reels", async (req: Request, res: Response) => {
+    try {
+        const reels = await prisma.reels.findMany({
+            include: {
+                User: {
+                    select: {
+                        username: true,
+                        avatar: true
+                    }
+                }
+            },orderBy: {
+                createdAt: 'desc'
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            reels
+        });
+        return;
+    } catch (error) {
+        console.error("Error fetching reels:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching reels",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+})

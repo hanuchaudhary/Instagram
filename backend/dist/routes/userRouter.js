@@ -288,7 +288,7 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
                 message: "User not found",
             });
         }
-        const result = yield (0, uploadCloudinary_1.uploadOnCloudinary)((_a = req.file) === null || _a === void 0 ? void 0 : _a.path);
+        const result = yield (0, uploadCloudinary_1.uploadOnCloudinary)((_a = req.file) === null || _a === void 0 ? void 0 : _a.path, "instagram-clone/avatars", "image");
         const avatarURL = result === null || result === void 0 ? void 0 : result.url;
         const updateUser = yield prisma.user.update({
             where: {
@@ -528,6 +528,53 @@ exports.userRouter.get("/profile/:username", (req, res) => __awaiter(void 0, voi
             success: false,
             message: "An error occurred while fetching profile",
             error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { password, currentPassword } = req.body;
+    const userId = req.userId;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }, select: {
+                password: true
+            }
+        });
+        if (!user) {
+            res.status(402).json({
+                message: "User Not Found"
+            });
+            return;
+        }
+        const dcryptCurrentPassword = yield bcrypt_1.default.compare(currentPassword, user === null || user === void 0 ? void 0 : user.password);
+        if (!dcryptCurrentPassword) {
+            res.status(402).json({
+                message: "Password didn't match"
+            });
+            return;
+        }
+        const newPassword = yield bcrypt_1.default.hash(password, 10);
+        const updatePassword = yield prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                password: newPassword
+            }
+        });
+        return res.status(200).json({
+            success: false,
+            message: "Password Updated Successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error while updating user:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while updating user details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
         });
     }
 }));

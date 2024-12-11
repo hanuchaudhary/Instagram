@@ -8,7 +8,7 @@ export default function ExplorePage() {
   const { isLoading, explorePosts, setFilter } = useExplorePosts();
 
   return (
-    <div className="max-w-3xl mx-auto py-4 md:px-0 px-2">
+    <div className="max-w-3xl mx-auto py-4 px-2">
       <h1 className="text-3xl font-bold mb-6">Explore Posts</h1>
       <Input
         type="search"

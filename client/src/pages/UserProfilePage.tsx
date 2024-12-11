@@ -154,6 +154,7 @@ export default function UserProfilePage() {
             <p className="mt-2">Tagged photos will appear here</p>
           </div>
         </TabsContent>
+        
       </Tabs>
       <AnimatePresence>
         {isOpen && selectedPost && (

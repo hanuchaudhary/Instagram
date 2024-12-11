@@ -8,6 +8,7 @@ import {
   PlusSquare,
   User,
   Search,
+  Film,
 } from "lucide-react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
@@ -80,6 +81,17 @@ export default function AppLayout() {
             >
               <Link className="text-xl py-6" to="/create">
                 <PlusSquare className="mr-2 h-10 w-10" /> Create
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`w-full justify-start ${
+                location.pathname === "/reels" ? "bg-accent" : ""
+              }`}
+              asChild
+            >
+              <Link className="text-xl py-6" to="/reels">
+                <Film className="mr-2 h-10 w-10" /> Reels
               </Link>
             </Button>
             <Button

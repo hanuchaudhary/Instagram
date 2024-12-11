@@ -1,15 +1,13 @@
-import { MoreHorizontal} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "./ui/card";
+import { MoreHorizontal } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { post } from "@/store/atoms/posts";
 import LikePost from "./LikePost";
 import PostComments from "./PostComments";
 import MiniProfile from "./Profile/MiniProfile";
+import ReelVideoPlayer from "./Reel/ReelVideoPlayer";
 const PostCard = ({ post }: { post: post }) => {
+  const mediaType =
+    post.mediaURL.split(".")[post.mediaURL.split(".").length - 1];
   return (
     <div>
       <Card className="rounded-none border-t-0 border-l-0 border-r-0 border-b pb-4 border-b-neutral-800 w-[350px]  shadow-sm md:w-[468px]">
@@ -28,13 +26,19 @@ const PostCard = ({ post }: { post: post }) => {
           </button>
         </CardHeader>
         <div className="w-full border rounded-md">
-          <CardContent className="p-0">
+          <CardContent className="p-0 overflow-hidden h-[500px]">
             <div className=" w-full aspect-square">
-              <img
-                src={post.mediaURL}
-                alt="Post image"
-                className="h-full w-full object-contain"
-              />
+              {mediaType === "mp4" ? (
+                <div className="h-full w-full">
+                  <ReelVideoPlayer mediaURL={post.mediaURL} />
+                </div>
+              ) : (
+                <img
+                  src={post.mediaURL}
+                  alt="Post image"
+                  className="h-full w-full object-contain"
+                />
+              )}
             </div>
           </CardContent>
         </div>

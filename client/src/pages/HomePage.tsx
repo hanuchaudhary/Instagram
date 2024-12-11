@@ -10,12 +10,11 @@ export default function HomePage() {
   const [posts] = useRecoilState(postsState);
 
   return (
-    <div className="w-full md:px-4 py-2 md:py-10">
-      <h1 className="font-semibold text-xl px-4 md:px-20 py-2">Posts</h1>
-      
-      <div className="grid lg:grid-cols-5 lg:px-20 gap-4">
-        <div className="col-span-3 h-[calc(100vh-150px)]">
-          <ScrollArea className="flex flex-col items-center justify-center gap-4 px-3">
+    <div className="lg:max-w-4xl max-w-lg px-3 mx-auto py-2 md:py-10">
+      <h1 className="font-semibold text-xl py-2">Posts</h1>
+      <div className="grid lg:grid-cols-5 grid-cols-1 gap-4">
+        <div className="lg:col-span-3 col-span-1 h-[calc(100vh-150px)]">
+          <ScrollArea className="flex flex-col items-center justify-center gap-4">
             {posts.posts.length === 0 ? (
               <div className="flex flex-col py-10 mt-10 items-center justify-center h-full bg-secondary rounded-lg p-8 mx-auto max-w-md">
                 <p className="text-lg">No posts available</p>

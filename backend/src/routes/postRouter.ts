@@ -13,6 +13,8 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
     const { caption, location } = req.body;
     const userId = (req as any).userId;
 
+    const file = req.file as Express.Multer.File;
+
     if (!userId) {
         return res.status(400).json({
             success: false,
@@ -32,31 +34,47 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
             });
         }
 
-        if (!req.file) {
+        if (!file) {
             return res.status(400).json({ success: false, message: "No file provided" });
         }
-        // Check if a media file was uploaded
+
         let mediaURL = "";
-        if (req.file) {
-            // Upload the file to Cloudinary
-            const cloudinaryResult = await uploadOnCloudinary(req.file.path);
-            //@ts-ignore
-            mediaURL = cloudinaryResult?.url; // Save the secure URL from Cloudinary
+
+        if (file.mimetype.includes("image")) {
+            const cloudinaryResult = await uploadOnCloudinary(file.path,"instagram-clone/post-images","image");
+            mediaURL = cloudinaryResult?.url as string;
         }
 
-        const post = await prisma.post.create({
-            data: {
-                caption,
-                mediaURL,
-                location,
-                userId,
-            },
+        if (file.mimetype.includes("video")) {
+            const cloudinaryResult = await uploadOnCloudinary(file.path,"instagram-clone/reels","video");
+            mediaURL = cloudinaryResult?.url as string
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            const newPost = await tx.post.create({
+                data: {
+                    caption,
+                    location,
+                    mediaURL,
+                    userId,
+                },
+            });
+            const newReel = await tx.reels.create({
+                data: {
+                    mediaURL,
+                    userId,
+                    caption
+                },
+            });
+
+            return { newPost, newReel };
         });
 
         return res.status(201).json({
             success: true,
             message: "Post created successfully",
-            post,
+            post: result.newPost,
+            reel: result.newReel
         });
     } catch (error) {
         console.error("Error creating post:", error);
@@ -237,7 +255,7 @@ postRouter.get("/postComments/:postId", async (req: Request, res: Response): Pro
 postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
     try {
-       
+
         const likesCount = await prisma.like.count({
             where: {
                 postId: parseInt(postId)

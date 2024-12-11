@@ -21,13 +21,14 @@ cloudinary_1.v2.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true
 });
-const uploadOnCloudinary = (filePath) => __awaiter(void 0, void 0, void 0, function* () {
+const uploadOnCloudinary = (filePath, folder, resource_type) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         if (!filePath)
             return null;
         const response = yield cloudinary_1.v2.uploader.upload(filePath, {
-            resource_type: "image",
-            folder: "uploads"
+            resource_type: resource_type, // image, video, raw
+            folder: folder, // Folder name on cloudinary
+            quality: "auto:best", // Quality of the media
         });
         console.log("Media Uploaded");
         yield promises_1.default.unlink(filePath);

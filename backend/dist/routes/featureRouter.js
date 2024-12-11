@@ -244,3 +244,33 @@ exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, v
         });
     }
 }));
+exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const reels = yield prisma.reels.findMany({
+            include: {
+                User: {
+                    select: {
+                        username: true,
+                        avatar: true
+                    }
+                }
+            }, orderBy: {
+                createdAt: 'desc'
+            }
+        });
+        res.status(200).json({
+            success: true,
+            reels
+        });
+        return;
+    }
+    catch (error) {
+        console.error("Error fetching reels:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching reels",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+}));

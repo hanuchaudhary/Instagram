@@ -37,8 +37,9 @@ model User {
   verifyCode       String
   verifyCodeExpiry String
   isVerified       Boolean     @default(false)
-  sentMessages     Message[] @relation("SentMessages")
-  receivedMessages Message[] @relation("ReceivedMessages")
+  sentMessages     Message[]   @relation("SentMessages")
+  receivedMessages Message[]   @relation("ReceivedMessages")
+  Reels            Reels[]
 }
 
 model Message {
@@ -83,6 +84,15 @@ model Post {
   comments  Comment[]
   likes     Like[]
   createdAt DateTime  @default(now())
+}
+
+model Reels {
+  id        Int      @id @unique @default(autoincrement())
+  caption   String
+  mediaURL  String?
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
 }
 
 model Comment {

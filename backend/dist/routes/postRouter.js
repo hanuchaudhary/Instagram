@@ -24,6 +24,7 @@ const prisma = new client_1.PrismaClient();
 exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { caption, location } = req.body;
     const userId = req.userId;
+    const file = req.file;
     if (!userId) {
         return res.status(400).json({
             success: false,
@@ -40,29 +41,41 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                 message: "User not found",
             });
         }
-        if (!req.file) {
+        if (!file) {
             return res.status(400).json({ success: false, message: "No file provided" });
         }
-        // Check if a media file was uploaded
         let mediaURL = "";
-        if (req.file) {
-            // Upload the file to Cloudinary
-            const cloudinaryResult = yield (0, uploadCloudinary_1.uploadOnCloudinary)(req.file.path);
-            //@ts-ignore
-            mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url; // Save the secure URL from Cloudinary
+        if (file.mimetype.includes("image")) {
+            const cloudinaryResult = yield (0, uploadCloudinary_1.uploadOnCloudinary)(file.path, "instagram-clone/post-images", "image");
+            mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url;
         }
-        const post = yield prisma.post.create({
-            data: {
-                caption,
-                mediaURL,
-                location,
-                userId,
-            },
-        });
+        if (file.mimetype.includes("video")) {
+            const cloudinaryResult = yield (0, uploadCloudinary_1.uploadOnCloudinary)(file.path, "instagram-clone/reels", "video");
+            mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url;
+        }
+        const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            const newPost = yield tx.post.create({
+                data: {
+                    caption,
+                    location,
+                    mediaURL,
+                    userId,
+                },
+            });
+            const newReel = yield tx.reels.create({
+                data: {
+                    mediaURL,
+                    userId,
+                    caption
+                },
+            });
+            return { newPost, newReel };
+        }));
         return res.status(201).json({
             success: true,
             message: "Post created successfully",
-            post,
+            post: result.newPost,
+            reel: result.newReel
         });
     }
     catch (error) {

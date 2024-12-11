@@ -265,6 +265,9 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                                 likes: true
                             }
                         }
+                    },
+                    orderBy:{
+                        createdAt: 'desc'
                     }
                 },
                 sentMessages: true,
@@ -310,7 +313,7 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
             });
         }
 
-        const result = await uploadOnCloudinary(req.file?.path)
+        const result = await uploadOnCloudinary(req.file?.path as string,"instagram-clone/avatars","image")
         const avatarURL = result?.url
 
         const updateUser = await prisma.user.update({

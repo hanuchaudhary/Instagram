@@ -12,6 +12,7 @@ import SearchPage from "./pages/SearchPage";
 import { useRecoilValue } from "recoil";
 import { authTokenState } from "./store/atoms/AuthenticatedToken";
 import UserProfilePage from "./pages/UserProfilePage";
+import ReelsPage from "./pages/ReelsPage";
 
 const App = () => {
   const token = useRecoilValue(authTokenState);
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="search" element={<SearchPage />} />
           <Route path="create" element={<CreatePostPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="reels" element={<ReelsPage />} />
           <Route path="user/:username" element={<UserProfilePage />} />
         </Route>
       </Routes>
