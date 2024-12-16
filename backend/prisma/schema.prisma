@@ -18,6 +18,11 @@ enum accountType {
   public
 }
 
+enum mediaType {
+  image
+  video
+}
+
 model User {
   id               String      @id @unique @default(uuid())
   username         String      @unique
@@ -79,17 +84,21 @@ model Post {
   caption   String
   location  String?
   mediaURL  String?
+  mediaType mediaType @default(image)
   User      User?     @relation(fields: [userId], references: [id])
   userId    String?
   comments  Comment[]
   likes     Like[]
   createdAt DateTime  @default(now())
+  Reels     Reels[]
 }
 
 model Reels {
   id        Int      @id @unique @default(autoincrement())
   caption   String
   mediaURL  String?
+  postIds   Int[]
+  post      Post     @relation(fields: [postIds], references: [id], onDelete: Cascade)
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?
   createdAt DateTime @default(now())

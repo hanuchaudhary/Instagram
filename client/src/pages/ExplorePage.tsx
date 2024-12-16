@@ -26,15 +26,25 @@ export default function ExplorePage() {
             explorePosts.map((post) => (
               <Card key={post.id} className="overflow-hidden relative group">
                 <CardContent className="p-0">
-                  <img
-                    src={post.mediaURL}
-                    alt={`Post ${post.id}`}
-                    className="w-full h-full object-cover aspect-square"
-                  />
+                  {post.mediaType === "video" ? (
+                    <video
+                      className="w-full h-full object-cover aspect-square"
+                    >
+                      <source src={post.mediaURL} type="video/mp4" />
+                    </video>
+                  ) : (
+                    <img
+                      src={post.mediaURL}
+                      alt={`Post ${post.id}`}
+                      className="w-full h-full object-cover aspect-square"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 text-white flex items-center gap-2">
                       <Heart className="w-6 h-6" />
-                      <span className="text-lg font-semibold">{post._count.likes}</span>
+                      <span className="text-lg font-semibold">
+                        {post._count.likes}
+                      </span>
                     </div>
                   </div>
                 </CardContent>

@@ -8,7 +8,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export default function HomePage() {
   usePosts();
   const [posts] = useRecoilState(postsState);
-
   return (
     <div className="lg:max-w-4xl max-w-lg px-3 mx-auto py-2 md:py-10">
       <h1 className="font-semibold text-xl py-2">Posts</h1>

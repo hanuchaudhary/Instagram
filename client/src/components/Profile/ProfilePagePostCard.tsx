@@ -8,9 +8,6 @@ import { toast } from "sonner";
 import { useProfile } from "@/hooks/Profile/useProfile";
 
 const ProfilePagePostCard = ({ post }: { post: PostType }) => {
-  const PostType =
-    post.mediaURL?.split(".")[post.mediaURL?.split(".").length - 1];
-
   const { fetchProfile } = useProfile();
   const handleDeletePost = async () => {
     try {
@@ -31,7 +28,7 @@ const ProfilePagePostCard = ({ post }: { post: PostType }) => {
     <div>
       <div>
         <Card className="aspect-square h-full w-full rounded-none overflow-hidden relative group">
-          {PostType === "mp4" ? (
+          {post.mediaType === "video" ? (
             <video
               src={post.mediaURL}
               className="object-cover w-full h-full"

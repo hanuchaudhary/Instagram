@@ -40,6 +40,7 @@ export interface PostType {
     caption: string;
     location?: string;
     mediaURL?: string;
+    mediaType?: string;
     user?: UserType;
     userId?: string;
     createdAt: Date;

@@ -50,6 +50,7 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
             mediaURL = cloudinaryResult?.url as string
         }
 
+        const mediaType = file.mimetype.includes("image") ? "image" : "video";
         const result = await prisma.$transaction(async (tx) => {
             const newPost = await tx.post.create({
                 data: {
@@ -57,6 +58,7 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                     location,
                     mediaURL,
                     userId,
+                    mediaType
                 },
             });
             const newReel = await tx.reels.create({
@@ -380,6 +382,7 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
             }, select: {
                 id: true,
                 mediaURL: true,
+                mediaType: true,
                 _count: {
                     select: {
                         likes: true

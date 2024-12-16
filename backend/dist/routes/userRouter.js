@@ -240,12 +240,16 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
                     select: {
                         id: true,
                         mediaURL: true,
+                        mediaType: true,
                         _count: {
                             select: {
                                 comments: true,
                                 likes: true
                             }
                         }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
                     }
                 },
                 sentMessages: true,

@@ -259,6 +259,7 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                     select: {
                         id: true,
                         mediaURL: true,
+                        mediaType: true,
                         _count: {
                             select: {
                                 comments: true,

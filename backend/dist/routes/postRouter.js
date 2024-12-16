@@ -53,6 +53,7 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
             const cloudinaryResult = yield (0, uploadCloudinary_1.uploadOnCloudinary)(file.path, "instagram-clone/reels", "video");
             mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url;
         }
+        const mediaType = file.mimetype.includes("image") ? "image" : "video";
         const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             const newPost = yield tx.post.create({
                 data: {
@@ -60,6 +61,7 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                     location,
                     mediaURL,
                     userId,
+                    mediaType
                 },
             });
             const newReel = yield tx.reels.create({
@@ -349,6 +351,7 @@ exports.postRouter.get("/explore", (req, res) => __awaiter(void 0, void 0, void 
             }, select: {
                 id: true,
                 mediaURL: true,
+                mediaType: true,
                 _count: {
                     select: {
                         likes: true
