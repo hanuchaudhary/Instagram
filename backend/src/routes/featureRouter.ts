@@ -135,7 +135,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
     }
 })
 
-featureRouter.post("/like-dislike/:postId", async (req: Request, res: Response): Promise<any> => {
+featureRouter.post("/like-post/:postId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { postId } = req.params;
     try {
@@ -156,8 +156,6 @@ featureRouter.post("/like-dislike/:postId", async (req: Request, res: Response):
                 id: parseInt(postId)
             }
         })
-
-
 
         if (!post) {
             return res.status(404).json({
@@ -262,7 +260,6 @@ featureRouter.post("/comment/:postId", async (req: Request, res: Response): Prom
         });
     }
 })
-
 
 featureRouter.get("/reels", async (req: Request, res: Response) => {
     try {

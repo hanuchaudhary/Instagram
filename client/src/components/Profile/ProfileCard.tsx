@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
 import { Link, Loader2, UserCircle } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,8 +31,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useProfile } from "@/hooks/Profile/useProfile";
-import { currentProfileState } from "@/store/atoms/profile";
 import { UserType } from "@/types/TypeInterfaces";
 import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
@@ -41,6 +38,8 @@ import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 import { editProfileSchema } from "@hanuchaudhary/instagram";
 import FollowersDrawer from "./FollowersDrawer";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
+import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 
 export default function ProfileCard() {
   const navigate = useNavigate();
@@ -49,8 +48,11 @@ export default function ProfileCard() {
     navigate("/auth/signin");
   };
 
-  useProfile();
-  const profileData = useRecoilValue(currentProfileState);
+  const {fetchProfile,profile} = useProfileStore()
+  const profileData = profile;
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   return (
     <div className="md:px-40 flex flex-col rounded-none  gap-6 p-4 md:p-6 shadow-md">
@@ -165,9 +167,9 @@ function EditProfile({ profileData }: { profileData: UserType }) {
 
     setIsLoading(true);
     try {
-      await axios.post(`${BACKEND_URL}/user/edit`, formData, {
+      await axios.post(`${BACKEND_URL}/api/v1/user/edit`, formData, {
         headers: {
-          Authorization: `${localStorage.getItem("token")?.split(" ")[1]}`,
+          Authorization: getAuthHeaders().Authorization,
           "Content-Type": "multipart/form-data",
         },
       });

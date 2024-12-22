@@ -123,82 +123,6 @@ exports.postRouter.delete("/delete", (req, res) => __awaiter(void 0, void 0, voi
         });
     }
 }));
-exports.postRouter.post("/like", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { postId } = req.body;
-    const userId = req.userId;
-    if (!postId) {
-        return res.status(400).json({
-            success: false,
-            message: "Post ID is required"
-        });
-    }
-    try {
-        const post = yield prisma.post.findUnique({
-            where: {
-                id: postId
-            }
-        });
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: "Post Not found"
-            });
-        }
-        const user = yield prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User Not found"
-            });
-        }
-        const alreadyLikedPost = yield prisma.like.findFirst({
-            where: {
-                postId,
-                userId
-            }
-        });
-        if (alreadyLikedPost) {
-            yield prisma.like.delete({
-                where: {
-                    id: alreadyLikedPost.id
-                }
-            });
-            return res.status(200).json({
-                success: true,
-                message: "Post Unliked"
-            });
-        }
-        const likedPost = yield prisma.like.create({
-            data: {
-                postId,
-                userId
-            },
-            select: {
-                post: {
-                    select: {
-                        caption: true
-                    }
-                }
-            }
-        });
-        return res.status(201).json({
-            success: true,
-            message: `Post Liked: ${likedPost.post.caption}`
-        });
-    }
-    catch (error) {
-        console.error("Error liking post:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error while liking post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-    }
-}));
 exports.postRouter.get("/postComments/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
     if (!postId) {
@@ -232,6 +156,84 @@ exports.postRouter.get("/postComments/:postId", (req, res) => __awaiter(void 0, 
         return res.status(500).json({
             success: false,
             message: "Error while fetching bulk comments",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { postId } = req.params;
+    const userId = req.userId;
+    if (!postId) {
+        return res.status(400).json({
+            success: false,
+            message: "Post ID is required"
+        });
+    }
+    try {
+        const post = yield prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post Not found"
+            });
+        }
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User Not found"
+            });
+        }
+        const alreadyLikedPost = yield prisma.like.findFirst({
+            where: {
+                postId: parseInt(postId),
+                userId
+            }
+        });
+        if (alreadyLikedPost) {
+            yield prisma.like.delete({
+                where: {
+                    id: alreadyLikedPost.id
+                }
+            });
+            return res.status(200).json({
+                success: true,
+                message: "Post DisLiked",
+                isLiked: false
+            });
+        }
+        const likedPost = yield prisma.like.create({
+            data: {
+                postId: parseInt(postId),
+                userId
+            },
+            select: {
+                post: {
+                    select: {
+                        caption: true
+                    }
+                }
+            }
+        });
+        return res.status(201).json({
+            success: true,
+            message: `Post Liked: ${likedPost.post.caption}`,
+            isLiked: true
+        });
+    }
+    catch (error) {
+        console.error("Error liking post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while liking post",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }

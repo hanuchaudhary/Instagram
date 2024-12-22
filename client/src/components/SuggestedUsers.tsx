@@ -1,24 +1,24 @@
-import { SearchedUser } from "@/store/atoms/users";
 import UserTile from "./userTile";
-import { useRecoilValue } from "recoil";
-import { suggestedUsersAtom } from "@/store/atoms/SuggestedUsers";
-import { useSuggestedUsers } from "@/hooks/Users/useSuggestedUsers";
 import { Card } from "./ui/card";
+import { useSuggestedUsersStore } from "@/store/UserStore/useSuggestedUsersStore";
+import { useEffect } from "react";
+import { searchUser } from "@/store/Explore&Search/useSearchUserStore";
 
 const SuggestedUsers = () => {
-  useSuggestedUsers();
-  const suggestedUsersData = useRecoilValue(suggestedUsersAtom);
-  const {users} = suggestedUsersData;
-  
+  const { fetchSuggestedUsers, suggestedUsers } = useSuggestedUsersStore();
+  useEffect(() => {
+    fetchSuggestedUsers();
+  }, [fetchSuggestedUsers]);
+
   return (
     <div>
       <Card className="w-full shadow-none p-4 bg-popover rounded-xl">
-        {users.length > 0 ? (
+        {suggestedUsers.length > 0 ? (
           <div>
             <h2 className="text-lg font-semibold mb-4">Suggested Users</h2>
             <p className="text-sm mb-4">People you might want to follow</p>
-            {users.map((user) => (
-              <UserTile key={user.id} user={user as SearchedUser} />
+            {suggestedUsers.map((user) => (
+              <UserTile key={user.id} user={user as searchUser} />
             ))}
           </div>
         ) : (

@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useFollowData } from "@/hooks/Profile/useFollowData";
 import axios from "axios";
 import TypingLoader from "@/components/TypingLoader";
 import { Menu, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useFollowDataStore } from "@/store/UserStore/useFollowDataStore";
+import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 
 interface User {
   id: string;
@@ -31,35 +32,34 @@ const MessagePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { following } = useFollowData();
+  const { following, fetchFollowData } = useFollowDataStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
   const chatUsers = [...following];
-  const localUser = localStorage.getItem("user");
-  const loggedUser = JSON.parse(localUser || "{}");
   const WebSocketUrl = "http://localhost:8080";
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
+  const { userId, username, avatar } = getAuthHeaders();
+
   const isCurrentUserMessage = (message: Message) => {
-    return message.senderId === loggedUser.id;
+    return message.senderId === userId;
   };
 
   const isUserOnline = (userId: string) => {
     return onlineUsers.includes(userId);
   };
 
-  const roomId = selectedUser
-    ? [loggedUser.id, selectedUser.id].sort().join("-")
-    : "";
+  const roomId = selectedUser ? [userId, selectedUser.id].sort().join("-") : "";
 
   // Fetch messages from db
   useEffect(() => {
+    fetchFollowData();
     const fetchMessages = async () => {
       if (!selectedUser) return;
       try {
         const res = await axios.get(
-          `${WebSocketUrl}/api/chat/${loggedUser.id}/${selectedUser.id}`
+          `${WebSocketUrl}/api/chat/${userId}/${selectedUser.id}`
         );
         setMessages(res.data);
       } catch (err) {
@@ -68,7 +68,7 @@ const MessagePage = () => {
     };
 
     fetchMessages();
-  }, [selectedUser, loggedUser.id, WebSocketUrl]);
+  }, [selectedUser, userId, WebSocketUrl, fetchFollowData]);
 
   // Connect to socket
   useEffect(() => {
@@ -77,7 +77,7 @@ const MessagePage = () => {
     setSocket(newSocket);
 
     newSocket.emit("roomId", roomId);
-    newSocket.emit("user online", loggedUser.id);
+    newSocket.emit("user online", userId);
 
     newSocket.on("receive message", (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -106,7 +106,7 @@ const MessagePage = () => {
       newSocket.off("user status");
       newSocket.disconnect();
     };
-  }, [WebSocketUrl, roomId, loggedUser.id]);
+  }, [WebSocketUrl, roomId, userId]);
 
   // Scroll to bottom of messages
   useEffect(() => {
@@ -130,7 +130,7 @@ const MessagePage = () => {
     }
 
     // Emit typing event with room ID and username
-    socket.emit("typing", { roomId, username: loggedUser.username });
+    socket.emit("typing", { roomId, username: username });
 
     // Set new timeout to emit stop typing
     typingTimeoutRef.current = setTimeout(() => {
@@ -144,7 +144,7 @@ const MessagePage = () => {
 
     const messageData = {
       message: newMessage,
-      senderId: loggedUser.id,
+      senderId: userId,
       receiverId: selectedUser.id,
       createdAt: new Date().toISOString(),
       roomId,
@@ -204,11 +204,11 @@ const MessagePage = () => {
                       <Avatar>
                         <AvatarImage
                           className="object-cover"
-                          src={user.user.avatar}
-                          alt={user.user.username}
+                          src={user.user.avatar || ""}
+                          alt={user.user.username || "username"}
                         />
                         <AvatarFallback>
-                          {user.user.username.charAt(0)}
+                          {user.user.username.charAt(0) || "U"}
                         </AvatarFallback>
                       </Avatar>
                       {isUserOnline(user.user.id) && (
@@ -216,7 +216,7 @@ const MessagePage = () => {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold">{user.user.username}</h3>
+                      <h3 className="font-semibold">{user.user.username || "username"}</h3>
                     </div>
                   </div>
                 </div>
@@ -241,13 +241,13 @@ const MessagePage = () => {
                 <h2 className="lg:text-xl font-semibold flex items-center gap-2">
                   <Avatar>
                     <AvatarImage className="object-cover">
-                      {selectedUser.avatar}
+                      {selectedUser.avatar || ""}
                     </AvatarImage>
                     <AvatarFallback className="font-semibold uppercase">
-                      {selectedUser.username[0]}
+                      {selectedUser.username[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  {selectedUser.username}
+                  {selectedUser.username || "username"}
                 </h2>
                 {isUserOnline(selectedUser.id) && (
                   <Badge className="bg-green-400 text-green-950 font-semibold">
@@ -257,7 +257,9 @@ const MessagePage = () => {
               </div>
             </div>
             <ScrollArea className="flex-1 p-4">
-              <div className="text-neutral-500 text-center font-semibold text-xs pt-14 pb-4">You are messaging To {selectedUser.username}</div>
+              <div className="text-neutral-500 text-center font-semibold text-xs pt-14 pb-4">
+                You are messaging To {selectedUser.username}
+              </div>
               {error && (
                 <div className="mb-4 p-2 bg-destructive/10 text-destructive text-center rounded">
                   {error}
@@ -285,18 +287,18 @@ const MessagePage = () => {
                           className="object-cover"
                           src={
                             isCurrentUserMessage(message)
-                              ? loggedUser.avatar
+                              ? avatar
                               : selectedUser.avatar
                           }
                           alt={
                             isCurrentUserMessage(message)
-                              ? loggedUser.username
+                              ? username
                               : selectedUser.username
                           }
                         />
                         <AvatarFallback>
                           {isCurrentUserMessage(message)
-                            ? loggedUser.username.charAt(0)
+                            ? username.charAt(0)
                             : selectedUser.username.charAt(0)}
                         </AvatarFallback>
                       </Avatar>

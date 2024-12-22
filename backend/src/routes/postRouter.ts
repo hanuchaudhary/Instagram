@@ -127,92 +127,6 @@ postRouter.delete("/delete", async (req: Request, res: Response): Promise<any> =
     }
 })
 
-postRouter.post("/like", async (req: Request, res: Response): Promise<any> => {
-    const { postId } = req.body;
-    const userId = (req as any).userId;
-
-    if (!postId) {
-        return res.status(400).json({
-            success: false,
-            message: "Post ID is required"
-        });
-    }
-
-    try {
-        const post = await prisma.post.findUnique({
-            where: {
-                id: postId
-            }
-        })
-
-        if (!post) {
-            return res.status(404).json({
-                success: false,
-                message: "Post Not found"
-            })
-        }
-
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        })
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User Not found"
-            })
-        }
-
-        const alreadyLikedPost = await prisma.like.findFirst({
-            where: {
-                postId,
-                userId
-            }
-        })
-
-        if (alreadyLikedPost) {
-            await prisma.like.delete({
-                where: {
-                    id: alreadyLikedPost.id
-                }
-            })
-            return res.status(200).json({
-                success: true,
-                message: "Post Unliked"
-            })
-        }
-
-        const likedPost = await prisma.like.create({
-            data: {
-                postId,
-                userId
-            },
-            select: {
-                post: {
-                    select: {
-                        caption: true
-                    }
-                }
-            }
-        })
-
-        return res.status(201).json({
-            success: true,
-            message: `Post Liked: ${likedPost.post.caption}`
-        })
-
-    } catch (error) {
-        console.error("Error liking post:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error while liking post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-    }
-})
-
 postRouter.get("/postComments/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
 
@@ -254,6 +168,94 @@ postRouter.get("/postComments/:postId", async (req: Request, res: Response): Pro
     }
 })
 
+postRouter.post("/like/:postId", async (req: Request, res: Response): Promise<any> => {
+    const { postId } = req.params;
+    const userId = (req as any).userId;
+
+    if (!postId) {
+        return res.status(400).json({
+            success: false,
+            message: "Post ID is required"
+        });
+    }
+
+    try {
+        const post = await prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            }
+        })
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post Not found"
+            })
+        }
+
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User Not found"
+            })
+        }
+
+        const alreadyLikedPost = await prisma.like.findFirst({
+            where: {
+                postId : parseInt(postId),
+                userId
+            }
+        })
+
+        if (alreadyLikedPost) {
+            await prisma.like.delete({
+                where: {
+                    id: alreadyLikedPost.id
+                }
+            })
+            return res.status(200).json({
+                success: true,
+                message: "Post DisLiked",
+                isLiked: false
+            })
+        }
+
+        const likedPost = await prisma.like.create({
+            data: {
+                postId : parseInt(postId),
+                userId
+            },
+            select: {
+                post: {
+                    select: {
+                        caption: true
+                    }
+                }
+            }
+        })
+
+        return res.status(201).json({
+            success: true,
+            message: `Post Liked: ${likedPost.post.caption}`,
+            isLiked: true
+        })
+
+    } catch (error) {
+        console.error("Error liking post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while liking post",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+})
+
 postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
     try {
@@ -287,7 +289,6 @@ postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promis
         });
     }
 })
-
 
 postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;

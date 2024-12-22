@@ -1,6 +1,7 @@
 import Menu from "@/components/Menu";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import {
   Compass,
   Home,
@@ -10,11 +11,17 @@ import {
   Search,
   Film,
 } from "lucide-react";
+import { useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 export default function AppLayout() {
   const location = useLocation();
 
+  const { fetchProfile } = useProfileStore();
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+  
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar for desktop */}

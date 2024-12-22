@@ -1,28 +1,9 @@
-import { PostType } from "@/store/atoms/profile";
+import { PostType, useProfileStore } from "@/store/UserStore/useProfileStore";
 import { Card } from "../ui/card";
 import { Heart, MessageCircle, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
-import axios from "axios";
-import { BACKEND_URL } from "@/config/config";
-import { toast } from "sonner";
-import { useProfile } from "@/hooks/Profile/useProfile";
-
 const ProfilePagePostCard = ({ post }: { post: PostType }) => {
-  const { fetchProfile } = useProfile();
-  const handleDeletePost = async () => {
-    try {
-      await axios.delete(`${BACKEND_URL}/post/delete/${post.id}`, {
-        headers: {
-          Authorization: localStorage.getItem("token")?.split(" ")[1],
-        },
-      });
-      toast.success("Post deleted Successfully");
-      fetchProfile();
-    } catch (error) {
-      toast.success("Error while deleting post");
-      console.log(error);
-    }
-  };
+  const { deleteProfilePost } = useProfileStore();
 
   return (
     <div>
@@ -45,7 +26,7 @@ const ProfilePagePostCard = ({ post }: { post: PostType }) => {
             <div className="opacity-0 group-hover:opacity-100 text-white flex items-center gap-4">
               <div className="absolute md:top-2 md:right-2 top-1 right-1 z-40">
                 <Button
-                  onClick={handleDeletePost}
+                  onClick={() => deleteProfilePost(post.id!)}
                   size={"icon"}
                   variant={"destructive"}
                 >

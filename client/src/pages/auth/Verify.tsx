@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,26 +33,26 @@ export default function VerifyAccount() {
   const form = useForm<z.infer<typeof verifyCodeSchema>>({
     resolver: zodResolver(verifyCodeSchema),
     defaultValues: {
-      verifyCode : ""
+      verifyCode: "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof verifyCodeSchema>) {
     setIsVerifying(true);
     try {
-      await axios.post(`${BACKEND_URL}/user/verify`, {
+      await axios.post(`${BACKEND_URL}/api/v1/user/verify`, {
         username,
         verifyCode: values.verifyCode,
       });
       toast.success("Account Verified Successfully!");
-      navigate("/auth/signin",{replace : true});
+      navigate("/auth/signin", { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
           error.response.data.message || "An error occurred during signup";
         toast.error(errorMessage);
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        console.log(error.response.data);
+        
       }
     } finally {
       setIsVerifying(false);

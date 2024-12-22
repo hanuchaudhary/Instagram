@@ -1,10 +1,5 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { MessageCircle, Send, UserCircle } from "lucide-react";
-import axios, { AxiosError } from "axios";
-import { toast } from "sonner";
-
 import {
   Drawer,
   DrawerClose,
@@ -18,80 +13,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-import { BACKEND_URL } from "@/config/config";
-import { useRecoilState } from "recoil";
-import commentsAtom, { CommentAtomInterface } from "@/store/atoms/CommentsAtom";
 import { getTimeAgo } from "@/lib/getTimeFormat";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 
 const PostComments = ({ postId }: { postId: number }) => {
-  const [comments, setComments] =
-    useRecoilState<CommentAtomInterface[]>(commentsAtom);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post(
-        `${BACKEND_URL}/feature/comment/${postId}`,
-        {
-          comment: input,
-        },
-        {
-          headers: {
-            Authorization: localStorage.getItem("token")?.split(" ")[1],
-          },
-        }
-      );
-      setInput("");
-      toast.success("Your comment has been added to the discussion!", {
-        dismissible: true,
-        duration: 1000,
-      });
-      fetchComments();
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        toast.error(
-          error.response?.data.message ||
-            "Failed to post your comment. Please try again.",
-          {
-            dismissible: true,
-            duration: 1000,
-          }
-        );
-      } else {
-        toast.error(
-          "Something went wrong while posting your comment. Please try again later.",
-          {
-            dismissible: true,
-            duration: 1000,
-          }
-        );
-      }
-    }
-  };
-
-  const fetchComments = async () => {
-    try {
-      const response = await axios.get(
-        `${BACKEND_URL}/post/postComments/${postId}`,
-        {
-          headers: {
-            Authorization: localStorage.getItem("token")?.split(" ")[1],
-          },
-        }
-      );
-      setComments(response.data.comments);
-    } catch (error) {
-      console.error("Error fetching comments:", error);
-      toast.error("Failed to load comments");
-    }
-  };
+  const { comments, fetchComments, postComment } = usePostCommentsStore();
 
   useEffect(() => {
     if (isOpen) {
-      fetchComments();
+      fetchComments(postId);
     }
   }, [isOpen, postId]);
 
@@ -120,19 +53,19 @@ const PostComments = ({ postId }: { postId: number }) => {
                 >
                   <div className="flex items-center gap-1">
                     <div className="flex items-center gap-1">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        className="object-cover"
-                        src={comment.user.avatar}
-                        alt={comment.user.username}
-                      />
-                      <AvatarFallback className="capitalize">
-                        <UserCircle className="fill-neutral-400 text-neutral-400" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <h1 className="text-sm font-semibold capitalize">
-                      {comment.user.username}
-                    </h1>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage
+                          className="object-cover"
+                          src={comment.user.avatar}
+                          alt={comment.user.username}
+                        />
+                        <AvatarFallback className="capitalize">
+                          <UserCircle className="fill-neutral-400 text-neutral-400" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <h1 className="text-sm font-semibold capitalize">
+                        {comment.user.username}
+                      </h1>
                     </div>
                   </div>
                   <div>
@@ -151,7 +84,11 @@ const PostComments = ({ postId }: { postId: number }) => {
           </div>
         </ScrollArea>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => {
+            e.preventDefault();
+            postComment(postId, input);
+            setInput("");
+          }}
           className="flex items-center gap-2 border-t p-4"
         >
           <Input

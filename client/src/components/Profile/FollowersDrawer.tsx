@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,36 +8,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
-import { useRecoilValue } from "recoil";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { authTokenState } from "@/store/atoms/AuthenticatedToken";
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
-import { useFollowData } from "@/hooks/Profile/useFollowData";
 import { Loader2 } from "lucide-react";
+import { useFollowDataStore } from "@/store/UserStore/useFollowDataStore";
 
 const FollowersDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const token = useRecoilValue(authTokenState);
-  const { followers, following, loading, refetch } = useFollowData();
-  const handleUnfollow = async (id: string) => {
-    try {
-      await axios.post(
-        `${BACKEND_URL}/feature/unfollow/${id}`,
-        {},
-        {
-          headers: {
-            Authorization: `${token.split(" ")[1]}`,
-          },
-        }
-      );
-      refetch();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { fetchFollowData, followers, following, isLoading, unFollowUser } =
+    useFollowDataStore();
+  useEffect(() => {
+    fetchFollowData();
+  }, [fetchFollowData]);
 
   return (
     <div>
@@ -47,7 +30,7 @@ const FollowersDrawer = () => {
             Followers
           </h1>
         </DialogTrigger>
-        <DialogContent className="p-2 md:p-4" >
+        <DialogContent className="p-2 md:p-4">
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-bold">
               Followers & Following
@@ -69,7 +52,7 @@ const FollowersDrawer = () => {
               <TabsContent className="w-full h-full" value="followers">
                 <ScrollArea className="h-[50vh] rounded-xl bg-primary-foreground my-1 md:p-4 p-2 md:h-[60vh]">
                   <div className="w-full flex flex-col gap-2">
-                    {loading ? (
+                    {isLoading ? (
                       <div className="text-center py-8 bg-secondary rounded-lg">
                         <h3 className="text-xl font-semibold mb-2">
                           <Loader2 className="animate-spin" />
@@ -83,7 +66,11 @@ const FollowersDrawer = () => {
                         >
                           <div className="flex items-center gap-4">
                             <Avatar>
-                              <AvatarImage className="object-cover" src={e.user.avatar} alt={e.user.username} />
+                              <AvatarImage
+                                className="object-cover"
+                                src={e.user.avatar}
+                                alt={e.user.username}
+                              />
                               <AvatarFallback>
                                 {e.user.username[0].toUpperCase()}
                               </AvatarFallback>
@@ -111,7 +98,7 @@ const FollowersDrawer = () => {
               <TabsContent className="w-full h-full" value="following">
                 <ScrollArea className="h-[50vh] rounded-xl bg-primary-foreground my-1 p-2 md:p-4 md:h-[60vh]">
                   <div className="w-full flex flex-col gap-2">
-                    {loading ? (
+                    {isLoading ? (
                       <div className="text-center py-8 bg-secondary rounded-lg">
                         <h3 className="text-xl font-semibold mb-2">
                           <Loader2 className="animate-spin" />
@@ -125,7 +112,11 @@ const FollowersDrawer = () => {
                         >
                           <div className="flex items-center md:gap-4 gap-2">
                             <Avatar>
-                              <AvatarImage className="object-cover" src={e.user.avatar} alt={e.user.username} />
+                              <AvatarImage
+                                className="object-cover"
+                                src={e.user.avatar}
+                                alt={e.user.username}
+                              />
                               <AvatarFallback>
                                 {e.user.username[0].toUpperCase()}
                               </AvatarFallback>
@@ -137,7 +128,7 @@ const FollowersDrawer = () => {
                           <div>
                             <Button
                               variant="outline"
-                              onClick={() => handleUnfollow(e.user.id)}
+                              onClick={() => unFollowUser(e.user.id)}
                             >
                               Unfollow
                             </Button>

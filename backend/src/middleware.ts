@@ -6,7 +6,16 @@ interface CustomRequest extends Request {
 }
 
 const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
-    const token = req.headers.authorization;
+    const headerPayload = req.headers.authorization;
+    if (!headerPayload || !headerPayload.startsWith("Bearer ")) {
+        res.status(401).json({
+            success: false,
+            message: "Invalid token format",
+        });
+        return;
+    }
+
+    const token = headerPayload.split(" ")[1];
 
     if (!token) {
         res.status(401).json({
@@ -18,21 +27,16 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
-        if (!decoded) {
-            res.status(401).json({
-                success: false,
-                message: "Unauthorized: Invalid token payload",
-            });
-        }
-        req.userId = decoded.id
-        
+        req.userId = decoded.id;
         next();
     } catch (error) {
+        console.error("Token verification failed:", error);
         res.status(401).json({
             success: false,
             message: "Unauthorized: Token verification failed",
-            error
+            error: error instanceof Error ? error.message : "Unknown error",
         });
+        return;
     }
 };
 

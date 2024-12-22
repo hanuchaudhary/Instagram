@@ -206,10 +206,13 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
         return res.status(200).json({
-            success: true,
-            message: "User logged in successfully",
             token,
             fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            accountType: user.accountType,
+            id: user.id
         });
     }
     catch (error) {
@@ -425,7 +428,7 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
         const suggestedUsersWithFollowStatus = suggestedUsers.map(user => (Object.assign(Object.assign({}, user), { isFollowing: followingIds.includes(user.id) })));
         return res.status(200).json({
             success: true,
-            users: suggestedUsersWithFollowStatus
+            suggestedUsers: suggestedUsersWithFollowStatus
         });
     }
     catch (error) {

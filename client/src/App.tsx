@@ -9,19 +9,19 @@ import MessagesPage from "./pages/MessagePage";
 import CreatePostPage from "./pages/CreatePostPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
-import { useRecoilValue } from "recoil";
-import { authTokenState } from "./store/atoms/AuthenticatedToken";
 import UserProfilePage from "./pages/UserProfilePage";
 import ReelsPage from "./pages/ReelsPage";
 
 const App = () => {
-  const token = useRecoilValue(authTokenState);
   const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
+    const token = localStorage.getItem("token");
+    console.log("Token:", token); // Debug log
     if (!token) {
       return <Navigate to="/auth/signin" replace />;
     }
     return <>{children}</>;
   };
+  
 
   return (
     <BrowserRouter>

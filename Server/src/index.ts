@@ -8,11 +8,11 @@ const PORT = 8080
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server, {
-  pingTimeout: 60000, 
+  pingTimeout: 60000,
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
-    credentials: true 
+    credentials: true
   }
 })
 
@@ -43,20 +43,19 @@ io.on('connection', (socket) => {
     io.emit("user status", { userId, status: 'online' })
   })
 
-  socket.on("send message", async (data: { 
-    message: string, 
-    senderId: string, 
+  socket.on("send message", async (data: {
+    message: string,
+    senderId: string,
     receiverId: string,
     roomId: string
   }) => {
     try {
       const { message, senderId, receiverId, roomId } = data
-      
+      console.log("message: ", message);
+
       const result = await prisma.message.create({
         data: {
-          message,
-          senderId,
-          receiverId
+          message, receiverId, senderId
         }
       })
 
@@ -67,7 +66,7 @@ io.on('connection', (socket) => {
         receiverId,
         createdAt: result.createdAt
       })
-      
+
     } catch (error) {
       console.error("Error saving message:", error)
       socket.emit("error", "Failed to send message")
@@ -101,7 +100,7 @@ io.on('connection', (socket) => {
 // API Route
 app.get("/api/chat/:senderId/:receiverId", async (req, res) => {
   const { senderId, receiverId } = req.params
-  
+
   try {
     const messages = await prisma.message.findMany({
       where: {

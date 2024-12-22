@@ -1,11 +1,11 @@
-import { Reel } from "@/store/atoms/ReelsAtom";
+import { Reel } from "@/store/ReelsStore/useReelsStore";
 import ReelVideoPlayer from "./ReelVideoPlayer";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { getTimeAgo } from "@/lib/getTimeFormat";
 
 export default function ReelCard(reel: Reel) {
   return (
-    <div className="border rounded-lg">
+    <div className="border ">
       <div>
         <ReelVideoPlayer mediaURL={reel.mediaURL} />
         <div className="px-3 py-6 select-none">

@@ -3,8 +3,7 @@ import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
 import { toast } from "sonner";
 import { useState } from "react";
-import { useSuggestedUsers } from "@/hooks/Users/useSuggestedUsers";
-import { usePosts } from "@/hooks/Posts/usePosts";
+import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 
 const FollowUser = ({
   userId,
@@ -14,21 +13,19 @@ const FollowUser = ({
   isFollowing: boolean;
 }) => {
   const [following, setFollowing] = useState(isFollowing);
-  const { fetchPosts } = usePosts();
-  const { fetchSuggestedUsers } = useSuggestedUsers();
 
   const handleFollow = async () => {
     try {
       const endpoint = following
-        ? `${BACKEND_URL}/feature/unfollow/${userId}`
-        : `${BACKEND_URL}/feature/follow/${userId}`;
+        ? `${BACKEND_URL}/api/v1/feature/unfollow/${userId}`
+        : `${BACKEND_URL}/api/v1/feature/follow/${userId}`;
 
       const res = await axios.post(
         endpoint,
         {},
         {
           headers: {
-            Authorization: localStorage.getItem("token")?.split(" ")[1],
+            Authorization: getAuthHeaders().Authorization
           },
         }
       );
@@ -45,8 +42,6 @@ const FollowUser = ({
         });
       }
 
-      fetchPosts();
-      fetchSuggestedUsers();
       setFollowing(!following);
     } catch (error) {
       toast.error("Error following user", {

@@ -1,8 +1,8 @@
-import { SearchedUser } from "@/store/atoms/users";
+import { searchUser } from "@/store/Explore&Search/useSearchUserStore";
 import FollowUser from "./FollowUser";
 import MiniProfile from "./Profile/MiniProfile";
 
-const UserTile = ({ user }: { user: SearchedUser }) => {
+const UserTile = ({ user }: { user: searchUser }) => {
   return (
     <div>
       <div className="px-2 py-3 flex items-center justify-between">
@@ -11,8 +11,8 @@ const UserTile = ({ user }: { user: SearchedUser }) => {
             username={user.username}
             fullName={user.fullName}
             avatar={user.avatar}
-            bio={user.bio}
-            location={user.location}
+            bio={user.bio!}
+            location={user.location!}
           />
         </div>
         <div className="flex items-center justify-center">

@@ -3,6 +3,11 @@ export enum AccountType {
     PUBLIC = "public"
 }
 
+export enum mediaType{
+    image,
+    video
+}
+
 export interface UserType {
     loading?: boolean;
     id?: string;
@@ -58,6 +63,7 @@ export interface CommentType {
 
 export interface LikeType {
     id: number; // Auto-incremented integer
+    isLiked: boolean; // Boolean value
     postId: number; // Integer reference to Post
     userId: string; // String reference to User
     post?: PostType; // Post object reference

@@ -7,9 +7,9 @@ import { featureRouter } from './routes/featureRouter';
 const app = express();
 app.use(cors())
 app.use(express.json());
-app.use("/user", userRouter);
-app.use("/post",postRouter)
-app.use("/feature",featureRouter)
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/post",postRouter)
+app.use("/api/v1/feature",featureRouter)
 
 
 app.listen(process.env.PORT, () => {

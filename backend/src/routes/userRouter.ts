@@ -223,10 +223,13 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
         );
 
         return res.status(200).json({
-            success: true,
-            message: "User logged in successfully",
             token,
             fullName: user.fullName,
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar,
+            accountType: user.accountType,
+            id: user.id
         });
 
     } catch (error) {
@@ -470,7 +473,7 @@ userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Respons
 
         return res.status(200).json({
             success: true,
-            users: suggestedUsersWithFollowStatus
+            suggestedUsers: suggestedUsersWithFollowStatus
         });
 
     } catch (error) {

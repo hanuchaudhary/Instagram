@@ -79,8 +79,29 @@ model Following {
   @@unique([userId, followId])
 }
 
+model Reels {
+  id        Int       @id @default(autoincrement())
+  caption   String
+  mediaURL  String?
+  posts     ReelPost[]
+  User      User?     @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime  @default(now())
+}
+
+model ReelPost {
+  id      Int   @id @default(autoincrement())
+  reelId  Int
+  postId  Int
+
+  reel    Reels @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  post    Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, postId])
+}
+
 model Post {
-  id        Int       @id @unique @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   caption   String
   location  String?
   mediaURL  String?
@@ -89,20 +110,10 @@ model Post {
   userId    String?
   comments  Comment[]
   likes     Like[]
+  Reels     ReelPost[]
   createdAt DateTime  @default(now())
-  Reels     Reels[]
 }
 
-model Reels {
-  id        Int      @id @unique @default(autoincrement())
-  caption   String
-  mediaURL  String?
-  postIds   Int[]
-  post      Post     @relation(fields: [postIds], references: [id], onDelete: Cascade)
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-  createdAt DateTime @default(now())
-}
 
 model Comment {
   id        Int      @id @unique @default(autoincrement())

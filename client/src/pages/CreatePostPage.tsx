@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { BACKEND_URL } from "@/config/config";
-import { currentProfileState } from "@/store/atoms/profile";
+import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { postSchema } from "@hanuchaudhary/instagram";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
@@ -26,16 +27,16 @@ import { Heart, Loader2, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
 import { toast } from "sonner";
 import { z } from "zod";
 
 const CreatePostPage = () => {
-  const profileData = useRecoilValue(currentProfileState);
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
   const [reelPreview, setReelPreview] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  const {profile} = useProfileStore()
 
   console.log(uploadProgress);
 
@@ -82,9 +83,9 @@ const CreatePostPage = () => {
 
     try {
       setIsLoading(true);
-      await axios.post(`${BACKEND_URL}/post/create`, formData, {
+      await axios.post(`${BACKEND_URL}/api/v1/post/create`, formData, {
         headers: {
-          Authorization: localStorage.getItem("token")?.split(" ")[1],
+          Authorization: getAuthHeaders().Authorization,
           "Content-Type": "multipart/form-data",
         },
         onUploadProgress: (event) => {
@@ -207,17 +208,17 @@ const CreatePostPage = () => {
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   className="object-cover"
-                  src={profileData.avatar}
+                  src={profile.avatar}
                   alt="@username"
                 />
-                <AvatarFallback>{profileData.fullName}</AvatarFallback>
+                <AvatarFallback>{profile.fullName}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col ml-2">
                 <CardTitle className="text-sm font-semibold">
-                  {profileData.username}
+                  {profile.username}
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-400">
-                  {profileData.fullName}
+                  {profile.fullName}
                 </CardDescription>
               </div>
               <Button variant="ghost" size="icon" className="ml-auto">
@@ -251,7 +252,7 @@ const CreatePostPage = () => {
               </div>
               <p className="font-semibold mt-2">999 likes</p>
               <div className="mt-2">
-                <span className="font-semibold">{profileData.username}</span>
+                <span className="font-semibold">{profile.username}</span>
                 <span className="text-sm font-semibold">
                   {" "}
                   {form.watch("caption")}

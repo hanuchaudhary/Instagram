@@ -42,7 +42,7 @@ export default function Component() {
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/user/signup`, {
+      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
         ...values,
       });
       toast.success(`Welcome, ${response.data.username}! Your account has been successfully created.`);

@@ -132,7 +132,7 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
         });
     }
 }));
-exports.featureRouter.post("/like-dislike/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     const { postId } = req.params;
     try {

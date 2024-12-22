@@ -13,14 +13,11 @@ import { BACKEND_URL } from "@/config/config";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { signinSchema } from "@hanuchaudhary/instagram";
-import { useSetRecoilState } from "recoil";
-import { authTokenState } from "@/store/atoms/AuthenticatedToken";
 
 const Signin = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(false);
-  const setAuthToken = useSetRecoilState(authTokenState);
 
   const togglePasswordVisibility = () => {
     setPasswordVisibility((prev) => !prev);
@@ -37,15 +34,16 @@ const Signin = () => {
   async function onSubmit(values: z.infer<typeof signinSchema>) {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/user/signin`, {
+      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
         ...values,
       });
       const token = `Bearer ${response.data.token}`;
-      setAuthToken(token);
-      const { fullName } = response.data;
+      const { fullName } = response.data
+      const userData = JSON.stringify(response.data);
       localStorage.setItem("token", token);
+      localStorage.setItem("user", userData);
       toast.success(`Welcome! ${fullName}`);
-      navigate(`/profile`,{replace: true});
+      navigate(`/`,{replace: true});
 
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

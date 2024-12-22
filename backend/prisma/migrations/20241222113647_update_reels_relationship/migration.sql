@@ -1,6 +1,9 @@
 -- CreateEnum
 CREATE TYPE "accountType" AS ENUM ('private', 'public');
 
+-- CreateEnum
+CREATE TYPE "mediaType" AS ENUM ('image', 'video');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -12,15 +15,31 @@ CREATE TABLE "User" (
     "bio" TEXT NOT NULL,
     "accountType" "accountType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3),
+    "verifyCode" TEXT NOT NULL,
+    "verifyCodeExpiry" TEXT NOT NULL,
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Message" (
+    "id" SERIAL NOT NULL,
+    "message" TEXT NOT NULL,
+    "senderId" TEXT NOT NULL,
+    "receiverId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Followers" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "followId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Followers_pkey" PRIMARY KEY ("id")
 );
@@ -29,17 +48,39 @@ CREATE TABLE "Followers" (
 CREATE TABLE "Following" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "followId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Following_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "Reels" (
+    "id" SERIAL NOT NULL,
+    "caption" TEXT NOT NULL,
+    "mediaURL" TEXT,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Reels_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ReelPost" (
+    "id" SERIAL NOT NULL,
+    "reelId" INTEGER NOT NULL,
+    "postId" INTEGER NOT NULL,
+
+    CONSTRAINT "ReelPost_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Post" (
     "id" SERIAL NOT NULL,
-    "title" TEXT NOT NULL,
     "caption" TEXT NOT NULL,
     "location" TEXT,
     "mediaURL" TEXT,
+    "mediaType" "mediaType" NOT NULL DEFAULT 'image',
     "userId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -50,6 +91,7 @@ CREATE TABLE "Post" (
 CREATE TABLE "Comment" (
     "id" SERIAL NOT NULL,
     "postId" INTEGER NOT NULL,
+    "comment" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -60,6 +102,7 @@ CREATE TABLE "Comment" (
 CREATE TABLE "Like" (
     "id" SERIAL NOT NULL,
     "postId" INTEGER NOT NULL,
+    "isLiked" BOOLEAN NOT NULL DEFAULT false,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -76,13 +119,25 @@ CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Message_id_key" ON "Message"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Message_senderId_receiverId_createdAt_key" ON "Message"("senderId", "receiverId", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Followers_id_key" ON "Followers"("id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Followers_userId_followId_key" ON "Followers"("userId", "followId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Following_id_key" ON "Following"("id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Post_id_key" ON "Post"("id");
+CREATE UNIQUE INDEX "Following_userId_followId_key" ON "Following"("userId", "followId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ReelPost_reelId_postId_key" ON "ReelPost"("reelId", "postId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Comment_id_key" ON "Comment"("id");
@@ -90,11 +145,29 @@ CREATE UNIQUE INDEX "Comment_id_key" ON "Comment"("id");
 -- CreateIndex
 CREATE UNIQUE INDEX "Like_id_key" ON "Like"("id");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Like_userId_postId_key" ON "Like"("userId", "postId");
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Followers" ADD CONSTRAINT "Followers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Following" ADD CONSTRAINT "Following_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reels" ADD CONSTRAINT "Reels_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReelPost" ADD CONSTRAINT "ReelPost_reelId_fkey" FOREIGN KEY ("reelId") REFERENCES "Reels"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ReelPost" ADD CONSTRAINT "ReelPost_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

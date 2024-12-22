@@ -1,12 +1,15 @@
 import ProfileCard from "@/components/Profile/ProfileCard";
 import { Separator } from "@/components/ui/separator";
 import ProfilePagePostCard from "@/components/Profile/ProfilePagePostCard";
-import { useRecoilState } from "recoil";
-import { currentProfileState } from "@/store/atoms/profile";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
+import { useEffect } from "react";
 
 const ProfilePage = () => {
-  const profileData = useRecoilState(currentProfileState);
-  const posts = profileData[0].posts;
+  const {fetchProfile,profile} = useProfileStore();
+  const posts = profile.posts;
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   return (
     <div className="flex flex-col h-full ">
