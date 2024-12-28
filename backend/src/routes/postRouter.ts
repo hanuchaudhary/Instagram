@@ -41,12 +41,12 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
         let mediaURL = "";
 
         if (file.mimetype.includes("image")) {
-            const cloudinaryResult = await uploadOnCloudinary(file.path,"instagram-clone/post-images","image");
+            const cloudinaryResult = await uploadOnCloudinary(file.path, "instagram-clone/post-images", "image");
             mediaURL = cloudinaryResult?.url as string;
         }
 
         if (file.mimetype.includes("video")) {
-            const cloudinaryResult = await uploadOnCloudinary(file.path,"instagram-clone/reels","video");
+            const cloudinaryResult = await uploadOnCloudinary(file.path, "instagram-clone/reels", "video");
             mediaURL = cloudinaryResult?.url as string
         }
 
@@ -61,16 +61,26 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                     mediaType
                 },
             });
+
             const newReel = await tx.reels.create({
                 data: {
+                    caption,
                     mediaURL,
-                    userId,
-                    caption
+                    userId
+                },
+            });
+
+
+            await tx.reelPost.create({
+                data: {
+                    reelId: newReel.id,
+                    postId: newPost.id
                 },
             });
 
             return { newPost, newReel };
         });
+
 
         return res.status(201).json({
             success: true,
@@ -208,7 +218,7 @@ postRouter.post("/like/:postId", async (req: Request, res: Response): Promise<an
 
         const alreadyLikedPost = await prisma.like.findFirst({
             where: {
-                postId : parseInt(postId),
+                postId: parseInt(postId),
                 userId
             }
         })
@@ -228,7 +238,7 @@ postRouter.post("/like/:postId", async (req: Request, res: Response): Promise<an
 
         const likedPost = await prisma.like.create({
             data: {
-                postId : parseInt(postId),
+                postId: parseInt(postId),
                 userId
             },
             select: {

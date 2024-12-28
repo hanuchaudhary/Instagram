@@ -66,9 +66,15 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
             });
             const newReel = yield tx.reels.create({
                 data: {
+                    caption,
                     mediaURL,
-                    userId,
-                    caption
+                    userId
+                },
+            });
+            yield tx.reelPost.create({
+                data: {
+                    reelId: newReel.id,
+                    postId: newPost.id
                 },
             });
             return { newPost, newReel };

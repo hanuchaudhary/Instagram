@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Loader2, Heart } from "lucide-react";
+import { Loader2, Heart, ImageIcon } from "lucide-react";
 import { useExplorePostStore } from "@/store/Explore&Search/useExplorePostStore";
 import { useEffect } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -31,9 +31,12 @@ export default function ExplorePage() {
             <Loader2 className="animate-spin" />
           </div>
         ) : explorePosts.length === 0 ? (
-          <div className="flex justify-center items-center w-full h-40 bg-secondary/90 rounded-xl">
-            <h1 className="md:text-2xl text-lg font-semibold text-primary text-center">
-              "No posts found with the search term <strong>{filter}</strong>"
+          <div className="flex justify-center flex-col items-center w-full h-40 bg-secondary/30 rounded-xl">
+            <div>
+              <ImageIcon className="h-20 w-20 text-muted-foreground" />
+            </div>
+            <h1 className="md:text-2xl text-lg font-semibold text-muted-foreground text-center">
+              No posts found with the search term <strong>{filter}</strong>
             </h1>
           </div>
         ) : (
@@ -45,9 +48,11 @@ export default function ExplorePage() {
               >
                 <CardContent className="p-0">
                   {post.mediaType === mediaType.video ? (
-                    <video className="w-full h-full object-cover aspect-square">
-                      <source src={post.mediaURL as string} type="video/mp4" />
-                    </video>
+                    <video
+                      muted
+                      src={post.mediaURL as string}
+                      className="w-full h-full object-cover aspect-square"
+                    ></video>
                   ) : (
                     <img
                       src={post.mediaURL as string}

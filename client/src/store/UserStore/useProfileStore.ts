@@ -45,7 +45,7 @@ export interface PostType {
     location?: string;
     mediaURL?: string;
     mediaType?: string;
-    user?: UserType;
+    User?: UserType;
     userId?: string;
     createdAt: Date;
     _count?: {

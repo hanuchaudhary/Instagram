@@ -29,10 +29,7 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
             }
         });
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "unAuthorized"
-            });
+            return res.status(404).json({ success: false, message: "unAuthorized" });
         }
         const otherUser = yield prisma.user.findUnique({
             where: {
@@ -42,26 +39,18 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
             }
         });
         if (!otherUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "Other User Not Found" });
         }
-        const followOtherUser = yield prisma.following.create({
-            data: {
-                userId,
-                followId: toUserId
-            }
-        });
-        const putFollower = yield prisma.followers.create({
-            data: {
-                userId: toUserId,
-                followId: userId
-            }
-        });
+        yield prisma.$transaction([
+            prisma.following.create({
+                data: { userId, followId: toUserId },
+            }),
+            prisma.followers.create({
+                data: { userId: toUserId, followId: userId },
+            }),
+        ]);
         return res.status(200).json({
-            success: true,
-            message: `${otherUser.username} followed successfully`
+            success: true, message: `${otherUser.username} followed successfully`
         });
     }
     catch (error) {
@@ -83,10 +72,7 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
             }
         });
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
         const otherUser = yield prisma.user.findUnique({
             where: {
@@ -97,27 +83,16 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
             }
         });
         if (!otherUser) {
-            return res.status(404).json({
-                success: false,
-                message: "Followed user not found"
-            });
+            return res.status(404).json({ success: false, message: "Followed user not found" });
         }
-        const unfollowOtherUser = yield prisma.following.delete({
-            where: {
-                userId_followId: {
-                    userId: userId,
-                    followId: toUserId
-                }
-            }
-        });
-        const deleteFollower = yield prisma.followers.delete({
-            where: {
-                userId_followId: {
-                    userId: toUserId,
-                    followId: userId
-                }
-            }
-        });
+        yield prisma.$transaction([
+            prisma.following.delete({
+                where: { userId_followId: { userId, followId: toUserId } },
+            }),
+            prisma.followers.delete({
+                where: { userId_followId: { userId: toUserId, followId: userId } },
+            }),
+        ]);
         return res.status(200).json({
             success: true,
             message: `${otherUser.username} unfollowed successfully`
@@ -245,22 +220,30 @@ exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, v
     }
 }));
 exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { skip = 0, take = 10 } = req.query;
     try {
-        const reels = yield prisma.reels.findMany({
+        const reels = yield prisma.post.findMany({
+            where: {
+                mediaType: 'video',
+            },
             include: {
                 User: {
                     select: {
                         username: true,
-                        avatar: true
-                    }
-                }
-            }, orderBy: {
-                createdAt: 'desc'
-            }
+                        avatar: true,
+                        id: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            skip: parseInt(skip, 10),
+            take: parseInt(take, 10)
         });
         res.status(200).json({
             success: true,
-            reels
+            reels,
         });
         return;
     }

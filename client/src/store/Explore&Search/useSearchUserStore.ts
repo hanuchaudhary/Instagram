@@ -6,6 +6,7 @@ import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
 export interface searchUser {
     id: string;
     avatar: string;
+    userType :  string
     username: string;
     fullName: string;
     isFollowing: boolean;

@@ -10,14 +10,18 @@ import {
 import { ScrollArea } from "../ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import { useFollowDataStore } from "@/store/UserStore/useFollowDataStore";
+import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
+import FollowUser from "../FollowUser";
 
 const FollowersDrawer = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { fetchFollowData, followers, following, isLoading, unFollowUser } =
-    useFollowDataStore();
+  const {
+    fetchFollowData,
+    followers,
+    following,
+    isLoading,
+  } = useFollowDataStore();
   useEffect(() => {
     fetchFollowData();
   }, [fetchFollowData]);
@@ -61,23 +65,26 @@ const FollowersDrawer = () => {
                     ) : followers.length > 0 ? (
                       followers.map((e) => (
                         <div
-                          key={e.user.id}
+                          key={e?.user?.id}
                           className="flex bg-popover justify-between items-center gap-2 p-2  rounded-lg"
                         >
                           <div className="flex items-center gap-4">
                             <Avatar>
                               <AvatarImage
                                 className="object-cover"
-                                src={e.user.avatar}
-                                alt={e.user.username}
+                                src={e?.user?.avatar}
+                                alt={e?.user?.username}
                               />
-                              <AvatarFallback>
-                                {e.user.username[0].toUpperCase()}
+                              <AvatarFallback className="uppercase">
+                                {e?.user?.username[0]}
                               </AvatarFallback>
                             </Avatar>
                             <h2 className="text-lg font-semibold">
-                              {e.user.username}
+                              {e?.user?.username}
                             </h2>
+                          </div>
+                          <div>
+                            <FollowUser followText="Follow Back" userId={e.user.id} />
                           </div>
                         </div>
                       ))
@@ -117,8 +124,8 @@ const FollowersDrawer = () => {
                                 src={e.user.avatar}
                                 alt={e.user.username}
                               />
-                              <AvatarFallback>
-                                {e.user.username[0].toUpperCase()}
+                              <AvatarFallback className="uppercase">
+                                {e.user.username[0]}
                               </AvatarFallback>
                             </Avatar>
                             <h2 className="text-lg font-semibold">
@@ -126,12 +133,7 @@ const FollowersDrawer = () => {
                             </h2>
                           </div>
                           <div>
-                            <Button
-                              variant="outline"
-                              onClick={() => unFollowUser(e.user.id)}
-                            >
-                              Unfollow
-                            </Button>
+                            <FollowUser userId={e.user.id} />
                           </div>
                         </div>
                       ))

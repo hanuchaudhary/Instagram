@@ -18,10 +18,7 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
         })
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "unAuthorized"
-            });
+            return res.status(404).json({ success: false, message: "unAuthorized" });
         }
 
         const otherUser = await prisma.user.findUnique({
@@ -33,29 +30,21 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
         })
 
         if (!otherUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "Other User Not Found" });
         }
 
-        const followOtherUser = await prisma.following.create({
-            data: {
-                userId,
-                followId: toUserId
-            }
-        })
+        await prisma.$transaction([
+            prisma.following.create({
+                data: { userId, followId: toUserId },
+            }),
+            prisma.followers.create({
+                data: { userId: toUserId, followId: userId },
+            }),
+        ]);
 
-        const putFollower = await prisma.followers.create({
-            data: {
-                userId: toUserId,
-                followId: userId
-            }
-        })
 
         return res.status(200).json({
-            success: true,
-            message: `${otherUser.username} followed successfully`
+            success: true, message: `${otherUser.username} followed successfully`
         });
 
     } catch (error) {
@@ -80,10 +69,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
         })
 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
+            return res.status(404).json({ success: false, message: "User not found" });
         }
 
         const otherUser = await prisma.user.findUnique({
@@ -96,29 +82,17 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
         })
 
         if (!otherUser) {
-            return res.status(404).json({
-                success: false,
-                message: "Followed user not found"
-            });
+            return res.status(404).json({ success: false, message: "Followed user not found" });
         }
 
-        const unfollowOtherUser = await prisma.following.delete({
-            where: {
-                userId_followId: {
-                    userId: userId,
-                    followId: toUserId
-                }
-            }
-        })
-
-        const deleteFollower = await prisma.followers.delete({
-            where: {
-                userId_followId: {
-                    userId: toUserId,
-                    followId: userId
-                }
-            }
-        })
+        await prisma.$transaction([
+            prisma.following.delete({
+                where: { userId_followId: { userId, followId: toUserId } },
+            }),
+            prisma.followers.delete({
+                where: { userId_followId: { userId: toUserId, followId: userId } },
+            }),
+        ]);
 
         return res.status(200).json({
             success: true,
@@ -262,23 +236,31 @@ featureRouter.post("/comment/:postId", async (req: Request, res: Response): Prom
 })
 
 featureRouter.get("/reels", async (req: Request, res: Response) => {
+    const { skip = 0, take = 10 } = req.query;
     try {
-        const reels = await prisma.reels.findMany({
+        const reels = await prisma.post.findMany({
+            where: {
+                mediaType: 'video',
+            },
             include: {
                 User: {
                     select: {
                         username: true,
-                        avatar: true
-                    }
-                }
-            },orderBy: {
-                createdAt: 'desc'
-            }
-        })
+                        avatar: true,
+                        id: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            skip: parseInt(skip as string, 10),
+            take: parseInt(take as string, 10)
+        });
 
         res.status(200).json({
             success: true,
-            reels
+            reels,
         });
         return;
     } catch (error) {
@@ -290,4 +272,4 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
         });
         return;
     }
-})
+});

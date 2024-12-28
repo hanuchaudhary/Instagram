@@ -4,8 +4,7 @@ import { useLoggedUserId } from "@/store/UserStore/useProfileStore";
 import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 
 const LikePost = ({ postId }: { postId: number }) => {
-  const { handleLikePost, isPostLiked, setIsPostLiked } =
-    usePostsStore();
+  const { handleLikePost, isPostLiked, setIsPostLiked } = usePostsStore();
 
   const handleLikeOnClick = () => {
     handleLikePost(postId.toString());
@@ -20,7 +19,7 @@ const LikePost = ({ postId }: { postId: number }) => {
             isPostLiked(postId.toString(), useLoggedUserId())
               ? "text-rose-600 fill-rose-600"
               : ""
-          } h-6 w-6`}
+          } h-6 w-6 transition-colors`}
         />
       </button>
     </div>

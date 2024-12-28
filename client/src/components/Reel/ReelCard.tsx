@@ -2,16 +2,17 @@ import { Reel } from "@/store/ReelsStore/useReelsStore";
 import ReelVideoPlayer from "./ReelVideoPlayer";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { getTimeAgo } from "@/lib/getTimeFormat";
+import UserTile from "../userTile";
 
 export default function ReelCard(reel: Reel) {
   return (
-    <div className="border ">
+    <div className="border rounded-lg overflow-hidden bg-black">
       <div>
         <ReelVideoPlayer mediaURL={reel.mediaURL} />
-        <div className="px-3 py-6 select-none">
+        {/* <div className="px-3 py-6 select-none">
           <div className="flex gap-1 items-center">
             <Avatar>
-              <AvatarImage
+              <AvatarImage>
                 className="object-cover"
                 src={reel.User.avatar}
                 alt={reel.User.username}
@@ -24,7 +25,8 @@ export default function ReelCard(reel: Reel) {
             <h1 className="text-sm pt-1 line-clamp-2">{reel.caption}</h1>
             <p className="text-xs text-neutral-400">{getTimeAgo(reel.createdAt)}</p>
           </div>
-        </div>
+        </div> */}
+        <UserTile user={reel.User} />
       </div>
     </div>
   );

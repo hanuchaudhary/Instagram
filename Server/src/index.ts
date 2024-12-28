@@ -51,8 +51,6 @@ io.on('connection', (socket) => {
   }) => {
     try {
       const { message, senderId, receiverId, roomId } = data
-      console.log("message: ", message);
-
       const result = await prisma.message.create({
         data: {
           message, receiverId, senderId

@@ -254,9 +254,7 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
                     orderBy: {
                         createdAt: 'desc'
                     }
-                },
-                sentMessages: true,
-                receivedMessages: true
+                }
             }
         });
         if (!user) {
@@ -497,18 +495,39 @@ exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __
         });
     }
 }));
-exports.userRouter.get("/profile/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username } = req.params;
+exports.userRouter.get("/profile/:userId/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, userId } = req.params;
     try {
         const user = yield prisma.user.findUnique({
             where: { username },
             select: {
                 id: true,
+                accountType: true,
                 username: true,
                 avatar: true,
                 bio: true,
                 fullName: true,
-                posts: true,
+                followers: {
+                    include: {
+                        user: true
+                    }
+                },
+                following: {
+                    include: {
+                        user: true
+                    }
+                },
+                posts: {
+                    include: {
+                        comments: {
+                            include: {
+                                user: true
+                            }
+                        },
+                    }
+                },
+                isVerified: true,
+                like: true,
                 _count: {
                     select: {
                         followers: true,
@@ -524,9 +543,29 @@ exports.userRouter.get("/profile/:username", (req, res) => __awaiter(void 0, voi
                 message: "User not found",
             });
         }
+        const isFollowing = user.following.some((follow) => follow.user.id === userId);
+        const isPrivateAccount = user.accountType === "private";
+        if (!isPrivateAccount && !isFollowing) {
+            return res.status(200).json({
+                success: true,
+                user
+            });
+        }
         return res.status(200).json({
             success: true,
-            user
+            user: {
+                id: user.id,
+                accountType: user.accountType,
+                username: user.username,
+                avatar: user.avatar,
+                bio: user.bio,
+                fullName: user.fullName,
+                _count: {
+                    followers: user._count.followers,
+                    following: user._count.following,
+                    posts: user._count.posts,
+                }
+            }
         });
     }
     catch (error) {
@@ -534,6 +573,53 @@ exports.userRouter.get("/profile/:username", (req, res) => __awaiter(void 0, voi
         return res.status(500).json({
             success: false,
             message: "An error occurred while fetching profile",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.userRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { postId } = req.params;
+    try {
+        const post = yield prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            },
+            include: {
+                comments: {
+                    include: {
+                        user: true
+                    }
+                },
+                User: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true
+                    }
+                }, _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            post
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching post",
             error: error instanceof Error ? error.message : 'An unexpected error occurred',
         });
     }

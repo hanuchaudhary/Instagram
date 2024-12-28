@@ -3,9 +3,9 @@ export enum AccountType {
     PUBLIC = "public"
 }
 
-export enum mediaType{
-    image,
-    video
+export enum mediaType {
+    image = "image",
+    video = "video"
 }
 
 export interface UserType {
@@ -19,10 +19,10 @@ export interface UserType {
     bio?: string;
     accountType: AccountType;
     posts?: PostType[]; // Array of Post objects
-    _count : {
-        followers : number,
-        following : number,
-        posts : number
+    _count: {
+        followers: number,
+        following: number,
+        posts: number
     }
     createdAt?: Date; // Date object
     updatedAt?: Date; // Date object
@@ -45,7 +45,8 @@ export interface PostType {
     caption: string; // String caption
     location?: string; // Optional string location
     mediaURL?: string; // Optional string for media URL
-    user?: UserType; // User object reference
+    mediaType?: mediaType | string; // Optional string for media type
+    User?: UserType; // User object reference
     userId?: string; // Optional string for user ID
     comments?: CommentType[]; // Array of Comment objects
     likes?: LikeType[]; // Array of Like objects
@@ -57,6 +58,7 @@ export interface CommentType {
     postId: number; // Integer reference to Post
     userId: string; // String reference to User
     post?: PostType; // Post object reference
+    comment: string;
     user?: UserType; // User object reference
     createdAt: Date; // Date object
 }

@@ -8,7 +8,7 @@ import axios from "axios";
 import TypingLoader from "@/components/TypingLoader";
 import { Menu, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useFollowDataStore } from "@/store/UserStore/useFollowDataStore";
+import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
 import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 
 interface User {

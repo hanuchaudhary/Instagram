@@ -22,7 +22,9 @@ interface FollowDataStore {
     followers: FollowData[];
     following: FollowData[];
     fetchFollowData: () => void;
-    unFollowUser: (id: string) => void;
+    handleFollow: (userId: string) => void;
+    handleUnfollow: (userId: string) => void;
+
 }
 
 export const useFollowDataStore = create<FollowDataStore>((set) => ({
@@ -36,17 +38,18 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
                     Authorization: getAuthHeaders().Authorization,
                 }
             });
-            set({ followers: response.data.followers, following: response.data.following });
+            const data = response.data;
+            set({ followers: data.followers, following: data.following });
         } catch (err) {
             console.error("Failed to fetch follow data");
         } finally {
             set({ isLoading: false });
         }
     },
-    unFollowUser: async (id: string) => {
+    handleFollow: async (userId: string) => {
         try {
-            await axios.post(
-                `${BACKEND_URL}/api/v1/feature/unfollow/${id}`,
+            const res = await axios.post(
+                `${BACKEND_URL}/api/v1/feature/follow/${userId}`,
                 {},
                 {
                     headers: {
@@ -54,9 +57,35 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
                     },
                 }
             );
-            set((state) => ({
-                following: state.following.filter((user) => user.user.id !== id),
-            }));
+
+            if (res.data.success) {
+                set((state) => ({
+                    following: [...state.following, { user: { id: userId, avatar: "", username: "" } }],
+                    isFollowing: true,
+                }));
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    handleUnfollow: async (userId: string) => {
+        try {
+            const res = await axios.post(
+                `${BACKEND_URL}/api/v1/feature/unfollow/${userId}`,
+                {},
+                {
+                    headers: {
+                        Authorization: getAuthHeaders().Authorization,
+                    },
+                }
+            );
+
+            if (res.data.success) {
+                set((state) => ({
+                    following: state.following.filter((user) => user.user.id !== userId),
+                    isFollowing: false,
+                }));
+            }
         } catch (error) {
             console.log(error);
         }

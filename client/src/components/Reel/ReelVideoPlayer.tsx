@@ -10,7 +10,7 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [playerState, setPlayerState] = useState({
     isPlaying: false,
-    isMuted: false,
+    isMuted: true,
     showControls: false,
   });
 
@@ -88,7 +88,7 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
       >
         <div
           onClick={togglePlayPause}
-          className="text-white bg-black/50 rounded-full p-4 hover:bg-black/70"
+          className="text-white bg-black/50 cursor-pointer rounded-full p-4 hover:bg-black/70"
         >
           {playerState.isPlaying ? (
             <Pause fill="white" className="h-10 w-10" />

@@ -242,7 +242,6 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
-
 userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId
     try {
@@ -270,12 +269,10 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
                             }
                         }
                     },
-                    orderBy:{
+                    orderBy: {
                         createdAt: 'desc'
                     }
-                },
-                sentMessages: true,
-                receivedMessages: true
+                }
             }
         })
 
@@ -317,7 +314,7 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
             });
         }
 
-        const result = await uploadOnCloudinary(req.file?.path as string,"instagram-clone/avatars","image")
+        const result = await uploadOnCloudinary(req.file?.path as string, "instagram-clone/avatars", "image")
         const avatarURL = result?.url
 
         const updateUser = await prisma.user.update({
@@ -548,18 +545,39 @@ userRouter.get("/bulk-followers", authMiddleware, async (req: Request, res: Resp
     }
 })
 
-userRouter.get("/profile/:username", async (req: Request, res: Response): Promise<any> => {
-    const { username } = req.params;
+userRouter.get("/profile/:userId/:username", async (req: Request, res: Response): Promise<any> => {
+    const { username, userId } = req.params;
     try {
         const user = await prisma.user.findUnique({
             where: { username },
             select: {
                 id: true,
+                accountType: true,
                 username: true,
                 avatar: true,
                 bio: true,
                 fullName: true,
-                posts: true,
+                followers: {
+                    include: {
+                        user: true
+                    }
+                },
+                following: {
+                    include: {
+                        user: true
+                    }
+                },
+                posts: {
+                    include: {
+                        comments: {
+                            include: {
+                                user: true
+                            }
+                        },
+                    }
+                },
+                isVerified: true,
+                like: true,
                 _count: {
                     select: {
                         followers: true,
@@ -577,10 +595,33 @@ userRouter.get("/profile/:username", async (req: Request, res: Response): Promis
             });
         }
 
+        const isFollowing = user.following.some((follow) => follow.user.id === userId);
+        const isPrivateAccount = user.accountType === "private";
+
+        if (!isPrivateAccount && !isFollowing) {
+            return res.status(200).json({
+                success: true,
+                user
+            })
+        }
+
         return res.status(200).json({
             success: true,
-            user
-        })
+            user: {
+                id: user.id,
+                accountType: user.accountType,
+                username: user.username,
+                avatar: user.avatar,
+                bio: user.bio,
+                fullName: user.fullName,
+                _count: {
+                    followers: user._count.followers,
+                    following: user._count.following,
+                    posts: user._count.posts,
+                }
+            }
+        });
+
     } catch (error) {
         console.error("Error while fetching profile:", error);
         return res.status(500).json({
@@ -591,6 +632,55 @@ userRouter.get("/profile/:username", async (req: Request, res: Response): Promis
     }
 })
 
+userRouter.get("/post/:postId", async (req: Request, res: Response): Promise<any> => {
+    const { postId } = req.params;
+    try {
+        const post = await prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            },
+            include: {
+                comments: {
+                    include: {
+                        user: true
+                    }
+                },
+                User: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true
+                    }
+                }, _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            }
+        })
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            post
+        })
+
+    } catch (error) {
+        console.error("Error while fetching post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching post",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+})
 
 userRouter.post("/change-password", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
     const { password, currentPassword } = req.body;

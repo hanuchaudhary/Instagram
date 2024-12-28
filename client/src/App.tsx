@@ -15,7 +15,6 @@ import ReelsPage from "./pages/ReelsPage";
 const App = () => {
   const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem("token");
-    console.log("Token:", token); // Debug log
     if (!token) {
       return <Navigate to="/auth/signin" replace />;
     }
