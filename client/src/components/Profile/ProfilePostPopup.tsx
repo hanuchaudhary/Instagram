@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, MessageCircle, Send, UserCircle, X } from "lucide-react";
+import {  Send, UserCircle, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentTile from "../Tiles/CommentTile";
-import { Button } from "../ui/button";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { useEffect } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import CommentInput from "../Post/CommentInput";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
+import LikePost from "../LikePost";
 
 export default function ProfilePostPopup({
   isOpen,
@@ -16,9 +19,18 @@ export default function ProfilePostPopup({
   handleClose: () => void;
 }) {
   const { fetchSinglePost, isSinglePostLoading, singlePost } = usePostsStore();
+  const { comments, fetchComments} = usePostCommentsStore();
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchComments(postId);
+    }
+  }, [isOpen, postId]);
+
   useEffect(() => {
     fetchSinglePost(postId);
   }, [fetchSinglePost, postId]);
+
 
   return (
     <AnimatePresence>
@@ -49,7 +61,6 @@ export default function ProfilePostPopup({
               </button>
 
               <div className="flex flex-col md:flex-row h-[80vh] md:h-[70vh]">
-                {/* Media Section */}
                 <div className="flex-1 bg-black flex items-center justify-center">
                   {singlePost.mediaType === "video" ? (
                     <video
@@ -82,54 +93,46 @@ export default function ProfilePostPopup({
                       {singlePost.User?.username}
                     </span>
                   </div>
-
-                  <div className="flex-1 overflow-y-auto p-4">
+                  <ScrollArea className="flex-1 p-4">
                     <div className="flex flex-col gap-1">
-                      {singlePost.comments?.map((comment) => (
-                        <CommentTile key={comment.id} {...comment} />
-                      ))}
+                      {comments.length > 0 ? (
+                        comments?.map((comment) => (
+                          <CommentTile key={comment.id} {...comment} />
+                        ))
+                      ) : (
+                        <div className="flex items-center flex-col justify-center h-full">
+                          <h1 className="text-neutral-500">No comments yet!</h1>
+                          <p className="text-xs text-muted-foreground">
+                            Be the first to comment and start the conversation!
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-
-                  {/* Actions */}
+                  </ScrollArea>
                   <div className="p-4 border-t">
-                    <div className="flex justify-between mb-2">
+                    <div className="flex justify-between mb-1">
                       <div className="flex space-x-4">
-                        <Button variant="ghost" size="icon">
-                          <Heart className="h-6 w-6" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                          <MessageCircle className="h-6 w-6" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
+                        <div>
+                          {/* <Heart className="h-6 w-6" /> */}
+                          <LikePost postId={singlePost.id!} />
+                        </div>
+                        <div>
                           <Send className="h-6 w-6" />
-                        </Button>
+                        </div>
                       </div>
                     </div>
-                    <p className="mb-4">
+                    <p className="">
                       <span className="font-semibold mr-2">
                         {singlePost.User?.username}
                       </span>
                       {singlePost.caption}
                     </p>
-                    <p className="font-semibold">797 likes</p>
+                    <p className="font-semibold text-sm text-neutral-400">
+                      {singlePost._count?.likes} likes
+                    </p>
                   </div>
 
-                  {/* Comment Input */}
-                  {/* <form onSubmit={handleCommentSubmit} className="p-4 border-t">
-                  <div className="flex items-center">
-                    <Input
-                      type="text"
-                      placeholder="Add a comment..."
-                      // value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="flex-1 mr-2"
-                    />
-                    <Button type="submit" disabled={!newComment.trim()}>
-                      Post
-                    </Button>
-                  </div>
-                </form> */}
+                  <CommentInput postId={postId} />
                 </div>
               </div>
             </motion.div>

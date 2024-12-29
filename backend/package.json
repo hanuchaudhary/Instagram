@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build" : "tsc -b && node dist/index.js"
+    "build": "tsc -b && node dist/index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@hanuchaudhary/instagram": "^1.0.2",
+    "@hanuchaudhary/instagram": "^1.0.6",
     "@prisma/client": "^5.21.1",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",

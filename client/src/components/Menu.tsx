@@ -14,7 +14,6 @@ import { useTheme } from "@/context/ThemeProvider";
 const Menu = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -32,17 +31,17 @@ const Menu = () => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={toggleTheme}>
-            {theme === 'light' ? (
+            {theme === "light" ? (
               <Moon className="mr-2 h-4 w-4" />
             ) : (
               <Sun className="mr-2 h-4 w-4" />
             )}
-            {theme === 'light' ? 'Dark' : 'Light'} Mode
+            {theme === "light" ? "Dark" : "Light"} Mode
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

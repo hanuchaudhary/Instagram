@@ -1,16 +1,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Share2, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export function ShareButton() {
+export enum ShareType {
+  POST = "POST",
+  PROFILE = "PROFILE",
+}
+
+export function ShareButton({ shareType }: { shareType: ShareType }) {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleShare = async () => {
-    const profileUrl = window.location.href
+    const profileUrl = window.location.href;
 
     try {
+      if (shareType === ShareType.PROFILE) {
+        await navigator.clipboard.writeText(profileUrl);
+      }
       await navigator.clipboard.writeText(profileUrl);
       setIsCopied(true);
       toast.success(`Link copied to clipboard`);
@@ -22,7 +29,7 @@ export function ShareButton() {
   };
 
   return (
-    <Button
+    <button
       onClick={handleShare}
       className="relative overflow-hidden"
       aria-label={isCopied ? "Copied to clipboard" : "Share profile link"}
@@ -54,6 +61,6 @@ export function ShareButton() {
           </motion.div>
         )}
       </AnimatePresence>
-    </Button>
+    </button>
   );
 }

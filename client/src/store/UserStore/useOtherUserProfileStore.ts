@@ -1,7 +1,6 @@
+import api from "@/config/axios";
 import { UserType } from "./useProfileStore";
 import { create } from "zustand";
-import axios from "axios";
-import { BACKEND_URL } from "@/config/config";
 
 interface otherUserProfileStore {
     profile: UserType | null;
@@ -15,7 +14,7 @@ export const useOtherUserProfileStore = create<otherUserProfileStore>((set) => (
     selectedPost: null,
     fetchProfile: async (loggedUserId: string, username: string) => {
         try {
-            const response = await axios.get(`${BACKEND_URL}/api/v1/user/profile/${loggedUserId}/${username}`);
+            const response = await api.get(`/user/profile/${loggedUserId}/${username}`);
             set({ profile: response.data.user });
         } catch (error) {
             console.error("Error fetching profile:", error);

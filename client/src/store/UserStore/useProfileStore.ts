@@ -1,7 +1,5 @@
-import { BACKEND_URL } from '@/config/config';
-import axios from 'axios';
+import api from '@/config/axios';
 import { create } from 'zustand';
-import { getAuthHeaders } from '../AuthHeader/getAuthHeaders';
 
 
 export enum AccountType {
@@ -64,11 +62,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     profile: {} as UserType,
     fetchProfile: async () => {
         try {
-            const res = await axios.get(`${BACKEND_URL}/api/v1/user/me`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization,
-                },
-            });
+            const res = await api.get(`/user/me`);
             set({ profile: res.data.user });
         } catch (error) {
             console.error("Error fetching profile:", error);
@@ -76,11 +70,7 @@ export const useProfileStore = create<ProfileStore>((set) => ({
     },
     deleteProfilePost: async (postId: number) => {
         try {
-            await axios.delete(`${BACKEND_URL}/api/v1/post/delete/${postId}`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization,
-                },
-            });
+            await api.delete(`/post/delete/${postId}`);
             set((state) => {
                 const newProfile = { ...state.profile };
                 newProfile.posts = newProfile.posts?.filter((post) => post.id !== postId);

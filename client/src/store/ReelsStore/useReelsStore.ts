@@ -1,7 +1,5 @@
-import { BACKEND_URL } from '@/config/config';
-import axios from 'axios';
+import api from '@/config/axios';
 import { create } from 'zustand';
-import { getAuthHeaders } from '../AuthHeader/getAuthHeaders';
 
 export interface Reel {
     id: string;
@@ -12,6 +10,9 @@ export interface Reel {
         id: string;
         avatar: string;
         username: string;
+        fullName: string;
+        bio: string;
+        location: string;
     };
 }
 
@@ -31,14 +32,10 @@ export const useReelsStore = create<ReelsStore>((set, get) => ({
     hasMore: true,
     page: 1,
     fetchReels: async () => {
-        const { page, reels } = get();
+        const { page } = get();
         set({ isLoading: true, error: null });
         try {
-            const response = await axios.get(`${BACKEND_URL}/api/v1/feature/reels?skip=${(page - 1) * 2}&take=10`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization,
-                },
-            });
+            const response = await api.get(`/feature/reels?skip=${(page - 1) * 2}&take=10`);
             const data = response.data;
             if (data.success) {
                 set((state) => ({

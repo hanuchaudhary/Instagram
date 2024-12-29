@@ -4,15 +4,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Facebook } from "lucide-react";
-import axios from "axios";
-import { BACKEND_URL } from "@/config/config";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { signinSchema } from "@hanuchaudhary/instagram";
+import api from "@/config/axios";
+import axios from "axios";
+import { useAuthStore } from "@/store/AuthHeader/getAuthHeaders";
 
 const Signin = () => {
   const navigate = useNavigate();
@@ -34,17 +41,17 @@ const Signin = () => {
   async function onSubmit(values: z.infer<typeof signinSchema>) {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
+      const response = await api.post(`/user/signin`, {
         ...values,
       });
-      const token = `Bearer ${response.data.token}`;
-      const { fullName } = response.data
-      const userData = JSON.stringify(response.data);
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", userData);
-      toast.success(`Welcome! ${fullName}`);
-      navigate(`/`,{replace: true});
+      const { token, user } = response.data;
+      const { fullName } = user;
+      localStorage.setItem("token", "Bearer " + token);
+      localStorage.setItem("user", JSON.stringify(user));
+      useAuthStore.getState().setAuth("Bearer " + token, user);
 
+      toast.success(`Welcome! ${fullName}`);
+      navigate(`/`, { replace: true });
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorMessage =
@@ -86,7 +93,10 @@ const Signin = () => {
               </span>
             </div>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-3"
+              >
                 <FormField
                   control={form.control}
                   name="credential"

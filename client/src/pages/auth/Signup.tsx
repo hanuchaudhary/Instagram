@@ -19,6 +19,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { BACKEND_URL } from "@/config/config";
 import { signupSchema } from "@hanuchaudhary/instagram";
+import api from "@/config/axios";
 
 export default function Component() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ export default function Component() {
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setIsLoading(true);
     try {
-      const response = await axios.post(`${BACKEND_URL}/api/v1/user/signup`, {
+      const response = await api.post(`/user/signup`, {
         ...values,
       });
       toast.success(`Welcome, ${response.data.username}! Your account has been successfully created.`);

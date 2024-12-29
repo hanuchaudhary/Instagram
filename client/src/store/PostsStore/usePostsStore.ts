@@ -1,8 +1,7 @@
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
 import { create } from "zustand";
-import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
 import { LikeType, PostType } from "@/types/TypeInterfaces";
+import api from "@/config/axios";
+import { useUserStore } from "../AuthHeader/getAuthHeaders";
 
 interface PostStore {
     isPostLoading: boolean;
@@ -15,11 +14,9 @@ interface PostStore {
     setIsPostLiked: (postId: string, userId: string) => void;
 
     isSinglePostLoading: boolean;
-    singlePost: PostType | null;
+    singlePost: PostType | any;
     fetchSinglePost: (postId: number) => void;
 }
-
-const { Authorization, userId } = getAuthHeaders()
 
 export const usePostsStore = create<PostStore>((set, get) => ({
     error: false,
@@ -28,11 +25,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
     singlePost: null,
     fetchPosts: async () => {
         try {
-            const res = await axios.get(`${BACKEND_URL}/api/v1/post/bulk`, {
-                headers: {
-                    Authorization: Authorization,
-                },
-            });
+            const res = await api.get(`/post/bulk`);
             set({ posts: res.data.posts, isPostLoading: false });
         } catch (error) {
             set({ error: true, isPostLoading: false });
@@ -41,16 +34,24 @@ export const usePostsStore = create<PostStore>((set, get) => ({
     },
 
     handleLikePost: async (postId: string) => {
+        const { stateUser } = useUserStore.getState();
+        const userId = stateUser?.id;
         try {
-            const response = await axios.post(
-                `${BACKEND_URL}/api/v1/post/like/${postId}`,
-                {},
-                {
-                    headers: {
-                        Authorization: Authorization,
-                    },
+            const response = await api.post(`/post/like/${postId}`);
+
+            if (get().singlePost && get().singlePost?.id === parseInt(postId)) {
+                const singlePost = { ...get().singlePost };
+                if (response.status === 201) {
+                    singlePost._count && singlePost._count.likes++;
+                } else if (response.status === 200) {
+                    singlePost._count && singlePost._count.likes--;
+                    singlePost.likes = singlePost?.likes?.filter(
+                        (like: LikeType) => like.userId !== userId
+                    );
                 }
-            );
+                set({ singlePost });
+            }
+
             const posts = get().posts.map((post) => {
                 if (post.id === parseInt(postId)) {
                     if (response.status === 201) {
@@ -72,6 +73,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
             console.error("Error liking post:", error);
         }
     },
+
     isPostLiked: (postId: string, userId: string) => {
         const post = get().posts.find((post) => post.id === parseInt(postId));
         if (post) {
@@ -79,6 +81,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         }
         return false;
     },
+
     setIsPostLiked: (postId: string, userId: string) => {
         const post = get().posts.find((post) => post.id === parseInt(postId));
         if (post) {
@@ -86,15 +89,12 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         }
         return false;
     },
+
     isSinglePostLoading: true,
     fetchSinglePost: async (postId: number) => {
         try {
             if (postId !== null) {
-                const res = await axios.get(`${BACKEND_URL}/api/v1/user/post/${postId}`, {
-                    headers: {
-                        Authorization: Authorization,
-                    },
-                });
+                const res = await api.get(`/user/post/${postId}`);
                 set({ singlePost: res.data.post, isSinglePostLoading: false });
             }
         } catch (error) {

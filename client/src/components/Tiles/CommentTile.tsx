@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { UserCircle } from "lucide-react";
 import { getTimeAgo } from "@/lib/getTimeFormat";
 
-export default function CommentTile(comment: CommentType) {
+export default function CommentTile(comment: CommentType | any) {
   return (
     <div
       key={comment.id}

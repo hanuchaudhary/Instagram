@@ -66,3 +66,11 @@ export const editProfileSchema = z.object({
     avatar: z.instanceof(File).optional(),
 });
 export type EditProfileType = z.infer<typeof editProfileSchema>;
+
+export const reportSchema = z.object({
+    reason: z.string().min(1, { message: "Reason must be atleast 1 Charcter" }),
+    type: z.enum(["POST", "USER", "COMMENT"]),
+    targetId: z.string(),
+    reportedId: z.string()
+})
+export type ReportType = z.infer<typeof reportSchema>;

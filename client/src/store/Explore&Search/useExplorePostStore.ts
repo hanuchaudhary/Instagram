@@ -1,8 +1,6 @@
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
 import { create } from "zustand";
-import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
 import { mediaType } from "@/types/TypeInterfaces";
+import api from "@/config/axios";
 
 interface ExplorePost {
     id: Number,
@@ -29,11 +27,7 @@ export const useExplorePostStore = create<explorePostStore>((set) => ({
     fetchExplorePosts: async (filter) => {
         set({ isLoading: true });
         try {
-            const res = await axios.get(`${BACKEND_URL}/api/v1/post/explore?filter=${filter}`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization
-                }
-            })
+            const res = await api.get(`/post/explore?filter=${filter}`)
             set({ explorePosts: res.data.posts })
         } catch (error) {
             console.error("Error fetching explore posts:", error);

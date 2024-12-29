@@ -18,8 +18,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import api from "@/config/axios";
 import { BACKEND_URL } from "@/config/config";
-import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { postSchema } from "@hanuchaudhary/instagram";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,9 +87,8 @@ const CreatePostPage = () => {
 
     try {
       setIsLoading(true);
-      await axios.post(`${BACKEND_URL}/api/v1/post/create`, formData, {
+      await api.post(`${BACKEND_URL}/post/create`, formData, {
         headers: {
-          Authorization: getAuthHeaders().Authorization,
           "Content-Type": "multipart/form-data",
         },
         onUploadProgress: (event) => {

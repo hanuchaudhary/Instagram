@@ -1,14 +1,14 @@
 import { Heart } from "lucide-react";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { useLoggedUserId } from "@/store/UserStore/useProfileStore";
-import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
+import { useUserStore } from "@/store/AuthHeader/getAuthHeaders";
 
 const LikePost = ({ postId }: { postId: number }) => {
   const { handleLikePost, isPostLiked, setIsPostLiked } = usePostsStore();
-
+  const { stateUser } = useUserStore();
   const handleLikeOnClick = () => {
     handleLikePost(postId.toString());
-    setIsPostLiked(postId.toString(), getAuthHeaders().userId);
+    setIsPostLiked(postId.toString(), stateUser?.id!);
   };
 
   return (

@@ -1,12 +1,11 @@
-import { PrismaClient } from "@prisma/client";
 import { Router, Request, Response } from "express";
 import authMiddleware from "../middleware";
 import { upload } from "../libs/multerUpload";
 import { uploadOnCloudinary } from "../libs/uploadCloudinary";
+import prisma from "../db/prisma";
 
 export const postRouter = Router();
 postRouter.use(authMiddleware);
-const prisma = new PrismaClient();
 
 
 postRouter.post("/create", upload.single("media"), async (req: Request, res: Response): Promise<any> => {
@@ -132,47 +131,6 @@ postRouter.delete("/delete", async (req: Request, res: Response): Promise<any> =
         return res.status(500).json({
             success: false,
             message: "Error while deleting post",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-    }
-})
-
-postRouter.get("/postComments/:postId", async (req: Request, res: Response): Promise<any> => {
-    const { postId } = req.params;
-
-    if (!postId) {
-        return res.status(400).json({
-            success: false,
-            message: "Post ID is required"
-        });
-    }
-
-    try {
-        const comments = await prisma.comment.findMany({
-            where: {
-                postId: Number(postId)
-            },
-            include: {
-                user: {
-                    select: {
-                        username: true,
-                        avatar: true
-                    }
-                }
-            }
-        })
-
-        return res.status(200).json({
-            success: true,
-            message: "Bulk comments fetched",
-            comments
-        })
-
-    } catch (error) {
-        console.error("Error while fetching bulk comments:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error while fetching bulk comments",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }

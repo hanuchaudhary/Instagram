@@ -5,13 +5,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Grid, ImageIcon, Loader2 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useOtherUserProfileStore } from "@/store/UserStore/useOtherUserProfileStore";
-import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
-import { ShareButton } from "@/components/ShareButton";
 import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
+import ReportShareDialog from "@/components/Report&Share";
+import { ShareType } from "@/components/ShareButton";
+import { useUserStore } from "@/store/AuthHeader/getAuthHeaders";
 
 export default function UserProfilePage() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const { stateUser } = useUserStore();
 
   const { username } = useParams();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
@@ -22,7 +24,7 @@ export default function UserProfilePage() {
   };
 
   useEffect(() => {
-    fetchProfile(getAuthHeaders().userId, username as string);
+    fetchProfile(stateUser?.id!, username as string);
   }, [username, fetchProfile]);
 
   const handleSelectPostId = (postId: number) => {
@@ -49,16 +51,14 @@ export default function UserProfilePage() {
   return (
     <div className="container px-4 sm:px-6 max-w-4xl py-6 sm:py-8">
       <Card className="p-6 sm:p-8 relative">
-        <div className="absolute top-2 right-2">
-          {/* <Button
-            onClick={handleCopyProfileLink}
-            className=""
-            variant={"outline"}
-            size={"icon"}
-          >
-            <Share2 />
-          </Button> */}
-          <ShareButton />
+        <div className="absolute flex items-center gap-2 top-2 right-4">
+          <ReportShareDialog
+            shareType={ShareType.PROFILE}
+            reportTargetTitle={profile.username}
+            reportType="USER"
+            reportedId={profile?.id!}
+            targetId={profile.id!}
+          />
         </div>
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
           <Avatar className="w-24 h-24 md:w-32 md:h-32">

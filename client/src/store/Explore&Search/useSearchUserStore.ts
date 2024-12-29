@@ -1,15 +1,11 @@
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
+import api from "@/config/axios";
 import { create } from "zustand";
-import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
 
 export interface searchUser {
     id: string;
     avatar: string;
-    userType :  string
     username: string;
     fullName: string;
-    isFollowing: boolean;
     bio?: string
     location?: string
 }
@@ -27,11 +23,7 @@ export const useSearchUserStore = create<searchUserStore>((set) => ({
     fetchSearchedUsers: async (filter) => {
         set({ isLoading: true });
         try {
-            const res = await axios.get(`${BACKEND_URL}/api/v1/user/bulk?filter=${filter}`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization
-                }
-            })
+            const res = await api.get(`/user/bulk?filter=${filter}`);
             set({ searchUsers: res.data.users })
         } catch (error) {
             console.error("Error fetching explore posts:", error);

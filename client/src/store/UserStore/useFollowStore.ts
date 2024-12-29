@@ -1,6 +1,4 @@
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
-import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
+import api from "@/config/axios";
 import { create } from "zustand";
 
 interface FollowData {
@@ -33,11 +31,7 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
     following: [],
     fetchFollowData: async () => {
         try {
-            const response = await axios.get<FollowResponse>(`${BACKEND_URL}/api/v1/user/bulk-followers`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization,
-                }
-            });
+            const response = await api.get<FollowResponse>(`/user/bulk-followers`);
             const data = response.data;
             set({ followers: data.followers, following: data.following });
         } catch (err) {
@@ -48,15 +42,7 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
     },
     handleFollow: async (userId: string) => {
         try {
-            const res = await axios.post(
-                `${BACKEND_URL}/api/v1/feature/follow/${userId}`,
-                {},
-                {
-                    headers: {
-                        Authorization: getAuthHeaders().Authorization,
-                    },
-                }
-            );
+            const res = await api.post(`/feature/follow/${userId}`);
 
             if (res.data.success) {
                 set((state) => ({
@@ -70,15 +56,7 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
     },
     handleUnfollow: async (userId: string) => {
         try {
-            const res = await axios.post(
-                `${BACKEND_URL}/api/v1/feature/unfollow/${userId}`,
-                {},
-                {
-                    headers: {
-                        Authorization: getAuthHeaders().Authorization,
-                    },
-                }
-            );
+            const res = await api.post(`/api/v1/feature/unfollow/${userId}`);
 
             if (res.data.success) {
                 set((state) => ({

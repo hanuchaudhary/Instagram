@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client';
 import { Request, Response, Router } from 'express'
 import authMiddleware from '../middleware';
+import prisma from '../db/prisma';
+import { reportSchema } from "@hanuchaudhary/instagram"
 
 export const featureRouter = Router();
 featureRouter.use(authMiddleware)
-const prisma = new PrismaClient();
+
 
 featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
@@ -235,6 +236,50 @@ featureRouter.post("/comment/:postId", async (req: Request, res: Response): Prom
     }
 })
 
+featureRouter.get("/comments/:postId", async (req: Request, res: Response): Promise<any> => {
+    const { postId } = req.params;
+
+    if (!postId) {
+        return res.status(400).json({
+            success: false,
+            message: "Post ID is required"
+        });
+    }
+
+    try {
+        const comments = await prisma.comment.findMany({
+            where: {
+                postId: Number(postId)
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Bulk comments fetched",
+            comments
+        })
+
+    } catch (error) {
+        console.error("Error while fetching bulk comments:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error while fetching bulk comments",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+})
+
 featureRouter.get("/reels", async (req: Request, res: Response) => {
     const { skip = 0, take = 10 } = req.query;
     try {
@@ -268,6 +313,71 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: "Error while fetching reels",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+});
+
+featureRouter.post("/report", authMiddleware, async (req: Request, res: Response) => {
+    const { success, error } = reportSchema.safeParse(req.body)
+    const { reportedId, reason, type, targetId } = req.body;
+
+    const reporterId = (req as any).userId;
+
+    if (!success) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request body",
+            error
+        });
+        return;
+    }
+
+    //ReporterId is the user who is reporting the post
+    //ReportedId is the user who is being reported
+    //TargetId is the post or user or comment being reported
+    //Type is the type of report (post, user, comment)
+
+    if (!type || !reportedId || !reason || !targetId) {
+        res.status(400).json({
+            success: false,
+            message: "Missing required fields",
+        });
+        return;
+    }
+
+    try {
+        if (type === "POST") {
+            await prisma.report.create({
+                data: {
+                    reporterId,
+                    reason,
+                    type,
+                    postId: parseInt(targetId),
+                    reportedId,
+                },
+            });
+        } else {
+            await prisma.report.create({
+                data: {
+                    reporterId,
+                    reason,
+                    type,
+                    reportedId,
+                },
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+        });
+        return;
+    } catch (error) {
+        console.error("Error reporting:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while reporting",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
         return;

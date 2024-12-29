@@ -1,26 +1,31 @@
-import { BACKEND_URL } from "@/config/config";
-import axios from "axios";
 import { create } from "zustand";
-import { getAuthHeaders } from "../AuthHeader/getAuthHeaders";
+import api from "@/config/axios";
 import { searchUser } from "../Explore&Search/useSearchUserStore";
 
 interface SuggestedUsersStore {
-    suggestedUsers: searchUser[];
-    fetchSuggestedUsers: () => void;
+  suggestedUsers: searchUser[];
+  isLoading: boolean;
+  error: string | null;
+  fetchSuggestedUsers: () => Promise<void>;
 }
 
-export const useSuggestedUsersStore = create<SuggestedUsersStore>((set) => ({
-    suggestedUsers: [],
-    fetchSuggestedUsers: async () => {
-        try {
-            const res = await axios.get(`${BACKEND_URL}/api/v1/user/suggestions`, {
-                headers: {
-                    Authorization: getAuthHeaders().Authorization,
-                },
-            });
-            set({ suggestedUsers: res.data.suggestedUsers });
-        } catch (error) {
-            console.error("Error fetching suggested users:", error);
-        }
-    },
+export const useSuggestedUsersStore = create<SuggestedUsersStore>((set, get) => ({
+  suggestedUsers: [],
+  isLoading: false,
+  error: null,
+  fetchSuggestedUsers: async () => {
+    const state = get();
+    if (state.suggestedUsers.length > 0) {
+      return;
+    }
+    set({ isLoading: true, error: null });
+    try {
+      const res = await api.get(`/user/suggestions`);
+      set({ suggestedUsers: res.data.suggestedUsers });
+    } catch (error: any) {
+      set({ error: error.response?.data?.message || "Failed to fetch users" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));

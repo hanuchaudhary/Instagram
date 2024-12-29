@@ -1,5 +1,4 @@
 import express, { NextFunction, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UserType } from '../types/UserTypes';
@@ -10,9 +9,9 @@ import { uploadOnCloudinary } from '../libs/uploadCloudinary';
 import authMiddleware from '../middleware';
 import { z } from 'zod';
 import { signupSchema, signinSchema, verifyCodeSchema } from '@hanuchaudhary/instagram'
+import prisma from '../db/prisma';
 
 export const userRouter = express.Router();
-const prisma = new PrismaClient();
 
 userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => {
     const { fullName, email, username, password } = req.body as UserType;
@@ -39,7 +38,7 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
         });
 
         if (existByUsername) {
-            if (!existByUsername.isVerified) {
+            if (!existByUsername.isCodeVerified) {
                 await prisma.user.delete({
                     where: {
                         id: existByUsername.id
@@ -55,7 +54,7 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
         }
 
         const existByEmail = await prisma.user.findFirst({
-            where: { email, isVerified: true }
+            where: { email, isCodeVerified: true }
         });
 
         if (existByEmail) {
@@ -75,6 +74,7 @@ userRouter.post("/signup", async (req: Request, res: Response): Promise<any> => 
                 fullName,
                 avatar: "",
                 bio: "",
+                role: "user",
                 password: hashedPassword,
                 verifyCode,
                 verifyCodeExpiry: (Date.now() + 3600000).toString(),
@@ -141,7 +141,7 @@ userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => 
         await prisma.user.update({
             where: { id: user.id },
             data: {
-                isVerified: true,
+                isCodeVerified: true,
                 verifyCode: "",
                 verifyCodeExpiry: "",
             },
@@ -194,7 +194,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
             });
         }
 
-        if (!user.isVerified) {
+        if (!user.isCodeVerified) {
             return res.status(403).json({
                 success: false,
                 message: "User is not verified. Please verify your email address.",
@@ -224,12 +224,15 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
 
         return res.status(200).json({
             token,
-            fullName: user.fullName,
-            username: user.username,
-            email: user.email,
-            avatar: user.avatar,
-            accountType: user.accountType,
-            id: user.id
+            user: {
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                accountType: user.accountType,
+                role: user.role,
+                id: user.id
+            }
         });
 
     } catch (error) {
@@ -576,7 +579,7 @@ userRouter.get("/profile/:userId/:username", async (req: Request, res: Response)
                         },
                     }
                 },
-                isVerified: true,
+                isCodeVerified: true,
                 like: true,
                 _count: {
                     select: {
@@ -643,6 +646,8 @@ userRouter.get("/post/:postId", async (req: Request, res: Response): Promise<any
                 comments: {
                     include: {
                         user: true
+                    }, orderBy: {
+                        createdAt: "desc"
                     }
                 },
                 User: {
@@ -735,3 +740,47 @@ userRouter.post("/change-password", authMiddleware, upload.single("avatar"), asy
         });
     }
 })
+
+userRouter.post("/deactivate", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    const { password } = req.body;
+    const userId = (req as any).userId;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { password: true }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
+            });
+        }
+
+        await prisma.user.delete({
+            where: { id: userId }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Account deactivated successfully"
+        });
+
+    } catch (error) {
+        console.error("Error while deactivating account:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while deactivating account",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
+});

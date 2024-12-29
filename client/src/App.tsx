@@ -11,6 +11,10 @@ import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import ReelsPage from "./pages/ReelsPage";
+import Dashboard from "./admin/pages/Dashboard";
+import SystemLogs from "./admin/pages/Logs";
+import ContentModeration from "./admin/pages/Moderation";
+import UserManagement from "./admin/pages/Users";
 
 const App = () => {
   const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
@@ -20,7 +24,6 @@ const App = () => {
     }
     return <>{children}</>;
   };
-  
 
   return (
     <BrowserRouter>
@@ -28,6 +31,10 @@ const App = () => {
         <Route path="/auth/signup" element={<Signup />} />
         <Route path="/auth/signin" element={<Signin />} />
         <Route path="/auth/verify/:username" element={<VerifyAccount />} />
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/moderation" element={<ContentModeration />} />
+        <Route path="/admin/logs" element={<SystemLogs />} />
         <Route
           element={
             <AuthMiddleware>

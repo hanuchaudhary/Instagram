@@ -1,4 +1,3 @@
-import { MoreHorizontal } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import LikePost from "./LikePost";
 import PostComments from "./PostComments";
@@ -9,9 +8,10 @@ import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { GradientHeartLikeIcon } from "./GradientHeartLikeIcon";
+import ReportShareDialog from "./Report&Share";
+import { ShareType } from "./ShareButton";
 const PostCard = ({ post }: { post: post }) => {
   const { handleLikePost, isPostLiked } = usePostsStore();
-
   const [showHeart, setShowHeart] = useState(false);
 
   const handleDoubleTap = () => {
@@ -21,7 +21,6 @@ const PostCard = ({ post }: { post: post }) => {
       setTimeout(() => setShowHeart(false), 1500);
     }
   };
-
   return (
     <div>
       <Card className="rounded-none border-t-0 border-l-0 border-r-0 border-b pb-4 border-b-neutral-800 w-[350px]  shadow-sm md:w-[468px]">
@@ -35,13 +34,18 @@ const PostCard = ({ post }: { post: post }) => {
               location={post.location}
             />
           </div>
-          <button>
-            <MoreHorizontal className="h-5 w-5" />
-          </button>
+          <ReportShareDialog
+            shareType={ShareType.POST}
+            reportTargetTitle={post.caption}
+            reportType="POST"
+            reportedId={post.User.id}
+            targetId={post.id.toString()}
+          />
         </CardHeader>
         <div className="w-full border rounded-md">
           <CardContent className="p-0 relative cursor-pointer overflow-hidden h-[500px]">
             <div
+              // onClick={() => console.log("clicked")}
               className="w-full h-full aspect-square overflow-hidden"
               onDoubleClick={handleDoubleTap}
             >

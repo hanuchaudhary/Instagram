@@ -9,7 +9,7 @@ const ProfilePage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const { fetchProfile, profile } = useProfileStore();
-  
+
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
@@ -21,6 +21,10 @@ const ProfilePage = () => {
     setSelectedPostId(null);
   };
 
+  useEffect(() => {
+    window.addEventListener("keydown", handleClose);
+    return () => window.removeEventListener("keydown", close);
+  }, []);
 
   return (
     <div className="flex relative flex-col h-full ">

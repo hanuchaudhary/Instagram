@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useReelsStore } from "@/store/ReelsStore/useReelsStore";
 import ReelCard from "@/components/Reel/ReelCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ArrowUp, Film } from "lucide-react";
+import { AlertCircle, Film } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function ReelsPage() {

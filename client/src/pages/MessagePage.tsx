@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import axios from "axios";
 import TypingLoader from "@/components/TypingLoader";
 import { Menu, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
-import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
+import api from "@/config/axios";
+import { useUserStore } from "@/store/AuthHeader/getAuthHeaders";
 
 interface User {
   id: string;
@@ -40,7 +40,8 @@ const MessagePage = () => {
   const WebSocketUrl = "http://localhost:8080";
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const { userId, username, avatar } = getAuthHeaders();
+  const { stateUser } = useUserStore();
+  const userId = stateUser?.id || "";
 
   const isCurrentUserMessage = (message: Message) => {
     return message.senderId === userId;
@@ -58,7 +59,7 @@ const MessagePage = () => {
     const fetchMessages = async () => {
       if (!selectedUser) return;
       try {
-        const res = await axios.get(
+        const res = await api.get(
           `${WebSocketUrl}/api/chat/${userId}/${selectedUser.id}`
         );
         setMessages(res.data);
@@ -130,7 +131,7 @@ const MessagePage = () => {
     }
 
     // Emit typing event with room ID and username
-    socket.emit("typing", { roomId, username: username });
+    socket.emit("typing", { roomId, username: stateUser?.username });
 
     // Set new timeout to emit stop typing
     typingTimeoutRef.current = setTimeout(() => {
@@ -216,7 +217,9 @@ const MessagePage = () => {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold">{user.user.username || "username"}</h3>
+                      <h3 className="font-semibold">
+                        {user.user.username || "username"}
+                      </h3>
                     </div>
                   </div>
                 </div>
@@ -287,18 +290,18 @@ const MessagePage = () => {
                           className="object-cover"
                           src={
                             isCurrentUserMessage(message)
-                              ? avatar
+                              ? stateUser?.avatar
                               : selectedUser.avatar
                           }
                           alt={
                             isCurrentUserMessage(message)
-                              ? username
+                              ? stateUser?.avatar
                               : selectedUser.username
                           }
                         />
                         <AvatarFallback>
                           {isCurrentUserMessage(message)
-                            ? username.charAt(0)
+                            ? stateUser?.username.charAt(0)
                             : selectedUser.username.charAt(0)}
                         </AvatarFallback>
                       </Avatar>

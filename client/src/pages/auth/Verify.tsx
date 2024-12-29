@@ -20,10 +20,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import axios from "axios";
-import { BACKEND_URL } from "@/config/config";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { verifyCodeSchema } from "@hanuchaudhary/instagram";
+import api from "@/config/axios";
 
 export default function VerifyAccount() {
   const { username } = useParams();
@@ -40,7 +40,7 @@ export default function VerifyAccount() {
   async function onSubmit(values: z.infer<typeof verifyCodeSchema>) {
     setIsVerifying(true);
     try {
-      await axios.post(`${BACKEND_URL}/api/v1/user/verify`, {
+      await api.post(`/user/verify`, {
         username,
         verifyCode: values.verifyCode,
       });

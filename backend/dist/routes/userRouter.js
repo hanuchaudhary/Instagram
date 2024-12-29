@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRouter = void 0;
 const express_1 = __importDefault(require("express"));
-const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
@@ -24,8 +23,8 @@ const uploadCloudinary_1 = require("../libs/uploadCloudinary");
 const middleware_1 = __importDefault(require("../middleware"));
 const zod_1 = require("zod");
 const instagram_1 = require("@hanuchaudhary/instagram");
+const prisma_1 = __importDefault(require("../db/prisma"));
 exports.userRouter = express_1.default.Router();
-const prisma = new client_1.PrismaClient();
 exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { fullName, email, username, password } = req.body;
     const validation = instagram_1.signupSchema.safeParse({ fullName, email, username, password });
@@ -43,12 +42,12 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
     try {
-        const existByUsername = yield prisma.user.findFirst({
+        const existByUsername = yield prisma_1.default.user.findFirst({
             where: { username }
         });
         if (existByUsername) {
-            if (!existByUsername.isVerified) {
-                yield prisma.user.delete({
+            if (!existByUsername.isCodeVerified) {
+                yield prisma_1.default.user.delete({
                     where: {
                         id: existByUsername.id
                     }
@@ -62,8 +61,8 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
                 });
             }
         }
-        const existByEmail = yield prisma.user.findFirst({
-            where: { email, isVerified: true }
+        const existByEmail = yield prisma_1.default.user.findFirst({
+            where: { email, isCodeVerified: true }
         });
         if (existByEmail) {
             return res.status(409).json({
@@ -73,13 +72,14 @@ exports.userRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 
         }
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-        const user = yield prisma.user.create({
+        const user = yield prisma_1.default.user.create({
             data: {
                 username,
                 email,
                 fullName,
                 avatar: "",
                 bio: "",
+                role: "user",
                 password: hashedPassword,
                 verifyCode,
                 verifyCodeExpiry: (Date.now() + 3600000).toString(),
@@ -113,7 +113,7 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: { username },
         });
         if (!user) {
@@ -135,10 +135,10 @@ exports.userRouter.post("/verify", (req, res) => __awaiter(void 0, void 0, void 
                 message: "Wrong verification code",
             });
         }
-        yield prisma.user.update({
+        yield prisma_1.default.user.update({
             where: { id: user.id },
             data: {
-                isVerified: true,
+                isCodeVerified: true,
                 verifyCode: "",
                 verifyCodeExpiry: "",
             },
@@ -173,7 +173,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
     try {
-        const user = yield prisma.user.findFirst({
+        const user = yield prisma_1.default.user.findFirst({
             where: {
                 OR: [{ email: credential }, { username: credential }],
             },
@@ -184,7 +184,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
                 message: "User does not exist with this email or username",
             });
         }
-        if (!user.isVerified) {
+        if (!user.isCodeVerified) {
             return res.status(403).json({
                 success: false,
                 message: "User is not verified. Please verify your email address.",
@@ -207,12 +207,15 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
         return res.status(200).json({
             token,
-            fullName: user.fullName,
-            username: user.username,
-            email: user.email,
-            avatar: user.avatar,
-            accountType: user.accountType,
-            id: user.id
+            user: {
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                accountType: user.accountType,
+                role: user.role,
+                id: user.id
+            }
         });
     }
     catch (error) {
@@ -227,7 +230,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
 exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             },
@@ -282,7 +285,7 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
     const { bio, fullName, accountType } = req.body;
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }
@@ -295,7 +298,7 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
         }
         const result = yield (0, uploadCloudinary_1.uploadOnCloudinary)((_a = req.file) === null || _a === void 0 ? void 0 : _a.path, "instagram-clone/avatars", "image");
         const avatarURL = result === null || result === void 0 ? void 0 : result.url;
-        const updateUser = yield prisma.user.update({
+        const updateUser = yield prisma_1.default.user.update({
             where: {
                 id: user.id
             },
@@ -336,7 +339,7 @@ exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(vo
     const { filter } = parsed.data;
     try {
         const userId = req.userId;
-        const myFollowingUsersId = yield prisma.following.findMany({
+        const myFollowingUsersId = yield prisma_1.default.following.findMany({
             where: {
                 userId
             },
@@ -345,7 +348,7 @@ exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(vo
             }
         });
         const followingIds = myFollowingUsersId.map(follow => follow.followId);
-        const users = yield prisma.user.findMany({
+        const users = yield prisma_1.default.user.findMany({
             where: {
                 AND: [
                     { username: { contains: filter, mode: "insensitive" } },
@@ -377,7 +380,7 @@ exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(vo
 exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }
@@ -388,7 +391,7 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
                 message: "unauthorized",
             });
         }
-        const myFollowingUsersId = yield prisma.following.findMany({
+        const myFollowingUsersId = yield prisma_1.default.following.findMany({
             where: {
                 userId
             },
@@ -397,7 +400,7 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
             }
         });
         const followingIds = myFollowingUsersId.map(follow => follow.followId);
-        const suggestedUsers = yield prisma.user.findMany({
+        const suggestedUsers = yield prisma_1.default.user.findMany({
             where: {
                 AND: [
                     { id: { not: userId } },
@@ -441,7 +444,7 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
 exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }
@@ -452,7 +455,7 @@ exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __
                 message: "unauthorized",
             });
         }
-        const following = yield prisma.followers.findMany({
+        const following = yield prisma_1.default.followers.findMany({
             where: {
                 followId: user.id
             },
@@ -466,7 +469,7 @@ exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __
                 }
             }
         });
-        const followers = yield prisma.following.findMany({
+        const followers = yield prisma_1.default.following.findMany({
             where: {
                 followId: user.id,
             },
@@ -498,7 +501,7 @@ exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __
 exports.userRouter.get("/profile/:userId/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, userId } = req.params;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: { username },
             select: {
                 id: true,
@@ -526,7 +529,7 @@ exports.userRouter.get("/profile/:userId/:username", (req, res) => __awaiter(voi
                         },
                     }
                 },
-                isVerified: true,
+                isCodeVerified: true,
                 like: true,
                 _count: {
                     select: {
@@ -580,7 +583,7 @@ exports.userRouter.get("/profile/:userId/:username", (req, res) => __awaiter(voi
 exports.userRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
     try {
-        const post = yield prisma.post.findUnique({
+        const post = yield prisma_1.default.post.findUnique({
             where: {
                 id: parseInt(postId)
             },
@@ -588,6 +591,8 @@ exports.userRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, 
                 comments: {
                     include: {
                         user: true
+                    }, orderBy: {
+                        createdAt: "desc"
                     }
                 },
                 User: {
@@ -628,7 +633,7 @@ exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1
     const { password, currentPassword } = req.body;
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }, select: {
@@ -649,7 +654,7 @@ exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1
             return;
         }
         const newPassword = yield bcrypt_1.default.hash(password, 10);
-        const updatePassword = yield prisma.user.update({
+        const updatePassword = yield prisma_1.default.user.update({
             where: {
                 id: userId
             },
@@ -667,6 +672,44 @@ exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1
         return res.status(500).json({
             success: false,
             message: "An error occurred while updating user details",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        });
+    }
+}));
+exports.userRouter.post("/deactivate", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { password } = req.body;
+    const userId = req.userId;
+    try {
+        const user = yield prisma_1.default.user.findUnique({
+            where: { id: userId },
+            select: { password: true }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: "Incorrect password"
+            });
+        }
+        yield prisma_1.default.user.delete({
+            where: { id: userId }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Account deactivated successfully"
+        });
+    }
+    catch (error) {
+        console.error("Error while deactivating account:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while deactivating account",
             error: error instanceof Error ? error.message : 'An unexpected error occurred'
         });
     }

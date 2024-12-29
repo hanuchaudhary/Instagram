@@ -13,14 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRouter = void 0;
-const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const middleware_1 = __importDefault(require("../middleware"));
 const multerUpload_1 = require("../libs/multerUpload");
 const uploadCloudinary_1 = require("../libs/uploadCloudinary");
+const prisma_1 = __importDefault(require("../db/prisma"));
 exports.postRouter = (0, express_1.Router)();
 exports.postRouter.use(middleware_1.default);
-const prisma = new client_1.PrismaClient();
 exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { caption, location } = req.body;
     const userId = req.userId;
@@ -32,7 +31,7 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
         });
     }
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: { id: userId }
         });
         if (!user) {
@@ -54,7 +53,7 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
             mediaURL = cloudinaryResult === null || cloudinaryResult === void 0 ? void 0 : cloudinaryResult.url;
         }
         const mediaType = file.mimetype.includes("image") ? "image" : "video";
-        const result = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        const result = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             const newPost = yield tx.post.create({
                 data: {
                     caption,
@@ -104,7 +103,7 @@ exports.postRouter.delete("/delete", (req, res) => __awaiter(void 0, void 0, voi
         });
     }
     try {
-        const post = yield prisma.post.delete({
+        const post = yield prisma_1.default.post.delete({
             where: {
                 id: postId
             }
@@ -129,43 +128,6 @@ exports.postRouter.delete("/delete", (req, res) => __awaiter(void 0, void 0, voi
         });
     }
 }));
-exports.postRouter.get("/postComments/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { postId } = req.params;
-    if (!postId) {
-        return res.status(400).json({
-            success: false,
-            message: "Post ID is required"
-        });
-    }
-    try {
-        const comments = yield prisma.comment.findMany({
-            where: {
-                postId: Number(postId)
-            },
-            include: {
-                user: {
-                    select: {
-                        username: true,
-                        avatar: true
-                    }
-                }
-            }
-        });
-        return res.status(200).json({
-            success: true,
-            message: "Bulk comments fetched",
-            comments
-        });
-    }
-    catch (error) {
-        console.error("Error while fetching bulk comments:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error while fetching bulk comments",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-    }
-}));
 exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
     const userId = req.userId;
@@ -176,7 +138,7 @@ exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0,
         });
     }
     try {
-        const post = yield prisma.post.findUnique({
+        const post = yield prisma_1.default.post.findUnique({
             where: {
                 id: parseInt(postId)
             }
@@ -187,7 +149,7 @@ exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0,
                 message: "Post Not found"
             });
         }
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }
@@ -198,14 +160,14 @@ exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0,
                 message: "User Not found"
             });
         }
-        const alreadyLikedPost = yield prisma.like.findFirst({
+        const alreadyLikedPost = yield prisma_1.default.like.findFirst({
             where: {
                 postId: parseInt(postId),
                 userId
             }
         });
         if (alreadyLikedPost) {
-            yield prisma.like.delete({
+            yield prisma_1.default.like.delete({
                 where: {
                     id: alreadyLikedPost.id
                 }
@@ -216,7 +178,7 @@ exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0,
                 isLiked: false
             });
         }
-        const likedPost = yield prisma.like.create({
+        const likedPost = yield prisma_1.default.like.create({
             data: {
                 postId: parseInt(postId),
                 userId
@@ -247,12 +209,12 @@ exports.postRouter.post("/like/:postId", (req, res) => __awaiter(void 0, void 0,
 exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
     try {
-        const likesCount = yield prisma.like.count({
+        const likesCount = yield prisma_1.default.like.count({
             where: {
                 postId: parseInt(postId)
             }
         });
-        const isLiked = yield prisma.like.findFirst({
+        const isLiked = yield prisma_1.default.like.findFirst({
             where: {
                 postId: parseInt(postId),
                 userId: req.userId
@@ -277,7 +239,7 @@ exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, voi
 exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
@@ -286,7 +248,7 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
                 message: "User not found",
             });
         }
-        const followingIds = yield prisma.user.findUnique({
+        const followingIds = yield prisma_1.default.user.findUnique({
             where: { id: userId },
             select: {
                 following: {
@@ -299,7 +261,7 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
         });
         const followedUserIds = (followingIds === null || followingIds === void 0 ? void 0 : followingIds.following.map(follow => follow.followId)) || [];
         const releventUserIds = [...followedUserIds, userId];
-        const posts = yield prisma.post.findMany({
+        const posts = yield prisma_1.default.post.findMany({
             where: {
                 userId: { in: releventUserIds },
             },
@@ -345,7 +307,7 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.postRouter.get("/explore", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const filter = req.query.filter;
-        const posts = yield prisma.post.findMany({
+        const posts = yield prisma_1.default.post.findMany({
             where: {
                 caption: {
                     contains: filter,
@@ -386,7 +348,7 @@ exports.postRouter.delete("/delete/:postId", (req, res) => __awaiter(void 0, voi
     try {
         const userId = req.userId;
         const { postId } = req.params;
-        const user = yield prisma.user.findUnique({
+        const user = yield prisma_1.default.user.findUnique({
             where: {
                 id: userId
             }
@@ -397,7 +359,7 @@ exports.postRouter.delete("/delete/:postId", (req, res) => __awaiter(void 0, voi
                 message: "unAuthorized"
             });
         }
-        yield prisma.post.delete({
+        yield prisma_1.default.post.delete({
             where: {
                 id: Number(postId)
             }

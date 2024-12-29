@@ -20,7 +20,7 @@ export default function HomePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Your Feed</h1>
-      <div className="grid lg:grid-cols-5 md:mx-20">
+      <div className="grid lg:grid-cols-5 gap-4 md:mx-20">
         <div className="lg:col-span-3">
           {isPostLoading && (
             <div className="space-y-4">

@@ -32,14 +32,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { UserType } from "@/types/TypeInterfaces";
-import axios from "axios";
 import { BACKEND_URL } from "@/config/config";
 import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 import { editProfileSchema } from "@hanuchaudhary/instagram";
 import FollowersDrawer from "./FollowersDrawer";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
-import { getAuthHeaders } from "@/store/AuthHeader/getAuthHeaders";
+import { DeactivateAccountDialog } from "../DeactivateAccount";
+import api from "@/config/axios";
 
 export default function ProfileCard() {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ export default function ProfileCard() {
     navigate("/auth/signin");
   };
 
-  const {fetchProfile,profile} = useProfileStore()
+  const { fetchProfile, profile } = useProfileStore();
   const profileData = profile;
   useEffect(() => {
     fetchProfile();
@@ -59,7 +59,11 @@ export default function ProfileCard() {
       <div className="flex gap-5 md:w-96">
         <div className="">
           <Avatar className="h-24 w-24 md:h-32 md:w-32">
-            <AvatarImage className="object-cover" src={profileData.avatar} alt={profileData.fullName} />
+            <AvatarImage
+              className="object-cover"
+              src={profileData.avatar}
+              alt={profileData.fullName}
+            />
             <AvatarFallback className="text-2xl uppercase font-bold">
               <UserCircle className="fill-neutral-400 h-16 w-16 md:h-20 md:w-20 text-neutral-400" />
             </AvatarFallback>
@@ -71,9 +75,10 @@ export default function ProfileCard() {
           </h1>
           <div className="flex gap-2">
             <EditProfile profileData={profileData} />
-            <Button onClick={handleLogout} size="sm" variant="destructive">
+            <Button onClick={handleLogout} size="sm" variant="outline">
               Logout
             </Button>
+            <DeactivateAccountDialog/>
           </div>
         </div>
       </div>
@@ -89,7 +94,7 @@ export default function ProfileCard() {
             <strong className="text-lg md:text-xl">
               {profileData._count.followers}
             </strong>{" "}
-            <FollowersDrawer/>
+            <FollowersDrawer />
           </span>
           <span>
             <strong className="text-lg md:text-xl">
@@ -167,9 +172,8 @@ function EditProfile({ profileData }: { profileData: UserType }) {
 
     setIsLoading(true);
     try {
-      await axios.post(`${BACKEND_URL}/api/v1/user/edit`, formData, {
+      await api.post(`${BACKEND_URL}/user/edit`, formData, {
         headers: {
-          Authorization: getAuthHeaders().Authorization,
           "Content-Type": "multipart/form-data",
         },
       });

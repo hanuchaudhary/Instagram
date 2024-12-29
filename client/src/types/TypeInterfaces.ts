@@ -8,6 +8,8 @@ export enum mediaType {
     video = "video"
 }
 
+export type ReportType = 'POST' | 'USER' | 'COMMENT';
+
 export interface UserType {
     loading?: boolean;
     id?: string;
@@ -18,6 +20,7 @@ export interface UserType {
     avatar?: string;
     bio?: string;
     accountType: AccountType;
+    isAccountVerified?: boolean;
     posts?: PostType[]; // Array of Post objects
     _count: {
         followers: number,
@@ -51,6 +54,10 @@ export interface PostType {
     comments?: CommentType[]; // Array of Comment objects
     likes?: LikeType[]; // Array of Like objects
     createdAt: Date; // Date object
+    _count ?: {
+        likes : number
+        comments : number
+    }
 }
 
 export interface CommentType {
