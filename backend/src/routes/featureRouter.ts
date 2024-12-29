@@ -1,37 +1,42 @@
 import { Request, Response, Router } from 'express'
-import authMiddleware from '../middleware';
+import { authMiddleware } from '../middleware';
 import prisma from '../db/prisma';
 import { reportSchema } from "@hanuchaudhary/instagram"
 
 export const featureRouter = Router();
 featureRouter.use(authMiddleware)
 
-
 featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { toUserId } = req.params;
-    try {
 
+    try {
         const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        })
+            where: { id: userId },
+        });
 
         if (!user) {
-            return res.status(404).json({ success: false, message: "unAuthorized" });
+            return res.status(404).json({ success: false, message: "Unauthorized" });
         }
 
         const otherUser = await prisma.user.findUnique({
-            where: {
-                id: toUserId
-            }, select: {
-                username: true
-            }
-        })
+            where: { id: toUserId },
+            select: { username: true },
+        });
 
         if (!otherUser) {
             return res.status(404).json({ success: false, message: "Other User Not Found" });
+        }
+
+        const existingFollow = await prisma.following.findUnique({
+            where: { userId_followId: { userId, followId: toUserId } },
+        });
+
+        if (existingFollow) {
+            return res.status(400).json({
+                success: false,
+                message: `You are already following ${otherUser.username}`,
+            });
         }
 
         await prisma.$transaction([
@@ -43,11 +48,10 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
             }),
         ]);
 
-
         return res.status(200).json({
-            success: true, message: `${otherUser.username} followed successfully`
+            success: true,
+            message: `${otherUser.username} followed successfully`,
         });
-
     } catch (error) {
         console.error("Error following user:", error);
         return res.status(500).json({
@@ -56,13 +60,13 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }
-})
+});
+
 
 featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
     const { toUserId } = req.params;
     try {
-
         const user = await prisma.user.findUnique({
             where: {
                 id: userId
@@ -281,7 +285,9 @@ featureRouter.get("/comments/:postId", async (req: Request, res: Response): Prom
 })
 
 featureRouter.get("/reels", async (req: Request, res: Response) => {
-    const { skip = 0, take = 10 } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 2;
+
     try {
         const reels = await prisma.post.findMany({
             where: {
@@ -299,8 +305,8 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
             orderBy: {
                 createdAt: 'desc',
             },
-            skip: parseInt(skip as string, 10),
-            take: parseInt(take as string, 10)
+            take: limit,
+            skip: (page - 1) * limit,
         });
 
         res.status(200).json({

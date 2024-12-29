@@ -32,19 +32,20 @@ export const useReelsStore = create<ReelsStore>((set, get) => ({
     hasMore: true,
     page: 1,
     fetchReels: async () => {
-        const { page } = get();
+        const { page, reels } = get();
         set({ isLoading: true, error: null });
         try {
-            const response = await api.get(`/feature/reels?skip=${(page - 1) * 2}&take=10`);
-            const data = response.data;
-            if (data.success) {
-                set((state) => ({
-                    reels: [...state.reels, ...data.reels],
-                    page: state.page + 1,
-                    hasMore: data.reels.length === 2,
-                }));
+            const response = await api.get(`/feature/reels`, {
+                params: {
+                    page,
+                    limit: 2
+                }
+            });
+            const newReels = response.data.reels;
+            if (newReels.length > 0) {
+                set({ reels: [...reels, ...newReels], page: page + 1 });
             } else {
-                set({ error: data.message || 'Failed to fetch reels' });
+                set({ error: 'Failed to fetch reels', hasMore: false });
             }
         } catch (error) {
             set({ error: 'An error occurred while fetching reels' });

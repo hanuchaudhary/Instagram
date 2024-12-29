@@ -20,7 +20,7 @@ require("dotenv/config");
 const sendEmail_1 = require("../libs/sendEmail");
 const multerUpload_1 = require("../libs/multerUpload");
 const uploadCloudinary_1 = require("../libs/uploadCloudinary");
-const middleware_1 = __importDefault(require("../middleware"));
+const middleware_1 = require("../middleware");
 const zod_1 = require("zod");
 const instagram_1 = require("@hanuchaudhary/instagram");
 const prisma_1 = __importDefault(require("../db/prisma"));
@@ -204,7 +204,9 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
                 message: "JWT secret is not configured. Please check the server configuration.",
             });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username }, jwtSecret);
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, username: user.username, role: user.role }, jwtSecret, {
+            expiresIn: "7d",
+        });
         return res.status(200).json({
             token,
             user: {
@@ -227,7 +229,7 @@ exports.userRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 
         });
     }
 }));
-exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.get("/me", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
         const user = yield prisma_1.default.user.findUnique({
@@ -280,7 +282,7 @@ exports.userRouter.get("/me", middleware_1.default, (req, res) => __awaiter(void
         });
     }
 }));
-exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.post("/edit", middleware_1.authMiddleware, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { bio, fullName, accountType } = req.body;
     const userId = req.userId;
@@ -327,7 +329,7 @@ exports.userRouter.post("/edit", middleware_1.default, multerUpload_1.upload.sin
 const filterSchema = zod_1.z.object({
     filter: zod_1.z.string().optional(),
 });
-exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.get("/bulk", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const parsed = filterSchema.safeParse(req.query);
     if (!parsed.success) {
         return res.status(400).json({
@@ -377,7 +379,7 @@ exports.userRouter.get("/bulk", middleware_1.default, (req, res) => __awaiter(vo
         });
     }
 }));
-exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.get("/suggestions", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
         const user = yield prisma_1.default.user.findUnique({
@@ -441,7 +443,7 @@ exports.userRouter.get("/suggestions", middleware_1.default, (req, res) => __awa
         });
     }
 }));
-exports.userRouter.get("/bulk-followers", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.get("/bulk-followers", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     try {
         const user = yield prisma_1.default.user.findUnique({
@@ -629,7 +631,7 @@ exports.userRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, 
         });
     }
 }));
-exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.post("/change-password", middleware_1.authMiddleware, multerUpload_1.upload.single("avatar"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { password, currentPassword } = req.body;
     const userId = req.userId;
     try {
@@ -676,7 +678,7 @@ exports.userRouter.post("/change-password", middleware_1.default, multerUpload_1
         });
     }
 }));
-exports.userRouter.post("/deactivate", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userRouter.post("/deactivate", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { password } = req.body;
     const userId = req.userId;
     try {

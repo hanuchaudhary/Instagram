@@ -4,6 +4,8 @@ import api from "@/config/axios";
 import { useUserStore } from "../AuthHeader/getAuthHeaders";
 
 interface PostStore {
+    hasMore: boolean;
+    page: number;
     isPostLoading: boolean;
     posts: any[];
     fetchPosts: () => void;
@@ -19,17 +21,31 @@ interface PostStore {
 }
 
 export const usePostsStore = create<PostStore>((set, get) => ({
+    page: 1,
+    hasMore: true,
     error: false,
-    isPostLoading: true,
+    isPostLoading: false,
     posts: [],
     singlePost: null,
     fetchPosts: async () => {
         try {
-            const res = await api.get(`/post/bulk`);
-            set({ posts: res.data.posts, isPostLoading: false });
+            const { page, posts } = get();
+            if (!get().hasMore) return;
+            set({ isPostLoading: true });
+
+            const res = await api.get(`/post/bulk`, { params: { page, limit: 5 }, });
+            const newPosts = res.data.posts;
+
+            if (newPosts.length > 0) {
+                set({ posts: [...posts, ...newPosts], page: page + 1, });
+            } else {
+                set({ hasMore: false });
+            }
         } catch (error) {
-            set({ error: true, isPostLoading: false });
+            set({ error: true });
             console.error("Error fetching posts:", error);
+        } finally {
+            set({ isPostLoading: false });
         }
     },
 

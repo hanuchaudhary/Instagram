@@ -1,3 +1,4 @@
+import api from "@/config/axios";
 import { Reel } from "@/store/ReelsStore/useReelsStore";
 import { useState } from "react";
 
@@ -6,22 +7,23 @@ const useFetchReelsStore = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
     const [hasMore, setHasMore] = useState(true);
-    const [skip, setSkip] = useState(0);
+    const [page, setPage] = useState(1);
 
     const fetchReels = async () => {
-        if (isLoading || !hasMore) return;
-
         setIsLoading(true);
         try {
-            const response = await fetch(`/api/reels?skip=${skip}&take=10`);
-            const data = await response.json();
+            const response = await api.get(`/feature/reels`, {
+                params: { page, limit: 2 }
+            });
+            const data = response.data;
+            console.log("data", data);
+            
 
-            if (data.success) {
+            if (data.reels.length > 0) {
                 setReels((prevReels: Reel[]) => [...prevReels, ...data.reels]);
-                setHasMore(data.hasMore); // Determines if there are more reels to fetch
-                setSkip((prevSkip) => prevSkip + 10); // Increment the skip value for pagination
+                setPage((page) => page + 1);
             } else {
-                setError("Failed to load reels");
+                setHasMore(false);
             }
         } catch (err) {
             setError("Failed to load reels");

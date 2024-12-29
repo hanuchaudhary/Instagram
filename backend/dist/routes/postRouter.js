@@ -14,12 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.postRouter = void 0;
 const express_1 = require("express");
-const middleware_1 = __importDefault(require("../middleware"));
+const middleware_1 = require("../middleware");
 const multerUpload_1 = require("../libs/multerUpload");
 const uploadCloudinary_1 = require("../libs/uploadCloudinary");
 const prisma_1 = __importDefault(require("../db/prisma"));
 exports.postRouter = (0, express_1.Router)();
-exports.postRouter.use(middleware_1.default);
+exports.postRouter.use(middleware_1.authMiddleware);
 exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { caption, location } = req.body;
     const userId = req.userId;
@@ -238,6 +238,8 @@ exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, voi
 }));
 exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
     try {
         const user = yield prisma_1.default.user.findUnique({
             where: { id: userId },
@@ -288,6 +290,8 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
                     }
                 }
             },
+            skip: (page - 1) * limit,
+            take: limit,
         });
         return res.status(200).json({
             success: true,

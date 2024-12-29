@@ -1,45 +1,41 @@
-import { useEffect, useRef, useCallback } from "react";
-import { useReelsStore } from "@/store/ReelsStore/useReelsStore";
+import { useEffect, useRef} from "react";
 import ReelCard from "@/components/Reel/ReelCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Film } from "lucide-react";
+import { AlertCircle, Film, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useFetchReelsStore } from "@/hooks/useFetchReelsStore";
 
 export default function ReelsPage() {
-  const { reels, isLoading, error, hasMore, fetchReels } = useReelsStore();
-  const observer = useRef<IntersectionObserver | null>(null);
-
-  const lastReelElementRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          fetchReels();
-        }
-      });
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore, fetchReels]
-  );
+  const { reels, isLoading, error, hasMore, fetchReels } = useFetchReelsStore();
+  const observerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchReels();
   }, []);
 
-  // const scrollToTop = () => {
-  //   console.log("Scroll position:", window.scrollY);
-  //   window.scrollTo({ top: 0, behavior: "smooth" });
-  // };
+  console.log(reels);
+  
+
+  useEffect(() => {
+    if (isLoading) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchReels();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerRef.current) observer.observe(observerRef.current);
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [fetchReels, isLoading, hasMore]);
 
   return (
     <div className="container relative mx-auto px-4 py-8">
-      {/* <div
-        className="fixed md:flex bottom-4 right-4 h-16 w-16 bg-secondary/30 hidden items-center justify-center rounded-full cursor-pointer"
-        onClick={scrollToTop}
-      >
-        <ArrowUp className="h-10 w-10" />
-      </div> */}
       <header className="mb-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Reels</h1>
         <p className="text-muted-foreground">
@@ -68,14 +64,24 @@ export default function ReelsPage() {
 
       {reels.length > 0 && (
         <div className="md:w-96 mx-auto space-y-3">
-          {reels.map((reel, index) => (
-            <div
-              key={reel.id}
-              ref={index === reels.length - 1 ? lastReelElementRef : null}
-            >
+          {reels.map((reel) => (
+            <div key={reel.id}>
               <ReelCard {...reel} />
             </div>
           ))}
+          <div ref={observerRef} />
+          {isLoading && (
+            <div className="flex justify-center mt-4">
+              <Loader2 className="animate-spin" />
+            </div>
+          )}
+          {!hasMore && (
+            <div className="end-message my-4 bg-secondary/30 rounded-xl p-4">
+              <h1 className="text-center text-sm font-semibold text-muted-foreground">
+                No more reels to show
+              </h1>
+            </div>
+          )}
         </div>
       )}
 

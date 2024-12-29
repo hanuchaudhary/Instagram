@@ -14,32 +14,36 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.featureRouter = void 0;
 const express_1 = require("express");
-const middleware_1 = __importDefault(require("../middleware"));
+const middleware_1 = require("../middleware");
 const prisma_1 = __importDefault(require("../db/prisma"));
 const instagram_1 = require("@hanuchaudhary/instagram");
 exports.featureRouter = (0, express_1.Router)();
-exports.featureRouter.use(middleware_1.default);
+exports.featureRouter.use(middleware_1.authMiddleware);
 exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.userId;
     const { toUserId } = req.params;
     try {
         const user = yield prisma_1.default.user.findUnique({
-            where: {
-                id: userId
-            }
+            where: { id: userId },
         });
         if (!user) {
-            return res.status(404).json({ success: false, message: "unAuthorized" });
+            return res.status(404).json({ success: false, message: "Unauthorized" });
         }
         const otherUser = yield prisma_1.default.user.findUnique({
-            where: {
-                id: toUserId
-            }, select: {
-                username: true
-            }
+            where: { id: toUserId },
+            select: { username: true },
         });
         if (!otherUser) {
             return res.status(404).json({ success: false, message: "Other User Not Found" });
+        }
+        const existingFollow = yield prisma_1.default.following.findUnique({
+            where: { userId_followId: { userId, followId: toUserId } },
+        });
+        if (existingFollow) {
+            return res.status(400).json({
+                success: false,
+                message: `You are already following ${otherUser.username}`,
+            });
         }
         yield prisma_1.default.$transaction([
             prisma_1.default.following.create({
@@ -50,7 +54,8 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
             }),
         ]);
         return res.status(200).json({
-            success: true, message: `${otherUser.username} followed successfully`
+            success: true,
+            message: `${otherUser.username} followed successfully`,
         });
     }
     catch (error) {
@@ -260,7 +265,8 @@ exports.featureRouter.get("/comments/:postId", (req, res) => __awaiter(void 0, v
     }
 }));
 exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { skip = 0, take = 10 } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 2;
     try {
         const reels = yield prisma_1.default.post.findMany({
             where: {
@@ -278,8 +284,8 @@ exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void
             orderBy: {
                 createdAt: 'desc',
             },
-            skip: parseInt(skip, 10),
-            take: parseInt(take, 10)
+            take: limit,
+            skip: (page - 1) * limit,
         });
         res.status(200).json({
             success: true,
@@ -297,7 +303,7 @@ exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void
         return;
     }
 }));
-exports.featureRouter.post("/report", middleware_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { success, error } = instagram_1.reportSchema.safeParse(req.body);
     const { reportedId, reason, type, targetId } = req.body;
     const reporterId = req.userId;

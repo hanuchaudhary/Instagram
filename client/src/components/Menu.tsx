@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Menu as MenuIcon, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeProvider";
+import { useAuthStore } from "@/store/AuthHeader/getAuthHeaders";
 
 const Menu = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const Menu = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("auth-store");
+    useAuthStore.getState().clearAuth();
     navigate("/auth/signin");
   };
 

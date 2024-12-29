@@ -254,7 +254,7 @@ const CreatePostPage = () => {
                   src={profile.avatar}
                   alt="@username"
                 />
-                <AvatarFallback>{profile.fullName}</AvatarFallback>
+                <AvatarFallback className="uppercase">{profile.fullName[0]}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col ml-2">
                 <CardTitle className="text-sm font-semibold">

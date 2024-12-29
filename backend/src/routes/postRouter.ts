@@ -1,12 +1,11 @@
 import { Router, Request, Response } from "express";
-import authMiddleware from "../middleware";
+import { authMiddleware } from "../middleware";
 import { upload } from "../libs/multerUpload";
 import { uploadOnCloudinary } from "../libs/uploadCloudinary";
 import prisma from "../db/prisma";
 
 export const postRouter = Router();
 postRouter.use(authMiddleware);
-
 
 postRouter.post("/create", upload.single("media"), async (req: Request, res: Response): Promise<any> => {
     const { caption, location } = req.body;
@@ -260,6 +259,8 @@ postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promis
 
 postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
     const userId = (req as any).userId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 5;
 
     try {
         const user = await prisma.user.findUnique({
@@ -315,6 +316,8 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
                     }
                 }
             },
+            skip: (page - 1) * limit,
+            take: limit,
         });
 
         return res.status(200).json({

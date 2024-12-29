@@ -43,7 +43,6 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
     handleFollow: async (userId: string) => {
         try {
             const res = await api.post(`/feature/follow/${userId}`);
-
             if (res.data.success) {
                 set((state) => ({
                     following: [...state.following, { user: { id: userId, avatar: "", username: "" } }],
@@ -56,7 +55,7 @@ export const useFollowDataStore = create<FollowDataStore>((set) => ({
     },
     handleUnfollow: async (userId: string) => {
         try {
-            const res = await api.post(`/api/v1/feature/unfollow/${userId}`);
+            const res = await api.post(`/feature/unfollow/${userId}`);
 
             if (res.data.success) {
                 set((state) => ({

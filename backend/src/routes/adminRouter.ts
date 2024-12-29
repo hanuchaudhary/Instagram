@@ -1,7 +1,8 @@
 import express from 'express';
 import prisma from '../db/prisma';
+import { adminMiddleware } from '../middleware';
 const adminRouter = express.Router();
-
+adminRouter.use(adminMiddleware);
 // User Management Routes
 adminRouter.get('/users', async (req, res) => {
     try {

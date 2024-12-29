@@ -1,21 +1,43 @@
-import { useEffect } from "react";
-import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import { useEffect, useRef } from "react";
 import PostCard from "@/components/PostCard";
 import SuggestedUsers from "@/components/SuggestedUsers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, UserPlus } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Loader2, UserPlus } from 'lucide-react';
 import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 
 export default function HomePage() {
-  const { posts, fetchPosts, isPostLoading, error } = usePostsStore();
   const { fetchFollowData } = useFollowDataStore();
-
   useEffect(() => {
     fetchFollowData();
-    fetchPosts();
-  }, [fetchPosts, fetchFollowData]);
+  }, [fetchFollowData]);
+  const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore();
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+      fetchPosts(); 
+  }, [fetchPosts]);
+
+  useEffect(() => {
+      if (!hasMore || isPostLoading) return;
+
+      const observer = new IntersectionObserver(
+          (entries) => {
+              if (entries[0].isIntersecting) {
+                  fetchPosts(); 
+              }
+          },
+          { threshold: 1.0 }
+      );
+
+      if (observerRef.current) observer.observe(observerRef.current);
+
+      return () => {
+          if (observerRef.current) observer.unobserve(observerRef.current);
+      };
+  }, [fetchPosts, hasMore, isPostLoading]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -40,7 +62,7 @@ export default function HomePage() {
             </Alert>
           )}
 
-          {!isPostLoading && !error && posts.length === 0 ? (
+          {!isPostLoading  && posts.length === 0 ? (
             <div className="flex flex-col items-center justify-center bg-secondary/30 rounded-xl p-8 text-center">
               <UserPlus className="h-16 w-16 mb-4 text-muted-foreground" />
               <h2 className="text-2xl font-semibold mb-2">No posts yet</h2>
@@ -50,12 +72,25 @@ export default function HomePage() {
               </p>
             </div>
           ) : (
-            <ScrollArea className="">
+            <ScrollArea className=" w-full">
               <div className="space-y-6">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                {posts.map((post, idx) => (
+                  <PostCard key={idx} post={post} />
                 ))}
               </div>
+              <div ref={observerRef} />
+              {isPostLoading && (
+                <div className="flex justify-center mt-4">
+                  <Loader2 className="animate-spin" />
+                </div>
+              )}
+              {!hasMore && (
+                <div className="end-message my-4 bg-secondary/30 rounded-xl p-4">
+                  <h1 className="text-center text-sm font-semibold text-muted-foreground">
+                    No more posts to show
+                  </h1>
+                </div>
+              )}
             </ScrollArea>
           )}
         </div>
@@ -67,3 +102,4 @@ export default function HomePage() {
     </div>
   );
 }
+

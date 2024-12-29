@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { UserType } from '../types/UserTypes';
@@ -6,7 +6,7 @@ import 'dotenv/config';
 import { sendEmail } from '../libs/sendEmail';
 import { upload } from '../libs/multerUpload';
 import { uploadOnCloudinary } from '../libs/uploadCloudinary';
-import authMiddleware from '../middleware';
+import { authMiddleware } from '../middleware';
 import { z } from 'zod';
 import { signupSchema, signinSchema, verifyCodeSchema } from '@hanuchaudhary/instagram'
 import prisma from '../db/prisma';
@@ -218,8 +218,10 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, username: user.username },
-            jwtSecret
+            { id: user.id, email: user.email, username: user.username, role: user.role },
+            jwtSecret, {
+            expiresIn: "7d",
+        }
         );
 
         return res.status(200).json({
