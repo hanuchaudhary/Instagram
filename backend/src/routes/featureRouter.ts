@@ -1,13 +1,14 @@
 import { Request, Response, Router } from 'express'
-import { authMiddleware } from '../middleware';
-import prisma from '../db/prisma';
 import { reportSchema } from "@hanuchaudhary/instagram"
+import { prisma } from '../database/PrismaClient';
+import { authMiddleware } from '../middleware';
+
 
 export const featureRouter = Router();
 featureRouter.use(authMiddleware)
 
 featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     const { toUserId } = req.params;
 
     try {
@@ -64,7 +65,7 @@ featureRouter.post("/follow/:toUserId", async (req: Request, res: Response): Pro
 
 
 featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     const { toUserId } = req.params;
     try {
         const user = await prisma.user.findUnique({
@@ -115,7 +116,7 @@ featureRouter.post("/unfollow/:toUserId", async (req: Request, res: Response): P
 })
 
 featureRouter.post("/like-post/:postId", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     const { postId } = req.params;
     try {
         const user = await prisma.user.findUnique({
@@ -186,7 +187,7 @@ featureRouter.post("/like-post/:postId", async (req: Request, res: Response): Pr
 })
 
 featureRouter.post("/comment/:postId", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     const { postId } = req.params;
     const { comment } = req.body;
 
@@ -325,6 +326,70 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
     }
 });
 
+featureRouter.get("/chat-users", authMiddleware, async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    try {
+        const chatUsers = await prisma.user.findMany({
+            where: {
+                OR: [
+                    { followers: { some: { userId } } },
+                    { following: { some: { followId: userId } } },
+                ]
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            chatUsers
+        })
+        return;
+
+    } catch (error) {
+        console.error("Error fetching chat users:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching chat users",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+
+});
+
+featureRouter.get("/messages/:toUserId", authMiddleware, async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const { toUserId } = req.params;
+
+    try {
+        const messages = await prisma.message.findMany({
+            where: {
+                OR: [
+                    { senderId: userId, receiverId: toUserId },
+                    { senderId: toUserId, receiverId: userId }
+                ],
+            },
+            orderBy: {
+                createdAt: 'asc'
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            messages
+        })
+        return;
+
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching messages",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+});
+
 featureRouter.post("/report", authMiddleware, async (req: Request, res: Response) => {
     const { success, error } = reportSchema.safeParse(req.body)
     const { reportedId, reason, type, targetId } = req.body;
@@ -389,3 +454,5 @@ featureRouter.post("/report", authMiddleware, async (req: Request, res: Response
         return;
     }
 });
+
+

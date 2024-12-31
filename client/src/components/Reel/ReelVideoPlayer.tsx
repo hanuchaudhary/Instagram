@@ -10,7 +10,7 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [playerState, setPlayerState] = useState({
     isPlaying: false,
-    isMuted: false,
+    isMuted: true,
     showControls: false,
   });
 

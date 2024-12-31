@@ -1,4 +1,5 @@
 import api from '@/config/axios';
+import { toast } from 'sonner';
 import { create } from 'zustand';
 
 
@@ -55,7 +56,11 @@ export interface PostType {
 interface ProfileStore {
     profile: UserType;
     fetchProfile: () => void;
+
     deleteProfilePost: (postId: number) => void;
+
+    isUpdatingProfile: boolean;
+    updateProfile: (profileData: any) => void;
 }
 
 export const useProfileStore = create<ProfileStore>((set) => ({
@@ -79,11 +84,26 @@ export const useProfileStore = create<ProfileStore>((set) => ({
         } catch (error) {
             console.error("Error deleting post:", error);
         }
+    },
+
+    isUpdatingProfile: false,
+    updateProfile: async (profileData) => {
+        try {
+            set({ isUpdatingProfile: true });
+            const res = await api.post(`/user/edit`, profileData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+            const data = res.data
+            toast.success(res.data.message || "Profile updated successfully");
+            set((state) => ({ profile: { ...state.profile, bio: data.updatedUser.bio, avatar: data.updatedUser.avatar, fullName: data.updatedUser.fullName } }));
+        } catch (error: any) {
+            toast.error(error.response.data.message || "Error updating profile");
+            console.error("Error updating profile:", error);
+        }finally {
+            set({ isUpdatingProfile: false });
+        }
     }
 }));
 
-export const useLoggedUserId = () => {
-    const LocalId = localStorage.getItem('user');
-    const userId = useProfileStore((state) => state.profile.id) || JSON.parse(LocalId || '{}').id;
-    return userId;
-}

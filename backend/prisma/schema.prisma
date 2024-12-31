@@ -70,6 +70,7 @@ model User {
 model Message {
   id         Int      @id @unique @default(autoincrement())
   message    String
+  image      String?
   senderId   String
   receiverId String
   sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)

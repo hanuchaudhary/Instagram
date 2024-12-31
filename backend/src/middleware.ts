@@ -1,12 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-interface CustomRequest extends Request {
-    userId?: string;
-    userRole?: string;
-}
 
-const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
+const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const headerPayload = req.headers.authorization;
     if (!headerPayload || !headerPayload.startsWith("Bearer ")) {
         res.status(401).json({
@@ -28,7 +24,7 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
-        req.userId = decoded.id;
+        req.user = decoded.user;
         next();
     } catch (error) {
         console.error("Token verification failed:", error);
@@ -41,7 +37,7 @@ const authMiddleware = (req: CustomRequest, res: Response, next: NextFunction): 
     }
 };
 
-const adminMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
+const adminMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const headerPayload = req.headers.authorization;
     if (!headerPayload || !headerPayload.startsWith("Bearer ")) {
         res.status(401).json({
@@ -63,9 +59,9 @@ const adminMiddleware = (req: CustomRequest, res: Response, next: NextFunction):
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
-        req.userRole = decoded.role;
+        req.user.role = decoded.role;
 
-        if (req.userRole !== "admin") {
+        if (req.user.role !== "admin") {
             res.status(403).json({
                 success: false,
                 message: "Forbidden: You do not have admin privileges",

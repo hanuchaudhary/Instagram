@@ -15,7 +15,7 @@ const PostCard = ({ post }: { post: post }) => {
   const [showHeart, setShowHeart] = useState(false);
 
   const handleDoubleTap = () => {
-    if (!isPostLiked(post.id.toString(), post.User.id)) {
+    if (!isPostLiked(post.id.toString())) {
       handleLikePost(post.id.toString());
       setShowHeart(true);
       setTimeout(() => setShowHeart(false), 1500);

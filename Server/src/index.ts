@@ -1,12 +1,14 @@
 import http from 'http'
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { Server } from 'socket.io'
-import { PrismaClient } from '../../backend/node_modules/prisma/prisma-client'
 import cors from 'cors'
+import { PrismaClient } from '../../Shared/node_modules/@prisma/client';
+const prisma = new PrismaClient()
 
 const PORT = 8080
 const app = express()
 const server = http.createServer(app)
+
 const io = new Server(server, {
   pingTimeout: 60000,
   cors: {
@@ -16,130 +18,95 @@ const io = new Server(server, {
   }
 })
 
-const prisma = new PrismaClient()
-const onlineUsers = new Map()
-
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? process.env.CLIENT_URL : "*",
+  origin: "*",
   credentials: true
 }))
 app.use(express.json())
 
+const onlineUsers = {} as { [key: string]: string };
+
+const getRecieversSocketId = (userId: string) => {
+  return onlineUsers[userId];
+}
+
 io.on('connection', (socket) => {
-  socket.on("roomId", (roomId: string) => {
-    // Leave previous rooms
-    socket.rooms.forEach(room => {
-      if (room !== socket.id) {
-        socket.leave(room)
-      }
-    })
-    // Join new room
-    socket.join(roomId)
-    console.log(`User ${socket.id} joined room: ${roomId}`)
-  })
+  console.log("UserConnected " + socket.id);
 
-  socket.on("user online", (userId: string) => {
-    onlineUsers.set(userId, socket.id)
-    io.emit("user status", { userId, status: 'online' })
-  })
-
-  socket.on("send message", async (data: {
-    message: string,
-    senderId: string,
-    receiverId: string,
-    roomId: string
-  }) => {
-    try {
-      const { message, senderId, receiverId, roomId } = data
-      const result = await prisma.message.create({
-        data: {
-          message, receiverId, senderId
-        }
-      })
-
-      io.to(roomId).emit("receive message", {
-        id: result.id,
-        message,
-        senderId,
-        receiverId,
-        createdAt: result.createdAt
-      })
-
-    } catch (error) {
-      console.error("Error saving message:", error)
-      socket.emit("error", "Failed to send message")
-    }
-  })
-
-  socket.on("typing", (data: { roomId: string, username: string }) => {
-    socket.to(data.roomId).emit("typing", data.username)
-  })
-
-  socket.on("stopTyping", (roomId: string) => {
-    socket.to(roomId).emit("stopTyping")
-  })
-
-  socket.on("online", (userId: string) => {
-    socket.to(userId).emit("online")
-  })
+  const userId = socket.handshake.query.userId as string | undefined;
+  onlineUsers[userId as string] = socket.id;
+  io.emit("getOnlineUsers", Object.keys(onlineUsers));
 
   socket.on("disconnect", () => {
-    for (const [userId, socketId] of onlineUsers.entries()) {
-      if (socketId === socket.id) {
-        onlineUsers.delete(userId)
-        io.emit("user status", { userId, status: 'offline' })
-        break
-      }
-    }
-    console.log("User disconnected:", socket.id)
-  })
-})
+    console.log("UserDisconnected " + socket.id);
+    delete onlineUsers[userId as string];
+  });
+});
 
-// API Route
-app.get("/api/chat/:senderId/:receiverId", async (req, res) => {
-  const { senderId, receiverId } = req.params
+
+app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Promise<any> => {
+  const { userId, toUserId } = req.params;
+  const { message } = req.body;
 
   try {
-    const messages = await prisma.message.findMany({
+    const user = await prisma.user.findUnique({
       where: {
-        OR: [
-          { senderId, receiverId },
-          { senderId: receiverId, receiverId: senderId }
-        ]
-      },
-      orderBy: { createdAt: 'asc' },
-      take: 50,
-      select: {
-        id: true,
-        message: true,
-        senderId: true,
-        receiverId: true,
-        createdAt: true
+        id: userId
       }
     })
-    res.status(200).json(messages)
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    const otherUser = await prisma.user.findUnique({
+      where: {
+        id: toUserId
+      }
+    })
+
+    if (!otherUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Receiver not found"
+      });
+    }
+
+    const newMessage = await prisma.message.create({
+      data: {
+        senderId: userId,
+        receiverId: toUserId,
+        message,
+      }
+    })
+
+    const recieversSocketId = getRecieversSocketId(toUserId);
+    if (recieversSocketId) {
+      io.to(recieversSocketId).emit("newMessage", newMessage);
+      console.log("Message sent to user: ", toUserId);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Message sent successfully",
+      newMessage
+    })
+    return;
+
   } catch (error) {
-    console.error("Error fetching messages:", error)
-    res.status(500).json({ error: "Failed to fetch messages" })
+    console.error("Error sending message:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error while sending message",
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+    });
+    return;
   }
-})
+});
 
-// Get online status
-app.get("/api/users/status/:userId", (req, res) => {
-  const { userId } = req.params
-  const isOnline = onlineUsers.has(userId)
-  res.json({ online: isOnline })
-})
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received. Closing HTTP server and Prisma Client...')
-  await prisma.$disconnect()
-  server.close(() => {
-    console.log('HTTP server closed')
-    process.exit(0)
-  })
-})
 
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`)

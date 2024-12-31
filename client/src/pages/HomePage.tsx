@@ -15,7 +15,6 @@ export default function HomePage() {
   }, [fetchFollowData]);
   const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore();
   const observerRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
       fetchPosts(); 
   }, [fetchPosts]);

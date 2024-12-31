@@ -1,6 +1,7 @@
 import express from 'express';
-import prisma from '../db/prisma';
+import { prisma } from '../database/PrismaClient';
 import { adminMiddleware } from '../middleware';
+
 const adminRouter = express.Router();
 adminRouter.use(adminMiddleware);
 // User Management Routes

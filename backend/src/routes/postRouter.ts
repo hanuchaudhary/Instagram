@@ -1,15 +1,16 @@
 import { Router, Request, Response } from "express";
-import { authMiddleware } from "../middleware";
 import { upload } from "../libs/multerUpload";
 import { uploadOnCloudinary } from "../libs/uploadCloudinary";
-import prisma from "../db/prisma";
+import {prisma} from '../database/PrismaClient';
+import { authMiddleware } from "../middleware";
+
 
 export const postRouter = Router();
 postRouter.use(authMiddleware);
 
 postRouter.post("/create", upload.single("media"), async (req: Request, res: Response): Promise<any> => {
     const { caption, location } = req.body;
-    const userId = (req as any).userId;
+    const userId = req.user.id;
 
     const file = req.file as Express.Multer.File;
 
@@ -137,7 +138,7 @@ postRouter.delete("/delete", async (req: Request, res: Response): Promise<any> =
 
 postRouter.post("/like/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.user.id;
 
     if (!postId) {
         return res.status(400).json({
@@ -258,7 +259,7 @@ postRouter.get("/postLikes/:postId", async (req: Request, res: Response): Promis
 })
 
 postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 5;
 
@@ -381,7 +382,7 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
 
 postRouter.delete("/delete/:postId", async (req: Request, res: Response): Promise<any> => {
     try {
-        const userId = (req as any).userId;
+        const userId = req.user.id;
         const { postId } = req.params;
 
         const user = await prisma.user.findUnique({

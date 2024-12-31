@@ -15,16 +15,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Facebook } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { signinSchema } from "@hanuchaudhary/instagram";
-import api from "@/config/axios";
-import axios from "axios";
-import { useAuthStore } from "@/store/AuthHeader/getAuthHeaders";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 const Signin = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const {signin,isSigningIn} = useAuthStore();
 
   const togglePasswordVisibility = () => {
     setPasswordVisibility((prev) => !prev);
@@ -38,31 +35,8 @@ const Signin = () => {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof signinSchema>) {
-    setIsLoading(true);
-    try {
-      const response = await api.post(`/user/signin`, {
-        ...values,
-      });
-      const { token, user } = response.data;
-      const { fullName } = user;
-      localStorage.setItem("token", "Bearer " + token);
-      localStorage.setItem("user", JSON.stringify(user));
-      useAuthStore.getState().setAuth("Bearer " + token, user);
-
-      toast.success(`Welcome! ${fullName}`);
-      navigate(`/`, { replace: true });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorMessage =
-          error.response.data.message || "An error occurred during sign-in.";
-        toast.error(errorMessage);
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  function onSubmit(values: z.infer<typeof signinSchema>) {
+      signin(values, navigate);
   }
 
   return (
@@ -165,9 +139,9 @@ const Signin = () => {
                   variant={"blue"}
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isSigningIn}
                 >
-                  {isLoading ? "Signing in..." : "Sign in"}
+                  {isSigningIn ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
             </Form>

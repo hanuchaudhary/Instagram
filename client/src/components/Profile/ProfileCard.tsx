@@ -32,15 +32,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { UserType } from "@/types/TypeInterfaces";
-import { BACKEND_URL } from "@/config/config";
 import { Badge } from "../ui/badge";
 import { toast } from "sonner";
 import { editProfileSchema } from "@hanuchaudhary/instagram";
 import FollowersDrawer from "./FollowersDrawer";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { DeactivateAccountDialog } from "../DeactivateAccount";
-import api from "@/config/axios";
-
 export default function ProfileCard() {
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -78,7 +75,7 @@ export default function ProfileCard() {
             <Button onClick={handleLogout} size="sm" variant="outline">
               Logout
             </Button>
-            <DeactivateAccountDialog/>
+            <DeactivateAccountDialog />
           </div>
         </div>
       </div>
@@ -134,7 +131,7 @@ function EditProfile({ profileData }: { profileData: UserType }) {
   const [closeDialog, setCloseDialog] = useState(false);
   const [imagePreview, setImagePreview] = useState(profileData.avatar);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { isUpdatingProfile, updateProfile } = useProfileStore();
   const form = useForm({
     resolver: zodResolver(editProfileSchema),
     defaultValues: {
@@ -169,23 +166,8 @@ function EditProfile({ profileData }: { profileData: UserType }) {
       toast.error("No changes to update");
       return;
     }
-
-    setIsLoading(true);
-    try {
-      await api.post(`${BACKEND_URL}/user/edit`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      toast.success("Profile Edited Successfully");
-      setCloseDialog(false);
-    } catch (error) {
-      toast.error("Error while updating profile");
-      console.error("Error updating profile:", error);
-      setCloseDialog(true);
-    } finally {
-      setIsLoading(false);
-    }
+    await updateProfile(formData);
+    setCloseDialog(false);
   }
 
   return (
@@ -291,7 +273,7 @@ function EditProfile({ profileData }: { profileData: UserType }) {
               )}
             />
             <div className="flex justify-end gap-4">
-              <Button disabled={isLoading} type="submit">
+              <Button disabled={isUpdatingProfile} type="submit">
                 {form.formState.isSubmitting && (
                   <Loader2 className="animate-spin" />
                 )}

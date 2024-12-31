@@ -5,7 +5,7 @@ import VerifyAccount from "./pages/auth/Verify";
 import AppLayout from "./pages/AppLayout";
 import HomePage from "./pages/HomePage";
 import ExplorePage from "./pages/ExplorePage";
-import MessagesPage from "./pages/MessagePage";
+import ChatPage from "./pages/ChatPage";
 import CreatePostPage from "./pages/CreatePostPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
@@ -16,15 +16,14 @@ import SystemLogs from "./admin/pages/Logs";
 import ContentModeration from "./admin/pages/Moderation";
 import UserManagement from "./admin/pages/Users";
 import { jwtDecode } from "jwt-decode";
+import { useAuthStore } from "./store/AuthStore/useAuthStore";
+import { useEffect } from "react";
 
 const App = () => {
-  const AuthMiddleware = ({ children }: { children: React.ReactNode }) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      return <Navigate to="/auth/signin" replace />;
-    }
-    return <>{children}</>;
-  };
+  const { authUser, checkAuth } = useAuthStore();
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
   const AdminMiddleware = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem("token");
@@ -41,8 +40,15 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/auth/signup" element={<Signup />} />
-        <Route path="/auth/signin" element={<Signin />} />
+        <Route
+          path="/auth/signup"
+          element={!authUser ? <Signup /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/auth/signin"
+          element={!authUser ? <Signin /> : <Navigate to="/" />}
+        />
+
         <Route path="/auth/verify/:username" element={<VerifyAccount />} />
         <Route
           path="/admin"
@@ -57,14 +63,12 @@ const App = () => {
         <Route path="/admin/logs" element={<SystemLogs />} />
         <Route
           element={
-            <AuthMiddleware>
-              <AppLayout />
-            </AuthMiddleware>
+            authUser ? <AppLayout /> : <Navigate to="/auth/signin" replace />
           }
         >
           <Route path="/" element={<HomePage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route path="messages" element={<MessagesPage />} />
+          <Route path="messages" element={<ChatPage />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="create" element={<CreatePostPage />} />
           <Route path="profile" element={<ProfilePage />} />

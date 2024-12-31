@@ -1,7 +1,7 @@
 import { searchUser } from "@/store/Explore&Search/useSearchUserStore";
 import FollowUser from "./FollowUser";
 import MiniProfile from "./Profile/MiniProfile";
-import { useUserStore } from "@/store/AuthHeader/getAuthHeaders";
+import { useUserStore } from "@/store/AuthStore/useAuthStore";
 
 const UserTile = ({ user }: { user: searchUser }) => {
   const { stateUser } = useUserStore();

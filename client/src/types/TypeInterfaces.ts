@@ -31,6 +31,15 @@ export interface UserType {
     updatedAt?: Date; // Date object
 }
 
+export interface MessageType {
+    id: number;
+    senderId: string;
+    receiverId: string;
+    message: string;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
 export interface FollowersType {
     id: string; // UUID string
     userId: string; // UUID string
@@ -54,9 +63,9 @@ export interface PostType {
     comments?: CommentType[]; // Array of Comment objects
     likes?: LikeType[]; // Array of Like objects
     createdAt: Date; // Date object
-    _count ?: {
-        likes : number
-        comments : number
+    _count?: {
+        likes: number
+        comments: number
     }
 }
 

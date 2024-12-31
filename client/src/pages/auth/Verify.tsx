@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,16 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 import { verifyCodeSchema } from "@hanuchaudhary/instagram";
-import api from "@/config/axios";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 export default function VerifyAccount() {
-  const { username } = useParams();
   const navigate = useNavigate();
-  const [isVerifying, setIsVerifying] = useState(false);
+  const { isVerifying, verify } = useAuthStore();
+  const { username } = useParams();
 
   const form = useForm<z.infer<typeof verifyCodeSchema>>({
     resolver: zodResolver(verifyCodeSchema),
@@ -38,25 +35,7 @@ export default function VerifyAccount() {
   });
 
   async function onSubmit(values: z.infer<typeof verifyCodeSchema>) {
-    setIsVerifying(true);
-    try {
-      await api.post(`/user/verify`, {
-        username,
-        verifyCode: values.verifyCode,
-      });
-      toast.success("Account Verified Successfully!");
-      navigate("/auth/signin", { replace: true });
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorMessage =
-          error.response.data.message || "An error occurred during signup";
-        toast.error(errorMessage);
-        console.log(error.response.data);
-        
-      }
-    } finally {
-      setIsVerifying(false);
-    }
+    verify(values, navigate, username as string);
   }
 
   return (

@@ -2,7 +2,7 @@ import api from "@/config/axios";
 import { comment } from "@/types/PostTypes";
 import { toast } from "sonner";
 import { create } from "zustand";
-import { useUserStore } from "../AuthHeader/getAuthHeaders";
+import { useAuthStore } from "../AuthStore/useAuthStore";
 
 interface CommentStore {
     comments: comment[];
@@ -24,7 +24,7 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     },
     postComment: async (postId: number, comment: string) => {
         try {
-            const stateUser = useUserStore.getState().stateUser;
+            const { authUser } = useAuthStore()
             await api.post(`/feature/comment/${postId}`, { comment: comment, });
             toast.success("Comment posted successfully");
             const updatedComments = [{
@@ -32,9 +32,9 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
                 comment: comment,
                 createdAt: new Date().toISOString(),
                 user: {
-                    id: stateUser?.id!,
-                    username: stateUser?.username!,
-                    avatar: stateUser?.avatar!,
+                    id: authUser?.id!,
+                    username: authUser?.username!,
+                    avatar: authUser?.avatar!,
                 },
             }, ...get().comments];
             set({ comments: updatedComments });

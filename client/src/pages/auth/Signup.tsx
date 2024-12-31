@@ -15,16 +15,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Facebook } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "sonner";
-import { BACKEND_URL } from "@/config/config";
 import { signupSchema } from "@hanuchaudhary/instagram";
-import api from "@/config/axios";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 export default function Component() {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
   const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const { isSigningUp, signup } = useAuthStore();
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setPasswordVisibility((prev) => !prev);
@@ -40,25 +37,8 @@ export default function Component() {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof signupSchema>) {
-    setIsLoading(true);
-    try {
-      const response = await api.post(`/user/signup`, {
-        ...values,
-      });
-      toast.success(`Welcome, ${response.data.username}! Your account has been successfully created.`);
-      navigate(`/auth/verify/${response.data.username}`);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorMessage =
-          error.response.data.message || "An error occurred during signup";
-        toast.error(errorMessage);
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+  function onSubmit(values: z.infer<typeof signupSchema>) {
+    signup(values, navigate);
   }
 
   return (
@@ -185,9 +165,9 @@ export default function Component() {
                   variant="blue"
                   type="submit"
                   className="w-full"
-                  disabled={isLoading}
+                  disabled={isSigningUp}
                 >
-                  {isLoading ? "Signing up..." : "Sign up"}
+                  {isSigningUp ? "Signing up..." : "Sign up"}
                 </Button>
               </form>
             </Form>

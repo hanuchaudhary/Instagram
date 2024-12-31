@@ -6,10 +6,10 @@ import 'dotenv/config';
 import { sendEmail } from '../libs/sendEmail';
 import { upload } from '../libs/multerUpload';
 import { uploadOnCloudinary } from '../libs/uploadCloudinary';
-import { authMiddleware } from '../middleware';
 import { z } from 'zod';
 import { signupSchema, signinSchema, verifyCodeSchema } from '@hanuchaudhary/instagram'
-import prisma from '../db/prisma';
+import { prisma } from '../database/PrismaClient';
+import { authMiddleware } from '../middleware';
 
 export const userRouter = express.Router();
 
@@ -162,6 +162,22 @@ userRouter.post("/verify", async (req: Request, res: Response): Promise<any> => 
     }
 });
 
+userRouter.get("/auth/check", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    try {
+        return res.status(200).json({
+            user: req.user,
+            message: "User is authenticated",
+        });
+    } catch (error) {
+        console.error("Error checking user authentication:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while checking user authentication",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+});
+
 userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => {
     const { credential, password } = req.body;
 
@@ -209,6 +225,13 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
             });
         }
 
+        const UserPayload = {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            role: user.role
+        }
+
         const jwtSecret = process.env.JWT_SECRET;
         if (!jwtSecret) {
             return res.status(500).json({
@@ -218,7 +241,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
         }
 
         const token = jwt.sign(
-            { id: user.id, email: user.email, username: user.username, role: user.role },
+            { user: UserPayload },
             jwtSecret, {
             expiresIn: "7d",
         }
@@ -248,7 +271,7 @@ userRouter.post("/signin", async (req: Request, res: Response): Promise<any> => 
 });
 
 userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId
+    const userId = req.user.id;
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -305,7 +328,7 @@ userRouter.get("/me", authMiddleware, async (req: Request, res: Response): Promi
 
 userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
     const { bio, fullName, accountType } = req.body;
-    const userId = (req as any).userId;
+    const userId = req.user.id
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -331,6 +354,11 @@ userRouter.post("/edit", authMiddleware, upload.single("avatar"), async (req: Re
                 avatar: avatarURL,
                 fullName,
                 accountType
+            }, select: {
+                bio: true,
+                avatar: true,
+                fullName: true,
+                accountType: true
             }
         })
 
@@ -367,7 +395,7 @@ userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Pro
     const { filter } = parsed.data;
 
     try {
-        const userId = (req as any).userId;
+        const userId = req.user.id;
 
         const myFollowingUsersId = await prisma.following.findMany({
             where: {
@@ -415,7 +443,7 @@ userRouter.get("/bulk", authMiddleware, async (req: Request, res: Response): Pro
 });
 
 userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -489,7 +517,7 @@ userRouter.get("/suggestions", authMiddleware, async (req: Request, res: Respons
 })
 
 userRouter.get("/bulk-followers", authMiddleware, async (req: Request, res: Response): Promise<any> => {
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     try {
         const user = await prisma.user.findUnique({
             where: {
@@ -691,7 +719,7 @@ userRouter.get("/post/:postId", async (req: Request, res: Response): Promise<any
 
 userRouter.post("/change-password", authMiddleware, upload.single("avatar"), async (req: Request, res: Response): Promise<any> => {
     const { password, currentPassword } = req.body;
-    const userId = (req as any).userId;
+    const userId = req.user.id;
     try {
 
         const user = await prisma.user.findUnique({
@@ -745,7 +773,7 @@ userRouter.post("/change-password", authMiddleware, upload.single("avatar"), asy
 
 userRouter.post("/deactivate", authMiddleware, async (req: Request, res: Response): Promise<any> => {
     const { password } = req.body;
-    const userId = (req as any).userId;
+    const userId = req.user.id;
 
     try {
         const user = await prisma.user.findUnique({

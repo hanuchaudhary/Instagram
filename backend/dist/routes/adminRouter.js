@@ -13,14 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const prisma_1 = __importDefault(require("../db/prisma"));
+const PrismaClient_1 = require("../database/PrismaClient");
 const middleware_1 = require("../middleware");
 const adminRouter = express_1.default.Router();
 adminRouter.use(middleware_1.adminMiddleware);
 // User Management Routes
 adminRouter.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const users = yield prisma_1.default.user.findMany({
+        const users = yield PrismaClient_1.prisma.user.findMany({
             select: {
                 id: true,
                 username: true,
@@ -42,7 +42,7 @@ adminRouter.put('/users/:id/status', (req, res) => __awaiter(void 0, void 0, voi
     const { id } = req.params;
     const { status } = req.body;
     try {
-        const updatedUser = yield prisma_1.default.user.update({
+        const updatedUser = yield PrismaClient_1.prisma.user.update({
             where: { id },
             data: { accountType: status },
         });
@@ -57,7 +57,7 @@ adminRouter.put('/users/:id/verify', (req, res) => __awaiter(void 0, void 0, voi
     const { id } = req.params;
     const { isVerified } = req.body;
     try {
-        const updatedUser = yield prisma_1.default.user.update({
+        const updatedUser = yield PrismaClient_1.prisma.user.update({
             where: { id },
             data: { isVerifiedAccount: isVerified },
         });
@@ -71,7 +71,7 @@ adminRouter.put('/users/:id/verify', (req, res) => __awaiter(void 0, void 0, voi
 // Content Moderation Routes
 adminRouter.get('/posts', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const posts = yield prisma_1.default.post.findMany({
+        const posts = yield PrismaClient_1.prisma.post.findMany({
             include: {
                 User: {
                     select: {
@@ -90,7 +90,7 @@ adminRouter.get('/posts', (req, res) => __awaiter(void 0, void 0, void 0, functi
 adminRouter.delete('/posts/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        yield prisma_1.default.post.delete({
+        yield PrismaClient_1.prisma.post.delete({
             where: { id: parseInt(id) },
         });
         res.json({ message: 'Post deleted successfully' });
@@ -104,7 +104,7 @@ adminRouter.get('/reports', (req, res) => __awaiter(void 0, void 0, void 0, func
     // Assuming you have a Report model, which isn't in the provided schema
     // You might want to add this to your Prisma schema
     try {
-        const reports = yield prisma_1.default.report.findMany({
+        const reports = yield PrismaClient_1.prisma.report.findMany({
             include: {
                 reporter: {
                     select: {
@@ -128,7 +128,7 @@ adminRouter.get('/reports', (req, res) => __awaiter(void 0, void 0, void 0, func
 adminRouter.put('/reports/:id/resolve', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
-        const updatedReport = yield prisma_1.default.report.update({
+        const updatedReport = yield PrismaClient_1.prisma.report.update({
             where: { id: parseInt(id) },
             data: { status: 'RESOLVED' },
         });
@@ -143,7 +143,7 @@ adminRouter.get('/logs', (req, res) => __awaiter(void 0, void 0, void 0, functio
     // Assuming you have a Log model, which isn't in the provided schema
     // You might want to add this to your Prisma schema
     try {
-        const logs = yield prisma_1.default.log.findMany({
+        const logs = yield PrismaClient_1.prisma.log.findMany({
             orderBy: {
                 createdAt: 'desc',
             },

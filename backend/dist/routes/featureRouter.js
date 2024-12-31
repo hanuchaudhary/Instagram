@@ -8,35 +8,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.featureRouter = void 0;
 const express_1 = require("express");
-const middleware_1 = require("../middleware");
-const prisma_1 = __importDefault(require("../db/prisma"));
 const instagram_1 = require("@hanuchaudhary/instagram");
+const PrismaClient_1 = require("../database/PrismaClient");
+const middleware_1 = require("../middleware");
 exports.featureRouter = (0, express_1.Router)();
 exports.featureRouter.use(middleware_1.authMiddleware);
 exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
+    const userId = req.user.id;
     const { toUserId } = req.params;
     try {
-        const user = yield prisma_1.default.user.findUnique({
+        const user = yield PrismaClient_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
             return res.status(404).json({ success: false, message: "Unauthorized" });
         }
-        const otherUser = yield prisma_1.default.user.findUnique({
+        const otherUser = yield PrismaClient_1.prisma.user.findUnique({
             where: { id: toUserId },
             select: { username: true },
         });
         if (!otherUser) {
             return res.status(404).json({ success: false, message: "Other User Not Found" });
         }
-        const existingFollow = yield prisma_1.default.following.findUnique({
+        const existingFollow = yield PrismaClient_1.prisma.following.findUnique({
             where: { userId_followId: { userId, followId: toUserId } },
         });
         if (existingFollow) {
@@ -45,11 +42,11 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
                 message: `You are already following ${otherUser.username}`,
             });
         }
-        yield prisma_1.default.$transaction([
-            prisma_1.default.following.create({
+        yield PrismaClient_1.prisma.$transaction([
+            PrismaClient_1.prisma.following.create({
                 data: { userId, followId: toUserId },
             }),
-            prisma_1.default.followers.create({
+            PrismaClient_1.prisma.followers.create({
                 data: { userId: toUserId, followId: userId },
             }),
         ]);
@@ -68,10 +65,10 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
     }
 }));
 exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
+    const userId = req.user.id;
     const { toUserId } = req.params;
     try {
-        const user = yield prisma_1.default.user.findUnique({
+        const user = yield PrismaClient_1.prisma.user.findUnique({
             where: {
                 id: userId
             }
@@ -79,7 +76,7 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
-        const otherUser = yield prisma_1.default.user.findUnique({
+        const otherUser = yield PrismaClient_1.prisma.user.findUnique({
             where: {
                 id: toUserId
             }, select: {
@@ -90,11 +87,11 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
         if (!otherUser) {
             return res.status(404).json({ success: false, message: "Followed user not found" });
         }
-        yield prisma_1.default.$transaction([
-            prisma_1.default.following.delete({
+        yield PrismaClient_1.prisma.$transaction([
+            PrismaClient_1.prisma.following.delete({
                 where: { userId_followId: { userId, followId: toUserId } },
             }),
-            prisma_1.default.followers.delete({
+            PrismaClient_1.prisma.followers.delete({
                 where: { userId_followId: { userId: toUserId, followId: userId } },
             }),
         ]);
@@ -113,10 +110,10 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
     }
 }));
 exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
+    const userId = req.user.id;
     const { postId } = req.params;
     try {
-        const user = yield prisma_1.default.user.findUnique({
+        const user = yield PrismaClient_1.prisma.user.findUnique({
             where: {
                 id: userId
             }
@@ -127,7 +124,7 @@ exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0,
                 message: "unAuthorized"
             });
         }
-        const post = yield prisma_1.default.post.findUnique({
+        const post = yield PrismaClient_1.prisma.post.findUnique({
             where: {
                 id: parseInt(postId)
             }
@@ -138,14 +135,14 @@ exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0,
                 message: "Post not found"
             });
         }
-        const userLikedPosts = yield prisma_1.default.like.findFirst({
+        const userLikedPosts = yield PrismaClient_1.prisma.like.findFirst({
             where: {
                 userId,
                 postId: parseInt(postId)
             }
         });
         if (userLikedPosts) {
-            yield prisma_1.default.like.delete({
+            yield PrismaClient_1.prisma.like.delete({
                 where: {
                     id: userLikedPosts.id
                 }
@@ -155,7 +152,7 @@ exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0,
                 message: "Post disliked successfully"
             });
         }
-        yield prisma_1.default.like.create({
+        yield PrismaClient_1.prisma.like.create({
             data: {
                 postId: parseInt(postId),
                 isLiked: true,
@@ -177,11 +174,11 @@ exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0,
     }
 }));
 exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.userId;
+    const userId = req.user.id;
     const { postId } = req.params;
     const { comment } = req.body;
     try {
-        const user = yield prisma_1.default.user.findUnique({
+        const user = yield PrismaClient_1.prisma.user.findUnique({
             where: {
                 id: userId
             }
@@ -192,7 +189,7 @@ exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, v
                 message: "unAuthorized"
             });
         }
-        const post = yield prisma_1.default.post.findUnique({
+        const post = yield PrismaClient_1.prisma.post.findUnique({
             where: {
                 id: parseInt(postId)
             }
@@ -203,7 +200,7 @@ exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, v
                 message: "Post not found"
             });
         }
-        const commentPost = yield prisma_1.default.comment.create({
+        const commentPost = yield PrismaClient_1.prisma.comment.create({
             data: {
                 postId: parseInt(postId),
                 userId,
@@ -233,7 +230,7 @@ exports.featureRouter.get("/comments/:postId", (req, res) => __awaiter(void 0, v
         });
     }
     try {
-        const comments = yield prisma_1.default.comment.findMany({
+        const comments = yield PrismaClient_1.prisma.comment.findMany({
             where: {
                 postId: Number(postId)
             },
@@ -268,7 +265,7 @@ exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     try {
-        const reels = yield prisma_1.default.post.findMany({
+        const reels = yield PrismaClient_1.prisma.post.findMany({
             where: {
                 mediaType: 'video',
             },
@@ -303,6 +300,115 @@ exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void
         return;
     }
 }));
+exports.featureRouter.get("/chat-users", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    try {
+        const chatUsers = yield PrismaClient_1.prisma.user.findMany({
+            where: {
+                OR: [
+                    { followers: { some: { userId } } },
+                    { following: { some: { followId: userId } } },
+                ]
+            }
+        });
+        res.status(200).json({
+            success: true,
+            chatUsers
+        });
+        return;
+    }
+    catch (error) {
+        console.error("Error fetching chat users:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching chat users",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+}));
+exports.featureRouter.get("/messages/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const { toUserId } = req.params;
+    try {
+        const messages = yield PrismaClient_1.prisma.message.findMany({
+            where: {
+                OR: [
+                    { senderId: userId, receiverId: toUserId },
+                    { senderId: toUserId, receiverId: userId }
+                ],
+            },
+            orderBy: {
+                createdAt: 'asc'
+            }
+        });
+        res.status(200).json({
+            success: true,
+            messages
+        });
+        return;
+    }
+    catch (error) {
+        console.error("Error fetching messages:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while fetching messages",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+}));
+exports.featureRouter.post("/message/send/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const { toUserId } = req.params;
+    const { message } = req.body;
+    try {
+        const user = yield PrismaClient_1.prisma.user.findUnique({
+            where: {
+                id: userId
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+        const otherUser = yield PrismaClient_1.prisma.user.findUnique({
+            where: {
+                id: toUserId
+            }
+        });
+        if (!otherUser) {
+            return res.status(404).json({
+                success: false,
+                message: "Receiver not found"
+            });
+        }
+        const newMessage = yield PrismaClient_1.prisma.message.create({
+            data: {
+                senderId: userId,
+                receiverId: toUserId,
+                message
+            }
+        });
+        res.status(200).json({
+            success: true,
+            message: "Message sent successfully",
+            newMessage
+        });
+        return;
+    }
+    catch (error) {
+        console.error("Error sending message:", error);
+        res.status(500).json({
+            success: false,
+            message: "Error while sending message",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+        return;
+    }
+}));
 exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { success, error } = instagram_1.reportSchema.safeParse(req.body);
     const { reportedId, reason, type, targetId } = req.body;
@@ -328,7 +434,7 @@ exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) =>
     }
     try {
         if (type === "POST") {
-            yield prisma_1.default.report.create({
+            yield PrismaClient_1.prisma.report.create({
                 data: {
                     reporterId,
                     reason,
@@ -339,7 +445,7 @@ exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) =>
             });
         }
         else {
-            yield prisma_1.default.report.create({
+            yield PrismaClient_1.prisma.report.create({
                 data: {
                     reporterId,
                     reason,
