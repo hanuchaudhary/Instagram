@@ -331,10 +331,15 @@ featureRouter.get("/chat-users", authMiddleware, async (req: Request, res: Respo
     try {
         const chatUsers = await prisma.user.findMany({
             where: {
+            AND: [
+                {
                 OR: [
                     { followers: { some: { userId } } },
                     { following: { some: { followId: userId } } },
                 ]
+                },
+                { id: { not: userId } }
+            ]
             }
         })
 

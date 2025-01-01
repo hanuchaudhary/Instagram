@@ -331,6 +331,11 @@ exports.userRouter.post("/edit", middleware_1.authMiddleware, multerUpload_1.upl
                 avatar: avatarURL,
                 fullName,
                 accountType
+            }, select: {
+                bio: true,
+                avatar: true,
+                fullName: true,
+                accountType: true
             }
         });
         return res.status(200).json({

@@ -31,6 +31,10 @@ interface ChatStore {
     socket: Socket | null;
     socketConnect: () => void;
     socketDisconnect: () => void;
+
+    isUserTyping: boolean;
+    startTyping: () => void;
+    stopTyping: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -91,6 +95,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     unSubscribeFromMessages: () => {
         const socket = get().socket;
         socket?.off("newMessage");
+    },
+
+    isUserTyping: false,
+    startTyping: () => {
+        const socket = get().socket;
+        const toUserId = get().selectedUser?.id;
+        socket?.emit("startTyping", toUserId);
+        set({ isUserTyping: true });
+    },
+    stopTyping: () => {
+        const socket = get().socket;
+        const toUserId = get().selectedUser?.id;
+        socket?.emit("stopTyping", toUserId);
+        set({ isUserTyping: false });
     },
 
     onlineUsers: [],

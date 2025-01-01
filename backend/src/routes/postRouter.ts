@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { upload } from "../libs/multerUpload";
 import { uploadOnCloudinary } from "../libs/uploadCloudinary";
-import {prisma} from '../database/PrismaClient';
+import { prisma } from '../database/PrismaClient';
 import { authMiddleware } from "../middleware";
 
 
@@ -59,6 +59,18 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                     userId,
                     mediaType
                 },
+                include: {
+                    User: {
+                        select: {
+                            username: true,
+                            fullName: true,
+                            id: true,
+                            avatar: true,
+                            bio: true,
+                        }
+                    },
+                    likes: true,
+                },
             });
 
             const newReel = await tx.reels.create({
@@ -66,6 +78,17 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                     caption,
                     mediaURL,
                     userId
+                },
+                include: {
+                    User: {
+                        select: {
+                            username: true,
+                            fullName: true,
+                            id: true,
+                            avatar: true,
+                            bio: true,
+                        }
+                    },
                 },
             });
 
@@ -84,8 +107,7 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
         return res.status(201).json({
             success: true,
             message: "Post created successfully",
-            post: result.newPost,
-            reel: result.newReel
+            post: result.newPost ? result.newPost : result.newReel,
         });
     } catch (error) {
         console.error("Error creating post:", error);
@@ -298,18 +320,16 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
                 createdAt: "desc",
             },
             include: {
-                User: true,
-                likes: true,
-                comments: {
-                    include: {
-                        user: {
-                            select: {
-                                username: true,
-                                avatar: true
-                            }
-                        }
+                User: {
+                    select: {
+                        username: true,
+                        fullName: true,
+                        id: true,
+                        avatar: true,
+                        bio: true,
                     }
                 },
+                likes: true,
                 _count: {
                     select: {
                         likes: true,
@@ -340,6 +360,8 @@ postRouter.get("/bulk", async (req: Request, res: Response): Promise<any> => {
 postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => {
     try {
         const filter = req.query.filter as string;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
 
         const posts = await prisma.post.findMany({
             where: {
@@ -361,7 +383,9 @@ postRouter.get("/explore", async (req: Request, res: Response): Promise<any> => 
                         likes: true
                     }
                 }
-            }
+            },
+            skip: (page - 1) * limit,
+            take: limit
         });
 
         return res.status(200).json({

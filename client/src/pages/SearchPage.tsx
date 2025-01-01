@@ -14,7 +14,7 @@ const SearchPage = () => {
   }, [debouncedFilter, fetchSearchedUsers]);
 
   return (
-    <div className="max-w-xl md:px-0 px-2 mx-auto py-10">
+    <div className="max-w-xl md:px-0 px-2 mx-auto py-4">
       <div>
         <h1 className="text-2xl font-bold mb-4">Search Users</h1>
         <Input

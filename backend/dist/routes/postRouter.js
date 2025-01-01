@@ -59,12 +59,35 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                     userId,
                     mediaType
                 },
+                include: {
+                    User: {
+                        select: {
+                            username: true,
+                            fullName: true,
+                            id: true,
+                            avatar: true,
+                            bio: true,
+                        }
+                    },
+                    likes: true,
+                },
             });
             const newReel = yield tx.reels.create({
                 data: {
                     caption,
                     mediaURL,
                     userId
+                },
+                include: {
+                    User: {
+                        select: {
+                            username: true,
+                            fullName: true,
+                            id: true,
+                            avatar: true,
+                            bio: true,
+                        }
+                    },
                 },
             });
             yield tx.reelPost.create({
@@ -78,8 +101,7 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
         return res.status(201).json({
             success: true,
             message: "Post created successfully",
-            post: result.newPost,
-            reel: result.newReel
+            post: result.newPost ? result.newPost : result.newReel,
         });
     }
     catch (error) {
@@ -268,18 +290,16 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
                 createdAt: "desc",
             },
             include: {
-                User: true,
-                likes: true,
-                comments: {
-                    include: {
-                        user: {
-                            select: {
-                                username: true,
-                                avatar: true
-                            }
-                        }
+                User: {
+                    select: {
+                        username: true,
+                        fullName: true,
+                        id: true,
+                        avatar: true,
+                        bio: true,
                     }
                 },
+                likes: true,
                 _count: {
                     select: {
                         likes: true,
@@ -308,6 +328,8 @@ exports.postRouter.get("/bulk", (req, res) => __awaiter(void 0, void 0, void 0, 
 exports.postRouter.get("/explore", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const filter = req.query.filter;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const posts = yield PrismaClient_1.prisma.post.findMany({
             where: {
                 caption: {
@@ -328,7 +350,9 @@ exports.postRouter.get("/explore", (req, res) => __awaiter(void 0, void 0, void 
                         likes: true
                     }
                 }
-            }
+            },
+            skip: (page - 1) * limit,
+            take: limit
         });
         return res.status(200).json({
             success: true,

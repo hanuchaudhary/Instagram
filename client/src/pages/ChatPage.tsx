@@ -13,7 +13,7 @@ export default function MessagePage() {
     return () => {
       socketDisconnect();
     };
-  }, [socketConnect]);
+  }, [socketConnect,socketDisconnect]);
   
 
   return (

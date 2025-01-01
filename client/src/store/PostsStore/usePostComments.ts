@@ -24,7 +24,7 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     },
     postComment: async (postId: number, comment: string) => {
         try {
-            const { authUser } = useAuthStore()
+            const authUser  = useAuthStore.getState().authUser;
             await api.post(`/feature/comment/${postId}`, { comment: comment, });
             toast.success("Comment posted successfully");
             const updatedComments = [{

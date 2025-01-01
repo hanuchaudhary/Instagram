@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { Loader2, ArrowDownCircle } from 'lucide-react';
+import { Loader2, ArrowDownCircle } from "lucide-react";
 import { useChatStore } from "@/store/ChatStore/useChatStore";
 import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -65,10 +65,7 @@ export default function ChatContainer() {
   return (
     <div className="w-full h-full flex flex-col bg-background">
       <ChatHeader />
-      <ScrollArea 
-        className="flex-1 p-4"
-        ref={scrollAreaRef}
-      >
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         {isMessagesLoading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -79,50 +76,80 @@ export default function ChatContainer() {
               You have no messages with{" "}
               <span className="font-semibold">{selectedUser.fullName}</span>
             </p>
-            <p className="text-sm text-muted-foreground">Send a message to start the conversation!</p>
+            <p className="text-sm text-muted-foreground">
+              Send a message to start the conversation!
+            </p>
           </div>
         ) : (
           <div className="space-y-2">
             {messages.map((msg, index) => {
-              const isFirstMessageOfDay = index === 0 || !isSameDay(new Date(msg.createdAt), new Date(messages[index - 1].createdAt));
+              const isFirstMessageOfDay =
+                index === 0 ||
+                !isSameDay(
+                  new Date(msg.createdAt),
+                  new Date(messages[index - 1].createdAt)
+                );
               return (
                 <div key={msg.id} className="space-y-2">
                   {isFirstMessageOfDay && (
                     <div className="flex justify-center">
                       <div className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
-                        {format(new Date(msg.createdAt), 'MMMM d, yyyy')}
+                        {format(new Date(msg.createdAt), "MMMM d, yyyy")}
                       </div>
                     </div>
                   )}
                   <div
                     className={cn(
                       "flex items-end space-x-2",
-                      msg.senderId === loggedInUserId ? "justify-end" : "justify-start"
+                      msg.senderId === loggedInUserId
+                        ? "justify-end"
+                        : "justify-start"
                     )}
                   >
                     {msg.senderId !== loggedInUserId && (
                       <Avatar className="w-8 h-8">
-                        <AvatarImage src={selectedUser.avatar} alt={selectedUser.fullName} />
-                        <AvatarFallback>{selectedUser.fullName.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          className="object-cover"
+                          src={selectedUser.avatar}
+                          alt={selectedUser.fullName}
+                        />
+                        <AvatarFallback className="uppercase">
+                          {selectedUser.fullName.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                     )}
                     <div
                       className={cn(
-                        "max-w-[70%] rounded-lg px-4 py-2 text-sm shadow-sm",
+                        "max-w-[70%] rounded-lg px-2 py-1 text-sm shadow-sm",
                         msg.senderId === loggedInUserId
                           ? "bg-primary text-primary-foreground rounded-br-none"
                           : "bg-accent text-accent-foreground rounded-bl-none"
                       )}
                     >
+                      {msg.image && (
+                        <div className="relative">
+                          <img
+                            src={msg.image}
+                            alt="message"
+                            className="w-52 object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
                       <p className="leading-relaxed">{msg.message}</p>
                       <p className="text-xs opacity-70 mt-1 text-right">
-                        {format(new Date(msg.createdAt), 'h:mm a')}
+                        {format(new Date(msg.createdAt), "h:mm a")}
                       </p>
                     </div>
                     {msg.senderId === loggedInUserId && (
                       <Avatar className="w-8 h-8">
-                        <AvatarImage src={authUser?.avatar} alt="You" />
-                        <AvatarFallback>{authUser?.username.charAt(0)}</AvatarFallback>
+                        <AvatarImage
+                          className="object-cover"
+                          src={authUser?.avatar}
+                          alt="You"
+                        />
+                        <AvatarFallback className="uppercase">
+                          {authUser?.username.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                     )}
                   </div>
@@ -143,9 +170,10 @@ export default function ChatContainer() {
           <ArrowDownCircle className="h-4 w-4" />
         </Button>
       )}
-      <div className="p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="md:px-4 px-2 py-1 md:py-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <MessageInput />
       </div>
+      <div className="md:h-0 h-16"></div>
     </div>
   );
 }
@@ -157,4 +185,3 @@ function isSameDay(date1: Date, date2: Date) {
     date1.getDate() === date2.getDate()
   );
 }
-

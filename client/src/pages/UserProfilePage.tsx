@@ -8,11 +8,11 @@ import { useOtherUserProfileStore } from "@/store/UserStore/useOtherUserProfileS
 import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
 import ReportShareDialog from "@/components/Report&Share";
 import { ShareType } from "@/components/ShareButton";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 export default function UserProfilePage() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
-
   const { username } = useParams();
+  const {setSelectedPostId} = usePostsStore();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
 
   const handleClose = () => {
@@ -22,7 +22,7 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     fetchProfile(username as string);
-  }, [username, fetchProfile]);
+  }, [username]);
 
   const handleSelectPostId = (postId: number) => {
     setSelectedPostId(postId);
@@ -161,7 +161,6 @@ export default function UserProfilePage() {
       <ProfilePostPopup
         handleClose={handleClose}
         isOpen={isOpen}
-        postId={selectedPostId as number}
       />
     </div>
   );

@@ -305,9 +305,14 @@ exports.featureRouter.get("/chat-users", middleware_1.authMiddleware, (req, res)
     try {
         const chatUsers = yield PrismaClient_1.prisma.user.findMany({
             where: {
-                OR: [
-                    { followers: { some: { userId } } },
-                    { following: { some: { followId: userId } } },
+                AND: [
+                    {
+                        OR: [
+                            { followers: { some: { userId } } },
+                            { following: { some: { followId: userId } } },
+                        ]
+                    },
+                    { id: { not: userId } }
                 ]
             }
         });
@@ -353,57 +358,6 @@ exports.featureRouter.get("/messages/:toUserId", middleware_1.authMiddleware, (r
         res.status(500).json({
             success: false,
             message: "Error while fetching messages",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-        return;
-    }
-}));
-exports.featureRouter.post("/message/send/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const { toUserId } = req.params;
-    const { message } = req.body;
-    try {
-        const user = yield PrismaClient_1.prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        });
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-        const otherUser = yield PrismaClient_1.prisma.user.findUnique({
-            where: {
-                id: toUserId
-            }
-        });
-        if (!otherUser) {
-            return res.status(404).json({
-                success: false,
-                message: "Receiver not found"
-            });
-        }
-        const newMessage = yield PrismaClient_1.prisma.message.create({
-            data: {
-                senderId: userId,
-                receiverId: toUserId,
-                message
-            }
-        });
-        res.status(200).json({
-            success: true,
-            message: "Message sent successfully",
-            newMessage
-        });
-        return;
-    }
-    catch (error) {
-        console.error("Error sending message:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error while sending message",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
         return;

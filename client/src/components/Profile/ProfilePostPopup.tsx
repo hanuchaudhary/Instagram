@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {  Send, UserCircle, X } from "lucide-react";
+import { Send, UserCircle, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentTile from "../Tiles/CommentTile";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
@@ -11,26 +11,25 @@ import LikePost from "../LikePost";
 
 export default function ProfilePostPopup({
   isOpen,
-  postId,
   handleClose,
 }: {
   isOpen: boolean;
-  postId: number;
   handleClose: () => void;
 }) {
-  const { fetchSinglePost, isSinglePostLoading, singlePost } = usePostsStore();
-  const { comments, fetchComments} = usePostCommentsStore();
+  const { fetchSinglePost, isSinglePostLoading, singlePost, selectedPostId } =
+    usePostsStore();
+  const { comments, fetchComments } = usePostCommentsStore();
 
   useEffect(() => {
     if (isOpen) {
-      fetchComments(postId);
+      fetchComments(selectedPostId!);
     }
-  }, [isOpen, postId]);
+  }, [isOpen, selectedPostId]);
 
   useEffect(() => {
-    fetchSinglePost(postId);
-  }, [fetchSinglePost, postId]);
-
+    if (!selectedPostId) return;
+    fetchSinglePost(selectedPostId!);
+  }, [fetchSinglePost, selectedPostId]);
 
   return (
     <AnimatePresence>
@@ -132,7 +131,7 @@ export default function ProfilePostPopup({
                     </p>
                   </div>
 
-                  <CommentInput postId={postId} />
+                  <CommentInput postId={selectedPostId!} />
                 </div>
               </div>
             </motion.div>

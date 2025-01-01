@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { jwtDecode } from "jwt-decode";
+import { useProfileStore } from "../UserStore/useProfileStore";
 
 interface UserState {
     stateUser: { id: string; username: string; avatar: string } | null;
@@ -99,6 +100,7 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
 
     checkAuth: async () => {
         const token = localStorage.getItem("token");
+        const profile = useProfileStore.getState().profile;
         if (token) {
             try {
                 const decoded: any = jwtDecode(token.split(" ")[1]);
@@ -110,6 +112,9 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
                 }
                 const response = await api.get(`/user/auth/check`);
                 set({ authUser: response.data.user });
+                set((state) => ({
+                    authUser: state.authUser ? { ...state.authUser, avatar: profile.avatar as string } : null
+                }));
             } catch (error) {
                 localStorage.removeItem("token");
                 set({ authUser: null });
@@ -126,5 +131,5 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
         toast.success("Successfully logged out.");
     },
 
-    
+
 }));

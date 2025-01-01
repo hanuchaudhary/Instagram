@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { LikeType, PostType } from "@/types/TypeInterfaces";
 import api from "@/config/axios";
 import { useAuthStore } from "../AuthStore/useAuthStore";
+import { toast } from "sonner";
 
 interface PostStore {
     hasMore: boolean;
@@ -16,7 +17,12 @@ interface PostStore {
 
     isSinglePostLoading: boolean;
     singlePost: PostType | null;
+    selectedPostId: number | null;
+    setSelectedPostId: (postId: number | null) => void;
     fetchSinglePost: (postId: number) => void;
+
+    createPost: (formData: FormData, navigate: any) => void;
+    isCreatingPost: boolean;
 }
 
 export const usePostsStore = create<PostStore>((set, get) => ({
@@ -111,15 +117,47 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         return post ? post.likes!.some((like: LikeType) => like.userId === authUser.id) : false;
     },
 
-    fetchSinglePost: async (postId: number) => {
+    selectedPostId: null,
+    setSelectedPostId: (postId) => {
+        set({ selectedPostId: postId });
+    },
+    fetchSinglePost: async () => {
+        const { selectedPostId } = get();
         try {
             set({ isSinglePostLoading: true });
-
-            const response = await api.get(`/user/post/${postId}`);
-            set({ singlePost: response.data.post, isSinglePostLoading: false });
+            const response = await api.get(`/user/post/${selectedPostId}`);
+            set({ singlePost: response.data.post });
         } catch (error) {
             console.error("Error fetching single post:", error);
-            set({ error: true, isSinglePostLoading: false });
+            set({ error: true });
+        } finally {
+            set({ isSinglePostLoading: false });
+        }
+    },
+
+    isCreatingPost: false,
+    createPost: async (formData: FormData, navigate: any) => {
+        try {
+            set({ isCreatingPost: true });
+            const response = await api.post("/post/create", formData);
+            const data = response.data;
+            if (response.status === 201) {
+                set({
+                    posts: [{
+                        id: data.post.id, caption: data.post.caption, createdAt: data.post.createdAt, _count: {
+                            comments: 0, likes: 0
+                        }, likes: [], mediaURL: data.post.mediaURL, mediaType: data.post.mediaType, User: data.post.User
+                    }, ...get().posts]
+                });
+            }
+            navigate('/', { replace: true });
+            toast.success("Post created successfully");
+
+        } catch (error) {
+            toast.error("Error creating post");
+            console.error("Error creating post:", error);
+        } finally {
+            set({ isCreatingPost: false });
         }
     },
 }));

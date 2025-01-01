@@ -17,13 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import api from "@/config/axios";
-import { BACKEND_URL } from "@/config/config";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { postSchema } from "@hanuchaudhary/instagram";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import {
   Heart,
   Loader2,
@@ -34,18 +31,16 @@ import {
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { z } from "zod";
 
 const CreatePostPage = () => {
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
   const [reelPreview, setReelPreview] = useState("");
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { createPost, isCreatingPost} = usePostsStore();
 
   const { profile } = useProfileStore();
 
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
@@ -84,39 +79,11 @@ const CreatePostPage = () => {
     formData.append("caption", values.caption);
     formData.append("location", values.location || "");
     if (selectedFile) formData.append("media", selectedFile);
-
-    try {
-      setIsLoading(true);
-      await api.post(`${BACKEND_URL}/post/create`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (event) => {
-          const percentageCompleted = Math.round(
-            (event.loaded * 100) / event.total!
-          );
-          if (percentageCompleted <= 100) {
-            setUploadProgress(percentageCompleted);
-          }
-        },
-      });
-      toast.success("Post Posted Successfully");
-      navigate("/");
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorMessage =
-          error.response.data.message || "Error While Posting";
-        toast.error(errorMessage);
-      } else {
-        toast.error("An unexpected error occurred. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    createPost(formData, navigate);
   }
 
   return (
-    <div className="container mx-auto md:px-4 py-8">
+    <div className="container mx-auto md:px-4">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         <div className="md:col-span-3">
           <Card className="border-none rounded-none shadow-none">
@@ -222,8 +189,8 @@ const CreatePostPage = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" disabled={isLoading} className="w-full">
-                    {isLoading ? (
+                  <Button type="submit" disabled={isCreatingPost} className="w-full">
+                    {isCreatingPost ? (
                       <div className="flex items-center justify-center">
                         <Loader2 className="animate-spin mr-2" />
                         Uploading
@@ -232,14 +199,6 @@ const CreatePostPage = () => {
                       "Upload Post"
                     )}
                   </Button>
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <div className="mt-4">
-                      <Progress value={uploadProgress} className="w-full" />
-                      <p className="text-sm text-center mt-2">
-                        {uploadProgress}% uploaded
-                      </p>
-                    </div>
-                  )}
                 </form>
               </Form>
             </CardContent>
@@ -268,7 +227,7 @@ const CreatePostPage = () => {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </CardHeader>
-            <CardContent className="p-0 min-h-[50vh]">
+            <CardContent className="px-2 min-h-[50vh]">
               {imagePreview ? (
                 <img
                   src={imagePreview}

@@ -14,7 +14,7 @@ export const useOtherUserProfileStore = create<otherUserProfileStore>((set) => (
     isLoading: true,
     selectedPost: null,
     fetchProfile: async (username: string) => {
-        const {authUser} = useAuthStore()
+        const { authUser } = useAuthStore.getState();
         try {
             const response = await api.get(`/user/profile/${authUser?.id}/${username}`);
             set({ profile: response.data.user });

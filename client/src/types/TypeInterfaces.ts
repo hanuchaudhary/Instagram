@@ -36,6 +36,7 @@ export interface MessageType {
     senderId: string;
     receiverId: string;
     message: string;
+    image?: string;
     createdAt: Date;
     updatedAt: Date;
 }

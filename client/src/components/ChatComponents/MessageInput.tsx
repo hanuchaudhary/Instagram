@@ -3,32 +3,15 @@ import { Input } from "../ui/input";
 import React, { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useChatStore } from "@/store/ChatStore/useChatStore";
+import { AnimatePresence, motion } from "framer-motion";
+import { Button } from "../ui/button";
+import TypingIndicator from "./TypingIndicator";
 
 export default function MessageInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { sendMessage } = useChatStore();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!text && !imagePreview) {
-      return;
-    }
-
-    try {
-      sendMessage({
-        message: text,
-        image: imagePreview!,
-      });
-      setText("");
-      setImagePreview(null);
-    } catch (error) {
-      toast.error("Failed to send message");
-      console.log(error);
-    }
-  };
+  const { sendMessage, isUserTyping, startTyping, stopTyping } = useChatStore();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,32 +29,85 @@ export default function MessageInput() {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    console.log("submitting");
+    e.preventDefault();
+    if (!text && !imagePreview) {
+      return;
+    }
+    try {
+      sendMessage({
+        message: text,
+        image: imagePreview!,
+      });
+      setText("");
+      setImagePreview(null);
+    } catch (error) {
+      toast.error("Failed to send message");
+      console.log(error);
+    }
+  };
+
+  const handleStartTyping = () => {
+    startTyping();
+  };
+
+  const handleStopTyping = () => {
+    // setTimeout(() => {
+    stopTyping();
+    // }, 2000);
+  };
+
   return (
     <div className="w-full relative">
-      {imagePreview && (
-        <div className="absolute left-0 bottom-10">
-          <img
-            src={imagePreview}
-            alt="preview"
-            className="w-44 object-cover rounded-lg"
-          />
-          <div
-            onClick={() => {
-              setImagePreview(null);
-              fileInputRef &&
-                fileInputRef.current &&
-                (fileInputRef.current.value = "");
-            }}
-            className="absolute top-0 right-0"
+      <AnimatePresence>
+        {imagePreview && (
+          <motion.div
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={{ opacity: 0, y: "100%" }}
+            className="absolute left-0 bottom-10"
           >
-            <X />
-          </div>
-        </div>
-      )}
+            <img
+              src={imagePreview}
+              alt="preview"
+              className="w-44 object-cover rounded-lg"
+            />
+            <div
+              onClick={() => {
+                setImagePreview(null);
+                fileInputRef &&
+                  fileInputRef.current &&
+                  (fileInputRef.current.value = "");
+              }}
+              className="absolute bg-secondary rounded-full top-1 right-1 cursor-pointer shadow-md"
+            >
+              <X />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="absolute -top-7 left-0 right-0">
+        {isUserTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex justify-start"
+          >
+            <TypingIndicator />
+          </motion.div>
+        )}
+      </div>
 
       <form onSubmit={handleSubmit}>
         <div className="flex gap-2">
           <Input
+            type="text"
+            onFocus={handleStartTyping}
+            onBlur={handleStopTyping}
             placeholder="Type a message..."
             value={text}
             onChange={(e) => {
@@ -92,10 +128,13 @@ export default function MessageInput() {
           >
             <Image size={20} />
           </button>
-
-          <button disabled={!text} type="submit">
+          <Button
+            disabled={!text && !imagePreview}
+            className="cursor-pointer"
+            type="submit"
+          >
             <Send size={20} />
-          </button>
+          </Button>
         </div>
       </form>
     </div>

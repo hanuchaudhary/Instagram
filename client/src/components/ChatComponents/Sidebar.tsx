@@ -20,6 +20,9 @@ const Sidebar = () => {
     onlineUsers,
   } = useChatStore();
 
+  console.log("Online users", onlineUsers);
+  
+
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -68,13 +71,13 @@ const Sidebar = () => {
                 />
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                {onlineUsers.length} online
+                {onlineUsers.length - 1} online
               </div>
             </div>
             <ScrollArea className="flex-1 p-1">
               {filteredUsers.map((user) => (
                 <Button
-                variant={"ghost"}
+                  variant={"ghost"}
                   key={user.id}
                   className={`w-full justify-start px-2 py-7 mb-1 ${
                     selectedUser?.id === user.id ? "bg-accent" : ""
@@ -105,8 +108,12 @@ const Sidebar = () => {
                 </Button>
               ))}
               {filteredUsers.length === 0 && (
-                <div className="text-center text-muted-foreground py-4">
-                  No users found
+                <div className="text-muted-foreground flex items-center justify-center h-full py-4">
+                  <p className="text-sm px-10 text-center">
+                    {showOnlineOnly
+                      ? "No online users found. Try following more users to see them here."
+                      : "No users found. Follow more users to start chatting with them."}
+                  </p>
                 </div>
               )}
             </ScrollArea>
@@ -115,7 +122,7 @@ const Sidebar = () => {
       </AnimatePresence>
       <div
         className={`flex flex-col items-center py-4 ${
-          isCollapsed ? "w-20" : "w-0"
+          isCollapsed ? "md:w-20 md: md:px-0 px-2" : "w-0"
         } overflow-hidden transition-all duration-300 ease-in-out`}
       >
         <Button
@@ -134,8 +141,12 @@ const Sidebar = () => {
             onClick={() => setSelectedUser(user)}
           >
             <Avatar
-              className={`h-14 w-14 ${
-                selectedUser?.id === user.id ? "ring-2 ring-green-500" : ""
+              className={`md:h-14 md:w-14 ${
+                selectedUser?.id === user.id
+                  ? onlineUsers.includes(selectedUser?.id as string)
+                    ? "ring-2 ring-green-500"
+                    : "ring-2 ring-neutral-400"
+                  : ""
               }`}
             >
               <AvatarImage

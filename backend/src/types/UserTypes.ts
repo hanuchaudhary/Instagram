@@ -7,8 +7,8 @@ export interface UserType {
     id?: string;
     username: string;
     fullName: string;
-    email: string;
     password: string;
+    email: string;
     avatar?: string;
     bio?: string;
     accountType: AccountType;

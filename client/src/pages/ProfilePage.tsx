@@ -4,23 +4,25 @@ import ProfilePagePostCard from "@/components/Profile/ProfilePagePostCard";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { useEffect, useState } from "react";
 import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 
 const ProfilePage = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
-  const { fetchProfile, profile } = useProfileStore();
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  const posts = profile.posts;
-
+  
+  const { setSelectedPostId } = usePostsStore();
   const handleClose = () => {
     setIsOpen(false);
     setSelectedPostId(null);
   };
+  
+  
+  const { fetchProfile, profile } = useProfileStore();
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
+  
+  const posts = profile.posts;
   useEffect(() => {
     window.addEventListener("keydown", handleClose);
     return () => window.removeEventListener("keydown", close);
@@ -48,11 +50,7 @@ const ProfilePage = () => {
                   <ProfilePagePostCard post={post} />
                 </div>
               ))}
-              <ProfilePostPopup
-                handleClose={handleClose}
-                isOpen={isOpen}
-                postId={selectedPostId!}
-              />
+              <ProfilePostPopup handleClose={handleClose} isOpen={isOpen} />
             </div>
           ) : (
             <div className="col-span-3 text-center py-8">

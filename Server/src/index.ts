@@ -3,6 +3,10 @@ import express, { Request, Response } from 'express'
 import { Server } from 'socket.io'
 import cors from 'cors'
 import { PrismaClient } from '../../Shared/node_modules/@prisma/client';
+import cloudinary from './lib/uploadCloudinary';
+import { config } from 'dotenv';
+config();
+
 const prisma = new PrismaClient()
 
 const PORT = 8080
@@ -31,14 +35,13 @@ const getRecieversSocketId = (userId: string) => {
 }
 
 io.on('connection', (socket) => {
-  console.log("UserConnected " + socket.id);
-
   const userId = socket.handshake.query.userId as string | undefined;
   onlineUsers[userId as string] = socket.id;
   io.emit("getOnlineUsers", Object.keys(onlineUsers));
 
+  const recieversSocketId = getRecieversSocketId(userId as string);
+
   socket.on("disconnect", () => {
-    console.log("UserDisconnected " + socket.id);
     delete onlineUsers[userId as string];
   });
 });
@@ -46,7 +49,7 @@ io.on('connection', (socket) => {
 
 app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Promise<any> => {
   const { userId, toUserId } = req.params;
-  const { message } = req.body;
+  const { message, image } = req.body;
 
   try {
     const user = await prisma.user.findUnique({
@@ -75,11 +78,23 @@ app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Prom
       });
     }
 
+    let response;
+    if (image) {
+      response = await cloudinary.uploader.upload(image, {
+        resource_type: "image",
+        folder: "instagram/messagesImages",
+        quality: "auto:best",
+      });
+
+      console.log("Image uploaded to cloudinary: ", response.secure_url);
+    }
+
     const newMessage = await prisma.message.create({
       data: {
         senderId: userId,
         receiverId: toUserId,
         message,
+        image: image ? response?.secure_url : null
       }
     })
 

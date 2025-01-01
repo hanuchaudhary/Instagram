@@ -1,20 +1,16 @@
 import { useEffect, useRef} from "react";
 import ReelCard from "@/components/Reel/ReelCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Film, Loader2 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useFetchReelsStore } from "@/hooks/useFetchReelsStore";
+import { Film, Loader2 } from "lucide-react";
+import { useReelsStore } from "@/store/ReelsStore/useReelsStore";
 
 export default function ReelsPage() {
-  const { reels, isLoading, error, hasMore, fetchReels } = useFetchReelsStore();
+  const { reels, isLoading, hasMore, fetchReels } = useReelsStore();
   const observerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetchReels();
   }, []);
-
-  console.log(reels);
-  
 
   useEffect(() => {
     if (isLoading) return;
@@ -43,15 +39,7 @@ export default function ReelsPage() {
         </p>
       </header>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {reels.length === 0 && !isLoading && !error && (
+      {reels.length === 0 && !isLoading && (
         <div className="flex flex-col items-center justify-center bg-secondary/30 rounded-xl p-8 text-center">
           <Film className="h-16 w-16 mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-semibold mb-2">No reels found</h2>
