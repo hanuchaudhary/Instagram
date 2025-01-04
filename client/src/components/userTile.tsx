@@ -1,11 +1,10 @@
 import { searchUser } from "@/store/Explore&Search/useSearchUserStore";
 import FollowUser from "./FollowUser";
 import MiniProfile from "./Profile/MiniProfile";
-import { useUserStore } from "@/store/AuthStore/useAuthStore";
+import { useAuthStore} from "@/store/AuthStore/useAuthStore";
 
 const UserTile = ({ user }: { user: searchUser }) => {
-  const { stateUser } = useUserStore();
-
+  const { authUser } = useAuthStore();
   return (
     <div>
       <div className=" py-3 flex items-center justify-between">
@@ -20,7 +19,7 @@ const UserTile = ({ user }: { user: searchUser }) => {
         </div>
         <div className="flex items-center justify-center">
           <h1 className="font-semibold text-blue-500">
-            {stateUser?.id === user.id ? "" : <FollowUser userId={user.id} />}
+            {authUser?.id === user.id ? "" : <FollowUser userId={user.id} />}
           </h1>
         </div>
       </div>

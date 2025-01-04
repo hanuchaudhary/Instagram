@@ -15,7 +15,6 @@ export interface post {
     location: string
     mediaURL: string
     createdAt: string
-    isLiked: boolean
     mediaType: string
     _count: {
         likes: number

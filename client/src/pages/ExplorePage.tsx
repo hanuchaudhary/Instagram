@@ -3,19 +3,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Loader2, Heart, ImageIcon } from "lucide-react";
 import { useExplorePostStore } from "@/store/Explore&Search/useExplorePostStore";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { mediaType } from "@/types/TypeInterfaces";
-import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
+import { useNavigate } from "react-router-dom";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 
 export default function ExplorePage() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { setSelectedPostId } = usePostsStore();
-  const handleClose = () => {
-    setIsOpen(false);
-    setSelectedPostId(null);
-  };
+  const observerRef = useRef<HTMLDivElement | null>(null);
+  const setSelectedPostId = usePostsStore.getState().setSelectedPostId;
 
   const {
     explorePosts,
@@ -30,7 +26,6 @@ export default function ExplorePage() {
     fetchExplorePosts(debouncedFilter);
   }, [debouncedFilter]);
 
-  const observerRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!hasMore || isLoading) return;
 
@@ -49,6 +44,8 @@ export default function ExplorePage() {
       if (observerRef.current) observer.unobserve(observerRef.current);
     };
   }, [fetchExplorePosts, hasMore, isLoading]);
+
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-3xl relative mx-auto py-4 px-2">
@@ -79,8 +76,8 @@ export default function ExplorePage() {
             {explorePosts.map((post) => (
               <Card
                 onClick={() => {
+                  navigate(`/post/${post.id}`);
                   setSelectedPostId(post.id as number);
-                  setIsOpen(true);
                 }}
                 key={post.id as number}
                 className="overflow-hidden cursor-pointer relative group"
@@ -112,6 +109,7 @@ export default function ExplorePage() {
             ))}
           </div>
         )}
+
         <div ref={observerRef} />
         {isLoading && (
           <div className="flex justify-center mt-4">
@@ -127,9 +125,6 @@ export default function ExplorePage() {
         )}
         <div ref={observerRef} />
       </ScrollArea>
-      <div className="z-[9999999999]">
-        <ProfilePostPopup handleClose={handleClose} isOpen={isOpen} />
-      </div>
     </div>
   );
 }

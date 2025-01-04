@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Volume2, VolumeX} from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 
 export interface ReelVideoPlayerProps {
   mediaURL: string;
@@ -42,7 +42,8 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
 
   useEffect(() => {
@@ -53,7 +54,11 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
       ([entry]) => {
         if (entry.isIntersecting) {
           video.play();
-          setPlayerState((prev) => ({ ...prev, isPlaying: true, showControls: false }));
+          setPlayerState((prev) => ({
+            ...prev,
+            isPlaying: true,
+            showControls: false,
+          }));
         } else {
           video.pause();
           setPlayerState((prev) => ({ ...prev, isPlaying: false }));
@@ -67,49 +72,60 @@ export default function ReelVideoPlayer({ mediaURL }: ReelVideoPlayerProps) {
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative h-[500px] w-full overflow-hidden bg-black"
-      onMouseEnter={() => setPlayerState((prev) => ({ ...prev, showControls: true }))}
-      onMouseLeave={() => setPlayerState((prev) => ({ ...prev, showControls: false }))}
-    >
-      <video
-        loop
-        ref={videoRef}
-        className="h-full w-full object-contain"
-        src={mediaURL}
-        onClick={togglePlayPause}
-        muted={playerState.isMuted}
-      />
+    <div className="relative">
       <div
-        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
-          playerState.showControls || !playerState.isPlaying ? "opacity-100" : "opacity-0"
-        }`}
+        ref={containerRef}
+        className="relative z-[999999] bg-black w-full max-w-[1080px] mx-auto overflow-hidden aspect-[9/16]"
+        onMouseEnter={() =>
+          setPlayerState((prev) => ({ ...prev, showControls: true }))
+        }
+        onMouseLeave={() =>
+          setPlayerState((prev) => ({ ...prev, showControls: false }))
+        }
       >
-        <div
+        <video
+          loop
+          ref={videoRef}
+          className="h-full w-full object-contain"
+          src={mediaURL}
           onClick={togglePlayPause}
-          className="text-white bg-black/50 cursor-pointer rounded-full p-4 hover:bg-black/70"
+          muted={playerState.isMuted}
+        />
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${
+            playerState.showControls || !playerState.isPlaying
+              ? "opacity-100"
+              : "opacity-0"
+          }`}
         >
-          {playerState.isPlaying ? (
-            <Pause fill="white" className="h-10 w-10" />
-          ) : (
-            <Play fill="white" className="h-10 w-10" />
-          )}
+          <div
+            onClick={togglePlayPause}
+            className="text-white bg-black/50 cursor-pointer rounded-full p-4 hover:bg-black/70"
+          >
+            {playerState.isPlaying ? (
+              <Pause fill="white" className="h-10 w-10" />
+            ) : (
+              <Play fill="white" className="h-10 w-10" />
+            )}
+          </div>
         </div>
-      </div>
-      <div
-        className={`absolute top-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 transition-opacity duration-300 ${
-          playerState.showControls ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="flex items-center justify-between">
-            <div onClick={toggleMute} className="text-white">
-              {playerState.isMuted ? <VolumeX  fill="white" className="h-6 w-6" /> : <Volume2
-              fill="white" className="h-6 w-6" />}
+        <div
+          className={`absolute top-0 right-0 p-4 transition-opacity duration-300 ${
+            playerState.showControls ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div onClick={toggleMute} className="text-white cursor-pointer">
+              {playerState.isMuted ? (
+                <VolumeX fill="white" className="h-6 w-6" />
+              ) : (
+                <Volume2 fill="white" className="h-6 w-6" />
+              )}
             </div>
           </div>
+        </div>
       </div>
+      <div className="absolute z[1] blur-2xl opacity-50 inset-0 bg-gradient-to-br from-neutral-600 via-neutral-500 to-orange-400 animate-gradient-xy"></div>
     </div>
   );
 }
-

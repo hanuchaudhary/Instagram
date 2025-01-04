@@ -8,9 +8,8 @@ import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { GradientHeartLikeIcon } from "./GradientHeartLikeIcon";
-import ReportShareDialog from "./Report&Share";
-import { ShareType } from "./ShareButton";
-const PostCard = ({ post }: { post: post }) => {
+import { ShareReportButton } from "./ShareReportButton";
+const PostCard = (post: post ) => {
   const { handleLikePost, isPostLiked } = usePostsStore();
   const [showHeart, setShowHeart] = useState(false);
 
@@ -34,18 +33,18 @@ const PostCard = ({ post }: { post: post }) => {
               location={post.location}
             />
           </div>
-          <ReportShareDialog
-            shareType={ShareType.POST}
-            reportTargetTitle={post.caption}
+          <ShareReportButton
+            reportTargetTitle="Report Post"
             reportType="POST"
-            reportedId={post.User.id}
-            targetId={post.id.toString()}
+            reportedId=""
+            shareType="post"
+            targetId=""
+            postId={post.id}
           />
         </CardHeader>
         <div className="w-full border rounded-md">
           <CardContent className="p-0 relative cursor-pointer overflow-hidden h-[500px]">
             <div
-              // onClick={() => console.log("clicked")}
               className="w-full h-full aspect-square overflow-hidden"
               onDoubleClick={handleDoubleTap}
             >

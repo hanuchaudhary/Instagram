@@ -1,7 +1,6 @@
 import api from '@/config/axios';
 import { toast } from 'sonner';
 import { create } from 'zustand';
-import { useAuthStore } from '../AuthStore/useAuthStore';
 
 
 export enum AccountType {

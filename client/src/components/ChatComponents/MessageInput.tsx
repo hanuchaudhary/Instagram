@@ -6,12 +6,16 @@ import { useChatStore } from "@/store/ChatStore/useChatStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import TypingIndicator from "./TypingIndicator";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 export default function MessageInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { sendMessage, isUserTyping, startTyping, stopTyping } = useChatStore();
+
+  const { authUser } = useAuthStore();
+  console.log(authUser?.id);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

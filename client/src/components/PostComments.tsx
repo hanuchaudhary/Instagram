@@ -22,7 +22,7 @@ const PostComments = ({ postId }: { postId: number }) => {
 
   useEffect(() => {
     if (isOpen) {
-      fetchComments(postId);
+      fetchComments();
     }
   }, [isOpen, postId]);
 
@@ -54,7 +54,7 @@ const PostComments = ({ postId }: { postId: number }) => {
             )}
           </div>
         </ScrollArea>
-        <CommentInput postId={postId} />
+        <CommentInput />
         <DrawerClose>
           <Button variant="outline">Close</Button>
         </DrawerClose>

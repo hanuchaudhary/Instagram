@@ -2,31 +2,18 @@ import ProfileCard from "@/components/Profile/ProfileCard";
 import { Separator } from "@/components/ui/separator";
 import ProfilePagePostCard from "@/components/Profile/ProfilePagePostCard";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
-import { useEffect, useState } from "react";
-import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 
 const ProfilePage = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const { setSelectedPostId } = usePostsStore();
-  const handleClose = () => {
-    setIsOpen(false);
-    setSelectedPostId(null);
-  };
-  
-  
+  const navigate = useNavigate();
   const { fetchProfile, profile } = useProfileStore();
+  const setSelectedPostId = usePostsStore.getState().setSelectedPostId;
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
-
-  
   const posts = profile.posts;
-  useEffect(() => {
-    window.addEventListener("keydown", handleClose);
-    return () => window.removeEventListener("keydown", close);
-  }, []);
 
   return (
     <div className="flex relative flex-col h-full ">
@@ -40,17 +27,16 @@ const ProfilePage = () => {
             <div className="w-full md:px-20 grid grid-cols-3 px-3 gap-4 md:gap-3 pb-20 pt-4 md:py-4">
               {posts?.map((post) => (
                 <div
+                  onClick={() => {
+                    navigate(`/post/${post.id}`);
+                    setSelectedPostId(post.id!);
+                  }}
                   className="cursor-pointer"
                   key={post.id}
-                  onClick={() => {
-                    setSelectedPostId(post.id!);
-                    setIsOpen(true);
-                  }}
                 >
                   <ProfilePagePostCard post={post} />
                 </div>
               ))}
-              <ProfilePostPopup handleClose={handleClose} isOpen={isOpen} />
             </div>
           ) : (
             <div className="col-span-3 text-center py-8">

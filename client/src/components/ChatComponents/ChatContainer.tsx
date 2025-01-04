@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { Loader2, ArrowDownCircle } from "lucide-react";
+import { Loader2, ArrowDownCircle, X } from "lucide-react";
 import { useChatStore } from "@/store/ChatStore/useChatStore";
 import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import MessageInput from "./MessageInput";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ChatContainer() {
   const {
@@ -54,6 +55,8 @@ export default function ChatContainer() {
     return true;
   };
 
+  const [imageZoom, setImageZoom] = useState<string | null>(null);
+
   if (!selectedUser) {
     return (
       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
@@ -65,7 +68,26 @@ export default function ChatContainer() {
   return (
     <div className="w-full h-full flex flex-col bg-background">
       <ChatHeader />
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-4 relative" ref={scrollAreaRef}>
+        <AnimatePresence>
+          {imageZoom && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute h-full w-full top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm z-10"
+            >
+              <X
+                onClick={() => setImageZoom(null)}
+                className="absolute cursor-pointer z-20 bg-background top-2 right-2 rounded-full"
+              />
+              <div className="h-4/5">
+                <img className="h-full w-full" src={imageZoom} alt="" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {isMessagesLoading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -90,7 +112,7 @@ export default function ChatContainer() {
                   new Date(messages[index - 1].createdAt)
                 );
               return (
-                <div key={msg.id} className="space-y-2">
+                <div key={msg.id} className="space-y-2 relative">
                   {isFirstMessageOfDay && (
                     <div className="flex justify-center">
                       <div className="bg-muted text-muted-foreground text-xs px-2 py-1 rounded-full">
@@ -129,13 +151,21 @@ export default function ChatContainer() {
                       {msg.image && (
                         <div className="relative">
                           <img
+                            onClick={() => setImageZoom(msg.image!)}
                             src={msg.image}
                             alt="message"
-                            className="w-52 object-cover rounded-lg"
+                            className="w-52 object-cover cursor-pointer rounded-lg"
                           />
                         </div>
                       )}
-                      <p className="leading-relaxed">{msg.message}</p>
+                      {msg.message.endsWith(".mp4") ? (
+                        <video controls className="w-52 rounded-lg">
+                          <source src={msg.message} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <p className="leading-relaxed">{msg.message}</p>
+                      )}
                       <p className="text-xs opacity-70 mt-1 text-right">
                         {format(new Date(msg.createdAt), "h:mm a")}
                       </p>

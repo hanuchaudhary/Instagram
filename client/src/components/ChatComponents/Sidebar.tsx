@@ -20,9 +20,6 @@ const Sidebar = () => {
     onlineUsers,
   } = useChatStore();
 
-  console.log("Online users", onlineUsers);
-  
-
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -71,7 +68,7 @@ const Sidebar = () => {
                 />
               </div>
               <div className="text-xs text-muted-foreground mt-2">
-                {onlineUsers.length - 1} online
+                {onlineUsers.length === 0 ? 0 : onlineUsers.length - 1} online
               </div>
             </div>
             <ScrollArea className="flex-1 p-1">

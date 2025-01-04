@@ -3,19 +3,21 @@ import { comment } from "@/types/PostTypes";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useAuthStore } from "../AuthStore/useAuthStore";
+import { usePostsStore } from "./usePostsStore";
 
 interface CommentStore {
     comments: comment[];
-    fetchComments: (postId: number) => Promise<void>;
+    fetchComments: () => Promise<void>;
     postComment: (postId: number, comment: string) => Promise<void>;
 }
 
 
 export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     comments: [],
-    fetchComments: async (postId: number) => {
+    fetchComments: async () => {
+        const selectedPostId = usePostsStore.getState().selectedPostId;
         try {
-            const response = await api.get(`/feature/comments/${postId}`);
+            const response = await api.get(`/feature/comments/${selectedPostId}`);
             set({ comments: response.data.comments });
         } catch (error) {
             console.error("Error fetching comments:", error);

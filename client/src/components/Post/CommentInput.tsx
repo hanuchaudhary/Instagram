@@ -3,19 +3,18 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 import { useState } from "react";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 
-export default function CommentInput({
-  postId,
-}: {
-  postId: number;
-}) {
+export default function CommentInput() {
+
   const { postComment } = usePostCommentsStore();
-    const [input, setInput] = useState("");
+  const selectedPostId = usePostsStore.getState().selectedPostId;
+  const [input, setInput] = useState("");
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        postComment(postId, input);
+        postComment(selectedPostId!, input);
         setInput("");
       }}
       className="flex items-center gap-2 border-t p-4"

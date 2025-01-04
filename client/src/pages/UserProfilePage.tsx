@@ -1,33 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Grid, ImageIcon, Loader2 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useOtherUserProfileStore } from "@/store/UserStore/useOtherUserProfileStore";
-import ProfilePostPopup from "@/components/Profile/ProfilePostPopup";
-import ReportShareDialog from "@/components/Report&Share";
-import { ShareType } from "@/components/ShareButton";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import { ShareReportButton } from "@/components/ShareReportButton";
 export default function UserProfilePage() {
-  const [isOpen, setIsOpen] = useState(false);
   const { username } = useParams();
-  const {setSelectedPostId} = usePostsStore();
+  const { setSelectedPostId, selectedPostId } = usePostsStore();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
-
-  const handleClose = () => {
-    setIsOpen(false);
-    setSelectedPostId(null);
-  };
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfile(username as string);
   }, [username]);
-
-  const handleSelectPostId = (postId: number) => {
-    setSelectedPostId(postId);
-    setIsOpen(true);
-  };
 
   if (isLoading) {
     return (
@@ -49,12 +37,13 @@ export default function UserProfilePage() {
     <div className="container px-4 sm:px-6 max-w-4xl py-6 sm:py-8">
       <Card className="p-6 sm:p-8 relative">
         <div className="absolute flex items-center gap-2 top-2 right-4">
-          <ReportShareDialog
-            shareType={ShareType.PROFILE}
-            reportTargetTitle={profile.username}
+          <ShareReportButton
+            reportTargetTitle="Report user"
             reportType="USER"
-            reportedId={profile?.id!}
-            targetId={profile.id!}
+            reportedId=""
+            targetId=""
+            shareType="profile"
+            postId={selectedPostId as number}
           />
         </div>
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
@@ -122,7 +111,10 @@ export default function UserProfilePage() {
                 <div
                   key={post.id}
                   className="aspect-square cursor-pointer overflow-hidden rounded-sm"
-                  onClick={() => handleSelectPostId(post.id!)}
+                  onClick={() => {
+                    setSelectedPostId(post.id!);
+                    navigate(`/post/${post.id}`);
+                  }}
                 >
                   {post.mediaType === "video" ? (
                     <video
@@ -158,10 +150,6 @@ export default function UserProfilePage() {
           </div>
         </TabsContent>
       </Tabs>
-      <ProfilePostPopup
-        handleClose={handleClose}
-        isOpen={isOpen}
-      />
     </div>
   );
 }

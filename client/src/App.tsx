@@ -18,6 +18,7 @@ import UserManagement from "./admin/pages/Users";
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "./store/AuthStore/useAuthStore";
 import { useEffect } from "react";
+import SinglePostWrapper from "./pages/SinglePostWrapper";
 
 const App = () => {
   const { authUser, checkAuth } = useAuthStore();
@@ -61,6 +62,7 @@ const App = () => {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/moderation" element={<ContentModeration />} />
         <Route path="/admin/logs" element={<SystemLogs />} />
+        <Route path="post/:postId" element={<SinglePostWrapper />} />
         <Route
           element={
             authUser ? <AppLayout /> : <Navigate to="/auth/signin" replace />

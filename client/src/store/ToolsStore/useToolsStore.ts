@@ -37,3 +37,7 @@ export const ToolsStore = create<UserReportStore>((set) => ({
         }
     },
 }));
+
+export const useVideoPlayerStore = create(() => ({
+
+}));

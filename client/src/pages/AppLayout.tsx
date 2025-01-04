@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import {
@@ -11,9 +10,9 @@ import {
   MessageCircle,
   PlusSquare,
   Search,
-  Film,
   ChevronLeft,
   ChevronRight,
+  ArrowUp,
 } from "lucide-react";
 import Menu from "@/components/Menu";
 
@@ -26,6 +25,18 @@ export default function AppLayout() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [isScrollbarVisible, setIsScrollbarVisible] = useState(false);
+
+  const handleScrollToTop = () => {
+    if (scrollRef.current) {
+      scrollRef.current?.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  };
 
   const NavLink = ({
     to,
@@ -96,7 +107,41 @@ export default function AppLayout() {
             <NavLink to="/messages" icon={MessageCircle} label="Messages" />
             <NavLink to="/search" icon={Search} label="Search" />
             <NavLink to="/create" icon={PlusSquare} label="Create" />
-            <NavLink to="/reels" icon={Film} label="Reels" />
+            {/* <NavLink to="/reels" icon={Film} label="Reels" /> */}
+            <Link
+              className={`flex items-center ${
+                !isCollapsed && "p-3"
+              } rounded-xl transition-colors duration-200 hover:bg-accent ${
+                location.pathname === "/reels"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-foreground"
+              }`}
+              to={"/reels"}
+            >
+              <img
+                typeof="image/svg+xml"
+                src="/reelsIcon.svg"
+                className={`dark:invert ${
+                  location.pathname === "/reels" ? "opacity-100" : "opacity-50"
+                } ${isCollapsed ? "w-10 h-10" : "w-7 h-7 mr-4"}`}
+                alt=""
+              />
+              <h1
+                className={`${
+                  location.pathname === "/reels"
+                    ? "text-primary"
+                    : "text-neutral-400"
+                }`}
+              >
+                <span
+                  className={`text-lg font-medium overflow-hidden whitespace-nowrap ${
+                    isCollapsed ? "hidden" : ""
+                  }`}
+                >
+                  Reels
+                </span>
+              </h1>
+            </Link>
             <Link
               to="/profile"
               className={`flex items-center ${
@@ -117,18 +162,19 @@ export default function AppLayout() {
                 />
                 <AvatarFallback>{authUser?.username?.charAt(0)}</AvatarFallback>
               </Avatar>
-              <AnimatePresence>
+              <h1
+                className={`${
+                  location.pathname === "/profile"
+                    ? "text-primary"
+                    : "text-neutral-400"
+                }`}
+              >
                 {!isCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="text-lg font-medium overflow-hidden whitespace-nowrap"
-                  >
+                  <span className="text-lg font-medium overflow-hidden whitespace-nowrap">
                     Profile
-                  </motion.span>
+                  </span>
                 )}
-              </AnimatePresence>
+              </h1>
             </Link>
           </nav>
         </div>
@@ -148,10 +194,32 @@ export default function AppLayout() {
       </motion.aside>
 
       {/* Main content */}
-      <main className="flex-1 h-screen overflow-hidden  md:pb-0">
-        <ScrollArea className="h-full">
+      <main className="flex-1 h-screen overflow-hidden md:pb-0">
+        <div
+          onScroll={() => {
+            if (scrollRef.current) {
+              setIsScrollbarVisible(scrollRef.current.scrollTop > 100);
+            }
+          }}
+          ref={scrollRef}
+          className="h-full overflow-y-scroll"
+        >
           <Outlet />
-        </ScrollArea>
+        </div>
+        <AnimatePresence>
+          {isScrollbarVisible && (
+            <motion.button
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              onClick={handleScrollToTop}
+              className="fixed bottom-4 right-4 bg-accent text-accent-foreground p-2 rounded-full shadow-lg"
+            >
+              <ArrowUp />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* Bottom navigation for mobile */}
@@ -194,7 +262,12 @@ export default function AppLayout() {
             location.pathname === "/search" ? "bg-accent" : ""
           }`}
         >
-          <Film className="w-7 h-7" />
+          {/* <Film className="w-7 h-7" /> */}
+          <img
+            src="/reelsIcon.svg"
+            className="w-8 h-8 dark:invert-[1]"
+            alt=""
+          />
         </Link>
         <Link
           to="/profile"

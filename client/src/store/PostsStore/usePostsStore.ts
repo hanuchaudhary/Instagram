@@ -117,7 +117,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         return post ? post.likes!.some((like: LikeType) => like.userId === authUser.id) : false;
     },
 
-    selectedPostId: null,
+    selectedPostId: 6,
     setSelectedPostId: (postId) => {
         set({ selectedPostId: postId });
     },

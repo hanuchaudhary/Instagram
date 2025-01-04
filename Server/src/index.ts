@@ -39,8 +39,6 @@ io.on('connection', (socket) => {
   onlineUsers[userId as string] = socket.id;
   io.emit("getOnlineUsers", Object.keys(onlineUsers));
 
-  const recieversSocketId = getRecieversSocketId(userId as string);
-
   socket.on("disconnect", () => {
     delete onlineUsers[userId as string];
   });
