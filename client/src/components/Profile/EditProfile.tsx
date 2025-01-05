@@ -84,7 +84,7 @@ export default function EditProfile({ profileData }: { profileData: UserType }) 
       <AlertDialogTrigger asChild>
         <Button size="sm">Edit Profile</Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="sm:max-w-[425px]">
+      <AlertDialogContent className="sm:max-w-[425px] bg-secondary border-none sm:rounded-2xl">
         <AlertDialogHeader>
           <AlertDialogTitle>Edit Profile</AlertDialogTitle>
         </AlertDialogHeader>
@@ -134,7 +134,7 @@ function AvatarUpload({ imagePreview, profileData, handleImageChange }: { imageP
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full"
+                className="w-full dark:bg-neutral-700 bg-neutral-200"
               />
             </FormControl>
             <FormDescription>
@@ -158,11 +158,11 @@ function AccountTypeSelect({ control }: { control: any }) {
           <FormLabel>Account Type</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select account type" />
+              <SelectTrigger  className="dark:bg-neutral-700 bg-neutral-200">
+                <SelectValue className="dark:bg-neutral-700 bg-neutral-200" placeholder="Select account type" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent className="dark:bg-neutral-700 bg-neutral-200">
               <SelectItem value="private">Private</SelectItem>
               <SelectItem value="public">Public</SelectItem>
             </SelectContent>
@@ -183,7 +183,7 @@ function NameInput({ control }: any) {
         <FormItem>
           <FormLabel>Name</FormLabel>
           <FormControl>
-            <Input placeholder="Enter your name" {...field} />
+            <Input className="dark:bg-neutral-700 bg-neutral-200" placeholder="Enter your name" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>
@@ -203,7 +203,7 @@ function BioTextarea({ control } : any) {
           <FormControl>
             <Textarea
               placeholder="Write something about yourself..."
-              className="resize-none"
+              className="resize-none dark:bg-neutral-700 bg-neutral-200"
               {...field}
             />
           </FormControl>

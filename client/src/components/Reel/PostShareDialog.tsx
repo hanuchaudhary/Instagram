@@ -13,9 +13,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import clsx from "clsx";
 import { useSendPostStore } from "@/store/PostsStore/useSendPostStore";
 import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
+import { Input } from "../ui/input";
+import { Separator } from "../ui/separator";
 
 const PostShareDialog = ({ postURL }: { postURL: string }) => {
   const [open, setOpen] = useState(false);
+  const [filterUser, setFilterUser] = useState("");
   const { sendPost, isSendingPost } = useSendPostStore();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { followers, following } = useFollowDataStore();
@@ -42,18 +45,35 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
     setOpen(false);
   };
 
+  const filteredUsers = filterUser
+    ? users.filter((user) => {
+        user.user.username.includes(filterUser);
+        console.log(user.user.username);
+      })
+    : users;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger className="cursor-pointer" asChild>
-        <Send className="w-7 h-7"/>
+        <Send className="w-7 h-7" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl z-[999999] p-2 md:p-6 border-none bg-secondary">
         <DialogHeader>
           <DialogTitle className="text-xl">Share</DialogTitle>
         </DialogHeader>
+        <Separator className="bg-primary-foreground" />
+        <div>
+          <Input
+            value={filterUser}
+            onChange={(e) => setFilterUser(e.target.value)}
+            placeholder="Search for users"
+            className="w-full dark:bg-neutral-700 bg-neutral-200"
+            type="search"
+          />
+        </div>
         <ScrollArea className="mt-4 max-h-[60vh] pr-4">
           <div className="grid lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-3">
-            {users.map(({ user }) => (
+            {filteredUsers.map(({ user }) => (
               <UserCard
                 key={user.id}
                 user={user}
@@ -63,26 +83,29 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
             ))}
           </div>
         </ScrollArea>
-        {selectedUsers.length > 0 && (
-          <>
-            <Button className="w-full mt-4" onClick={handleShare}>
-              {isSendingPost ? (
-                "Sending..."
-              ) : (
-                <div className="flex items-center justify-center">
-                  Share <Send />
-                </div>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => setSelectedUsers([])}
-            >
-              Clear Selection
-            </Button>
-          </>
-        )}
+        <>
+          <Button
+            disabled={selectedUsers.length <= 0}
+            className="w-full mt-4"
+            onClick={handleShare}
+          >
+            {isSendingPost ? (
+              "Sending..."
+            ) : (
+              <div className="flex items-center justify-center">
+                Share <Send />
+              </div>
+            )}
+          </Button>
+          <Button
+            disabled={selectedUsers.length <= 0 || isSendingPost}
+            variant="ghost"
+            className="w-full"
+            onClick={() => setSelectedUsers([])}
+          >
+            Clear Selection
+          </Button>
+        </>
       </DialogContent>
     </Dialog>
   );

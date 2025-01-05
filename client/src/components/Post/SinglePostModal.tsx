@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Send, UserCircle } from "lucide-react";
+import { UserCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentTile from "../Tiles/CommentTile";
 import { ScrollArea } from "../ui/scroll-area";
@@ -8,6 +8,7 @@ import LikePost from "../LikePost";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 import { useEffect } from "react";
+import PostShareDialog from "../Reel/PostShareDialog";
 
 export default function SinglePostModal() {
   const { fetchSinglePost, isSinglePostLoading, singlePost, selectedPostId } =
@@ -38,7 +39,7 @@ export default function SinglePostModal() {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
     >
-      <div className="flex flex-col md:flex-row h-[90vh] md:h-[80vh]">
+      <div className="flex gap-2 flex-col md:flex-row h-[90vh] md:h-[80vh]">
         <div className="flex-1 bg-transparent flex items-center justify-center relative ">
           <div className="absolute inset-0 z-0">
             <div
@@ -52,7 +53,7 @@ export default function SinglePostModal() {
               }}
             />
           </div>
-          <div className="relative z-10 w-full  h-full flex items-center justify-center">
+          <div className="relative aspect-[9/16] rounded-2xl z-10 w-full  h-full flex items-center justify-center">
             {singlePost?.mediaType === "video" ? (
               <video
                 src={singlePost.mediaURL}
@@ -106,7 +107,7 @@ export default function SinglePostModal() {
                   <LikePost postId={singlePost.id!} />
                 </div>
                 <div>
-                  <Send className="h-6 w-6" />
+                  <PostShareDialog postURL={singlePost.mediaURL as string} />
                 </div>
               </div>
             </div>

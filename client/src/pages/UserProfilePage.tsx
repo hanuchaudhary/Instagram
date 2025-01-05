@@ -7,9 +7,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useOtherUserProfileStore } from "@/store/UserStore/useOtherUserProfileStore";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { ReportButton } from "@/components/ReportButton";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 export default function UserProfilePage() {
   const { username } = useParams();
-  const { setSelectedPostId, selectedPostId } = usePostsStore();
+  const { selectedPostId ,setSelectedPostId} = usePostsStore();
+  const { setPostId } = usePostCommentsStore();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
   const navigate = useNavigate();
 
@@ -34,7 +36,7 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="container px-4 sm:px-6 max-w-4xl py-6 sm:py-8">
+    <div className="container mx-auto px-4 sm:px-6 max-w-4xl py-6 sm:py-8">
       <Card className="p-6 sm:p-8 relative">
         <div className="absolute flex items-center gap-2 top-2 right-4">
           <ReportButton
@@ -111,8 +113,9 @@ export default function UserProfilePage() {
                   key={post.id}
                   className="aspect-square cursor-pointer overflow-hidden rounded-sm"
                   onClick={() => {
-                    setSelectedPostId(post.id!);
+                    setPostId(post.id!);
                     navigate(`/post/${post.id}`);
+                    setSelectedPostId(post.id!);
                   }}
                 >
                   {post.mediaType === "video" ? (

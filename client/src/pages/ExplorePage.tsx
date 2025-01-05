@@ -8,10 +8,12 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { mediaType } from "@/types/TypeInterfaces";
 import { useNavigate } from "react-router-dom";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 
 export default function ExplorePage() {
   const observerRef = useRef<HTMLDivElement | null>(null);
   const setSelectedPostId = usePostsStore.getState().setSelectedPostId;
+  const setPostId = usePostCommentsStore.getState().setPostId;
 
   const {
     explorePosts,
@@ -78,6 +80,7 @@ export default function ExplorePage() {
                 onClick={() => {
                   navigate(`/post/${post.id}`);
                   setSelectedPostId(post.id as number);
+                  setPostId(post.id as number);
                 }}
                 key={post.id as number}
                 className="overflow-hidden cursor-pointer relative group"

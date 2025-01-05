@@ -58,7 +58,7 @@ const MiniProfile = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center gap-2  cursor-pointer">
           <Avatar className="h-8 w-8">
             <AvatarImage className="object-cover" src={avatar} alt={username} />
             <AvatarFallback>{username[0]?.toUpperCase()}</AvatarFallback>
@@ -80,7 +80,7 @@ const MiniProfile = ({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[9999]">
         <div className="flex flex-col items-center gap-4 p-4">
           <Avatar className="h-24 w-24">
             <AvatarImage className="object-cover" src={avatar} alt={username} />

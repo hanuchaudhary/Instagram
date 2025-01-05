@@ -4,12 +4,12 @@ import ProfilePagePostCard from "@/components/Profile/ProfilePagePostCard";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { fetchProfile, profile } = useProfileStore();
-  const setSelectedPostId = usePostsStore.getState().setSelectedPostId;
+  const setPostId = usePostCommentsStore.getState().setPostId;
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
@@ -29,7 +29,7 @@ const ProfilePage = () => {
                 <div
                   onClick={() => {
                     navigate(`/post/${post.id}`);
-                    setSelectedPostId(post.id!);
+                    setPostId(post.id!);
                   }}
                   className="cursor-pointer"
                   key={post.id}
