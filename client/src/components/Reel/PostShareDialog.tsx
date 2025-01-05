@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,24 +11,21 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import clsx from "clsx";
-import { useSendPostStore } from "@/store/PostsStore/useSendPostStore";
-import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
 import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
+import { useChatStore } from "@/store/ChatStore/useChatStore";
 
 const PostShareDialog = ({ postURL }: { postURL: string }) => {
   const [open, setOpen] = useState(false);
   const [filterUser, setFilterUser] = useState("");
-  const { sendPost, isSendingPost } = useSendPostStore();
+  const { isSharingPost, sharePost, chatUsers, fetchChatUsers } =
+    useChatStore();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const { followers, following } = useFollowDataStore();
-  const users = [...following, ...followers].map((user) => ({
-    user: {
-      id: user.user.id,
-      username: user.user.username,
-      avatar: user.user.avatar,
-    },
-  }));
+
+  useEffect(() => {
+    // if (chatUsers) return;
+    fetchChatUsers();
+  }, [fetchChatUsers]);
 
   const handleSelectUsers = (userId: string) => {
     setSelectedUsers((prev) =>
@@ -39,18 +36,10 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
   };
 
   const handleShare = () => {
-    console.log(`Sharing with user ids: ${selectedUsers.join(", ")}`);
-    sendPost(selectedUsers.join(", "), postURL);
+    sharePost({ message: postURL }, selectedUsers.join(","));
     setSelectedUsers([]);
     setOpen(false);
   };
-
-  const filteredUsers = filterUser
-    ? users.filter((user) => {
-        user.user.username.includes(filterUser);
-        console.log(user.user.username);
-      })
-    : users;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -73,14 +62,19 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
         </div>
         <ScrollArea className="mt-4 max-h-[60vh] pr-4">
           <div className="grid lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-3">
-            {filteredUsers.map(({ user }) => (
-              <UserCard
-                key={user.id}
-                user={user}
-                isSelected={selectedUsers.includes(user.id)}
-                onClick={() => handleSelectUsers(user.id)}
-              />
-            ))}
+            {chatUsers.map(
+              (user) =>
+                user.id && (
+                  <UserCard
+                    key={user.id}
+                    avatar={user.avatar!}
+                    id={user.id!}
+                    username={user.username!}
+                    isSelected={selectedUsers.includes(user.id)}
+                    onClick={() => handleSelectUsers(user.id!)}
+                  />
+                )
+            )}
           </div>
         </ScrollArea>
         <>
@@ -89,7 +83,7 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
             className="w-full mt-4"
             onClick={handleShare}
           >
-            {isSendingPost ? (
+            {isSharingPost ? (
               "Sending..."
             ) : (
               <div className="flex items-center justify-center">
@@ -98,7 +92,7 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
             )}
           </Button>
           <Button
-            disabled={selectedUsers.length <= 0 || isSendingPost}
+            disabled={selectedUsers.length <= 0 || isSharingPost}
             variant="ghost"
             className="w-full"
             onClick={() => setSelectedUsers([])}
@@ -112,11 +106,14 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
 };
 
 const UserCard = ({
-  user,
+  avatar,
+  username,
   isSelected,
   onClick,
 }: {
-  user: { id: string; username: string; avatar: string };
+  id: string;
+  username: string;
+  avatar: string;
   isSelected: boolean;
   onClick: () => void;
 }) => (
@@ -133,16 +130,12 @@ const UserCard = ({
         "border-[4px] border-blue-500": isSelected,
       })}
     >
-      <AvatarImage
-        className="object-cover"
-        src={user.avatar}
-        alt={user.username}
-      />
+      <AvatarImage className="object-cover" src={avatar} alt={username} />
       <AvatarFallback className="dark:bg-neutral-900 bg-neutral-200">
-        {user.username[0].toUpperCase()}
+        {username[0].toUpperCase()}
       </AvatarFallback>
     </Avatar>
-    <p className="text-sm text-muted-foreground">@{user.username}</p>
+    <p className="text-sm text-muted-foreground">@{username}</p>
   </div>
 );
 

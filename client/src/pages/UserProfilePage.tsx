@@ -10,7 +10,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 export default function UserProfilePage() {
   const { username } = useParams();
-  const { selectedPostId ,setSelectedPostId} = usePostsStore();
+  const { selectedPostId, setSelectedPostId } = usePostsStore();
   const { setPostId } = usePostCommentsStore();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
   const navigate = useNavigate();
@@ -60,7 +60,12 @@ export default function UserProfilePage() {
           </Avatar>
           <div className="flex-1 text-center sm:text-left space-y-4">
             <div className="flex flex-col">
-              <h1 className="text-2xl font-semibold">{profile.username}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-semibold">{profile.username}</h1>
+                {profile.isVerifiedAccount && (
+                  <img className="h-5 w-5" src="/verified.svg" alt="" />
+                )}
+              </div>
               <h2 className="text-base text-muted-foreground">
                 {profile.fullName}
               </h2>

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import PostCard from "@/components/PostCard";
+import PostCard from "@/components/Post/PostCard";
 import SuggestedUsers from "@/components/SuggestedUsers";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -7,6 +7,7 @@ import { AlertCircle, Loader2, UserPlus } from "lucide-react";
 import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import StoryViewer from "@/components/Stories/StoryViewer";
 
 export default function HomePage() {
   const { fetchFollowData } = useFollowDataStore();
@@ -39,10 +40,12 @@ export default function HomePage() {
   }, [fetchPosts, hasMore, isPostLoading]);
 
   return (
-    <div className="container mx-auto py-4 px-2 md:px-4">
-      <h1 className="text-3xl font-bold mb-6">Your Feed</h1>
-      <div className="grid lg:grid-cols-5 gap-4 md:mx-20">
+    <div className="container mx-auto max-w-5xl py-4 px-2 md:px-4">
+      <div className="grid lg:grid-cols-5 mx-6 gap-4">
         <div className="lg:col-span-3">
+          <div className="my-6">
+            <StoryViewer/>
+          </div>
           {isPostLoading && (
             <div className="space-y-4">
               {[...Array(3)].map((_, index) => (
@@ -72,15 +75,10 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              <ScrollArea className=" w-full">
+              <ScrollArea className="mx-10 w-full">
                 <div className="space-y-6">
                   {posts.map((post, idx) => (
-                    <PostCard
-                      key={idx}
-                      {...post}
-                      id={post.id ?? 0}
-                      location={post.location ?? ""}
-                    />
+                    <PostCard key={idx} {...post} />
                   ))}
                 </div>
                 <div ref={observerRef} />

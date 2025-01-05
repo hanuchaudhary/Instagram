@@ -121,6 +121,74 @@ app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Prom
 });
 
 
+app.post("/send-post/:userId/:toUserIds", async (req: Request, res: Response) => {
+  // const userId = req.user.id;
+  const { userId, toUserIds } = req.params;
+  const { message } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    })
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+      return;
+    }
+
+    const receiverIds = toUserIds.includes(",") ? toUserIds.split(",") : [toUserIds];
+    for (const receiverId of receiverIds) {
+      const receiver = await prisma.user.findUnique({
+        where: {
+          id: receiverId
+        }
+      })
+      if (!receiver) {
+        res.status(404).json({
+          success: false,
+          message: "Receiver not found"
+        });
+        return;
+      }
+    }
+    let newMessage;
+    for (const receiverId of receiverIds) {
+      newMessage = await prisma.message.create({
+        data: {
+          message,
+          senderId: userId,
+          receiverId: receiverId
+        }
+      })
+    }
+
+    const recieversSocketIds = receiverIds.map(getRecieversSocketId).filter(Boolean);
+    for (const recieversSocketId of recieversSocketIds) {
+      io.to(recieversSocketId as string).emit("newMessage", newMessage);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Message sent successfully to users"
+    })
+    return;
+
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error while sending message",
+      error: error instanceof Error ? error.message : "An unexpected error occurred",
+    });
+    return;
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`)
 })

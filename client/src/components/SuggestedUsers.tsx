@@ -1,4 +1,4 @@
-import UserTile from "./userTile";
+import UserTile from "./Tiles/userTile";
 import { Card } from "./ui/card";
 import { useSuggestedUsersStore } from "@/store/UserStore/useSuggestedUsersStore";
 import { useEffect } from "react";

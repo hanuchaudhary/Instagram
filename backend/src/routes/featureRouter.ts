@@ -317,7 +317,7 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
                     }
                 }
             },
-            orderBy:{
+            orderBy: {
                 createdAt: 'desc'
             },
             take: limit,
@@ -347,13 +347,23 @@ featureRouter.get("/chat-users", authMiddleware, async (req: Request, res: Respo
             where: {
                 OR: [
                     {
-                        OR: [
-                            { followers: { some: { userId } } },
-                            { following: { some: { followId: userId } } },
-                        ]
+                        followers: {
+                            some: {
+                                followId: userId
+                            }
+                        }
                     },
-                    { id: { not: userId } }
-                ]
+                    {
+                        following: {
+                            some: {
+                                userId: userId
+                            }
+                        }
+                    }
+                ],
+                NOT: {
+                    id: userId
+                }
             }
         })
 
@@ -403,69 +413,6 @@ featureRouter.get("/messages/:toUserId", authMiddleware, async (req: Request, re
         res.status(500).json({
             success: false,
             message: "Error while fetching messages",
-            error: error instanceof Error ? error.message : "An unexpected error occurred",
-        });
-        return;
-    }
-});
-
-featureRouter.post("/send-post/:toUserIds", authMiddleware, async (req: Request, res: Response) => {
-    const userId = req.user.id;
-    const { toUserIds } = req.params;
-    const { message } = req.body;
-
-    try {
-        const user = await prisma.user.findUnique({
-            where: {
-                id: userId
-            }
-        })
-
-        if (!user) {
-            res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-            return;
-        }
-
-        const receiverIds = toUserIds.includes(",") ? toUserIds.split(",") : [toUserIds];
-        for (const receiverId of receiverIds) {
-            const receiver = await prisma.user.findUnique({
-                where: {
-                    id: receiverId
-                }
-            })
-            if (!receiver) {
-                res.status(404).json({
-                    success: false,
-                    message: "Receiver not found"
-                });
-                return;
-            }
-        }
-
-        for (const receiverId of receiverIds) {
-            await prisma.message.create({
-                data: {
-                    message,
-                    senderId: userId,
-                    receiverId: receiverId
-                }
-            })
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Message sent successfully to users"
-        })
-        return;
-
-    } catch (error) {
-        console.error("Error sending message:", error);
-        res.status(500).json({
-            success: false,
-            message: "Error while sending message",
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
         return;

@@ -590,6 +590,7 @@ userRouter.get("/profile/:userId/:username", async (req: Request, res: Response)
                 avatar: true,
                 bio: true,
                 fullName: true,
+                isVerifiedAccount: true,
                 followers: {
                     include: {
                         user: true

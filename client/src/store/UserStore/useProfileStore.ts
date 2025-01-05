@@ -18,6 +18,7 @@ export interface UserType {
     avatar?: string;
     bio?: string;
     accountType: AccountType;
+    isVerifiedAccount: boolean;
     posts?: PostType[];
     following?: FollowersType[];
     followers?: FollowersType[];

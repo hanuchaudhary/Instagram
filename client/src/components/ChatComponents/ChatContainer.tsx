@@ -142,7 +142,7 @@ export default function ChatContainer() {
                     )}
                     <div
                       className={cn(
-                        "max-w-[70%] rounded-lg px-2 py-1 text-sm shadow-sm",
+                        "max-w-[70%] rounded-lg p-1 text-base shadow-sm",
                         msg.senderId === loggedInUserId
                           ? "bg-primary text-primary-foreground rounded-br-none"
                           : "bg-accent text-accent-foreground rounded-bl-none"

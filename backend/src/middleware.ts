@@ -1,3 +1,4 @@
+import { UserType } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
@@ -59,9 +60,16 @@ const adminMiddleware = (req: Request, res: Response, next: NextFunction): void 
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as jwt.JwtPayload;
-        req.user.role = decoded.role;
 
-        if (req.user.role !== "admin") {
+        if (!decoded.user) {
+            res.status(401).json({
+                success: false,
+                message: "Unauthorized: Invalid token",
+            });
+            return;
+        }
+        
+        if (decoded.user.role !== "admin") {
             res.status(403).json({
                 success: false,
                 message: "Forbidden: You do not have admin privileges",

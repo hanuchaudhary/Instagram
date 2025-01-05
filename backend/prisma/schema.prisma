@@ -65,6 +65,7 @@ model User {
   ReportMade        Report[]    @relation("ReportsMade")
   ReportRecieved    Report[]    @relation("ReportsReceived")
   Reel              Reel[]
+  Story             Story[]
 }
 
 model Message {
@@ -146,6 +147,17 @@ model Like {
   createdAt DateTime @default(now())
 
   @@unique([userId, postId])
+}
+
+model Story {
+  id        Int       @id @default(autoincrement())
+  userId    String
+  User      User      @relation(fields: [userId], references: [id])
+  mediaURL  String
+  mediaType mediaType
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  duration  Int
 }
 
 model Report {

@@ -31,6 +31,41 @@ export interface UserType {
     updatedAt?: Date; // Date object
 }
 
+export interface Post {
+    id: number;
+    caption: string;
+    location: string;
+    mediaURL: string;
+    mediaType: mediaType
+    userId: string;
+    createdAt: string; 
+    User: User;
+    likes: Like[];
+    _count: Count;
+  }
+  
+  interface User {
+    username: string;
+    fullName: string;
+    id: string;
+    avatar: string;
+    bio: string;
+  }
+  
+  interface Like {
+    id: number;
+    postId: number;
+    isLiked: boolean;
+    userId: string;
+    createdAt: string;
+  }
+  
+  interface Count {
+    likes: number;
+    comments: number;
+  }
+  
+
 export interface MessageType {
     id: number;
     senderId: string;

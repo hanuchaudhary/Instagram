@@ -80,7 +80,7 @@ const MiniProfile = ({
           </div>
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md z-[9999]">
+      <DialogContent className="sm:max-w-md z-[9999] bg-secondary">
         <div className="flex flex-col items-center gap-4 p-4">
           <Avatar className="h-24 w-24">
             <AvatarImage className="object-cover" src={avatar} alt={username} />

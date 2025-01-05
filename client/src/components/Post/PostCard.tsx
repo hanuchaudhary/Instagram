@@ -1,24 +1,24 @@
-import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import LikePost from "./LikePost";
 import PostComments from "./PostComments";
-import MiniProfile from "./Profile/MiniProfile";
-import ReelVideoPlayer from "./Reel/ReelVideoPlayer";
-import { post } from "@/types/PostTypes";
+import MiniProfile from "../Profile/MiniProfile";
+import ReelVideoPlayer from "../Reel/ReelVideoPlayer";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { GradientHeartLikeIcon } from "./GradientHeartLikeIcon";
-import { ReportButton } from "./ReportButton";
-import PostShareDialog from "./Reel/PostShareDialog";
+import { GradientHeartLikeIcon } from "../GradientHeartLikeIcon";
+import { ReportButton } from "../ReportButton";
+import PostShareDialog from "../Reel/PostShareDialog";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
-const PostCard = (post: post) => {
+import { Post } from "@/types/TypeInterfaces";
+const PostCard = (post: Post) => {
   const { handleLikePost, isPostLiked } = usePostsStore();
   const { setPostId } = usePostCommentsStore();
   const [showHeart, setShowHeart] = useState(false);
 
   const handleDoubleTap = () => {
-    if (!isPostLiked(post.id.toString())) {
-      handleLikePost(post.id.toString());
+    if (!isPostLiked(post.id)) {
+      handleLikePost(post.id);
       setShowHeart(true);
       setTimeout(() => setShowHeart(false), 1500);
     }
@@ -41,7 +41,7 @@ const PostCard = (post: post) => {
             reportType="POST"
             reportedId=""
             targetId=""
-            postId={post.id}
+            postId={post.id!}
           />
         </CardHeader>
         <div className="w-full border rounded-md">
@@ -110,7 +110,7 @@ const PostCard = (post: post) => {
           <div className="flex w-full">
             <div className="flex gap-3 items-center">
               <LikePost postId={post.id} />
-              <div onClick={() => setPostId(post.id)}>
+              <div onClick={() => setPostId(post.id!)}>
                 <PostComments />
               </div>
               <PostShareDialog postURL={post.mediaURL} />

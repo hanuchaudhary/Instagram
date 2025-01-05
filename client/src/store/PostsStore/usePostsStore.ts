@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { LikeType, PostType } from "@/types/TypeInterfaces";
+import {  Post, PostType } from "@/types/TypeInterfaces";
 import api from "@/config/axios";
 import { useAuthStore } from "../AuthStore/useAuthStore";
 import { toast } from "sonner";
@@ -8,12 +8,12 @@ interface PostStore {
     hasMore: boolean;
     page: number;
     isPostLoading: boolean;
-    posts: PostType[];
+    posts: Post[];
     fetchPosts: () => void;
 
     error: boolean;
-    handleLikePost: (postId: string) => void;
-    isPostLiked: (postId: string) => boolean;
+    handleLikePost: (postId: number) => void;
+    isPostLiked: (postId: number) => boolean;
 
     isSinglePostLoading: boolean;
     singlePost: PostType | null;
@@ -59,14 +59,14 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         }
     },
 
-    handleLikePost: async (postId: string) => {
+    handleLikePost: async (postId) => {
         const { authUser } = useAuthStore.getState();
         if (!authUser) return;
 
         try {
             const response = await api.post(`/post/like/${postId}`);
 
-            const updatePostLikes = (post: PostType) => {
+            const updatePostLikes = (post: Post) => {
                 if (response.status === 201) {
                     if (!post._count || !post.likes) {
                         return
@@ -78,7 +78,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
                         userId: authUser.id,
                         isLiked: true,
                         postId: post.id!,
-                        createdAt: new Date()
+                        createdAt: new Date().toString(),
                     });
                 } else if (response.status === 200) {
                     if (!post._count || !post.likes) {
@@ -87,20 +87,20 @@ export const usePostsStore = create<PostStore>((set, get) => ({
 
                     post._count.likes--;
                     post.likes = post.likes.filter(
-                        (like: LikeType) => like.userId !== authUser.id
+                        (like) => like.userId !== authUser.id
                     );
 
                 }
             };
 
-            if (get().singlePost && get().singlePost?.id === parseInt(postId)) {
+            if (get().singlePost && get().singlePost?.id === postId) {
                 const singlePost = { ...get().singlePost };
                 updatePostLikes(singlePost as any);
                 set({ singlePost: singlePost as any });
             }
 
             const posts = get().posts.map((post) => {
-                if (post.id === parseInt(postId)) {
+                if (post.id === postId) {
                     updatePostLikes(post);
                 }
                 return post;
@@ -112,12 +112,12 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         }
     },
 
-    isPostLiked: (postId: string) => {
+    isPostLiked: (postId) => {
         const { authUser } = useAuthStore.getState();
         if (!authUser) return false;
 
-        const post = get().posts.find((post) => post.id === parseInt(postId));
-        return post ? post.likes!.some((like: LikeType) => like.userId === authUser.id) : false;
+        const post = get().posts.find((post) => post.id === postId);
+        return post ? post.likes!.some((like) => like.userId === authUser.id) : false;
     },
 
     selectedPostId: 6,
@@ -149,7 +149,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
                     posts: [{
                         id: data.post.id, caption: data.post.caption, createdAt: data.post.createdAt, _count: {
                             comments: 0, likes: 0
-                        }, likes: [], mediaURL: data.post.mediaURL, mediaType: data.post.mediaType, User: data.post.User
+                        }, likes: [], mediaURL: data.post.mediaURL, mediaType: data.post.mediaType, User: data.post.User, location: data.post.location, userId: data.post.userId
                     }, ...get().posts]
                 });
             }

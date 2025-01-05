@@ -1,4 +1,4 @@
-import UserTile from "@/components/userTile";
+import UserTile from "@/components/Tiles/userTile";
 import { Input } from "@/components/ui/input";
 import { useSearchUserStore } from "@/store/Explore&Search/useSearchUserStore";
 import { useEffect } from "react";

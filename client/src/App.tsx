@@ -6,7 +6,6 @@ import AppLayout from "./pages/AppLayout";
 import HomePage from "./pages/HomePage";
 import ExplorePage from "./pages/ExplorePage";
 import ChatPage from "./pages/ChatPage";
-import CreatePostPage from "./pages/CreatePostPage";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import UserProfilePage from "./pages/UserProfilePage";
@@ -19,6 +18,8 @@ import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "./store/AuthStore/useAuthStore";
 import { useEffect } from "react";
 import SinglePostWrapper from "./pages/SinglePostWrapper";
+import FullViewStory from "./components/Stories/FullviewStory";
+import CreatePage from "./pages/CreatePage";
 
 const App = () => {
   const { authUser, checkAuth } = useAuthStore();
@@ -32,7 +33,7 @@ const App = () => {
       return <Navigate to="/auth/signin" replace />;
     }
     const decodedToken: any = jwtDecode(token);
-    if (decodedToken.role !== "admin") {
+    if (decodedToken.user.role !== "admin") {
       return <Navigate to="/" replace />;
     }
     return <>{children}</>;
@@ -62,7 +63,8 @@ const App = () => {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/admin/moderation" element={<ContentModeration />} />
         <Route path="/admin/logs" element={<SystemLogs />} />
-        <Route path="post/:postId" element={<SinglePostWrapper />} />
+        <Route path="/post/:postId" element={<SinglePostWrapper />} />
+        <Route path="/story/:storyId" element={<FullViewStory />} />
         <Route
           element={
             authUser ? <AppLayout /> : <Navigate to="/auth/signin" replace />
@@ -72,7 +74,7 @@ const App = () => {
           <Route path="explore" element={<ExplorePage />} />
           <Route path="messages" element={<ChatPage />} />
           <Route path="search" element={<SearchPage />} />
-          <Route path="create" element={<CreatePostPage />} />
+          <Route path="create" element={<CreatePage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="reels" element={<ReelsPage />} />
           <Route path="user/:username" element={<UserProfilePage />} />

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentTile from "../Tiles/CommentTile";
 import { ScrollArea } from "../ui/scroll-area";
 import CommentInput from "./CommentInput";
-import LikePost from "../LikePost";
+import LikePost from "./LikePost";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 import { useEffect } from "react";

@@ -4,14 +4,14 @@ import { motion } from "framer-motion";
 const LikePost = ({ postId }: { postId: number }) => {
   const { handleLikePost, isPostLiked } = usePostsStore();
   const handleLikeOnClick = () => {
-    handleLikePost(postId.toString());
+    handleLikePost(postId);
   };
   return (
     <div>
       <motion.button whileTap={{ scale: 1.1 }} onClick={handleLikeOnClick}>
         <Heart
           className={`${
-            isPostLiked(postId.toString()) ? "text-rose-600 fill-rose-600" : ""
+            isPostLiked(postId) ? "text-rose-600 fill-rose-600" : ""
           } h-7 w-7 transition-colors`}
         />
       </motion.button>

@@ -35,6 +35,11 @@ interface ChatStore {
     isUserTyping: boolean;
     startTyping: () => void;
     stopTyping: () => void;
+
+    sharePost: (messageData: messageData, selectedUserIds: string) => void;
+    isSharingPost: boolean;
+
+
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -81,6 +86,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             set({ messages: [...messages, response.data.newMessage] });
         } catch (error) {
             console.log(error);
+        }
+    },
+
+    isSharingPost: false,
+    sharePost: async (messageData, selectedUserIds) => {
+        const loggedUserId = useAuthStore.getState().authUser?.id;
+        const { messages } = get();
+        set({ isSharingPost: true });
+        try {
+            const response = await api.post(`${socketURI}/send-post/${loggedUserId}/${selectedUserIds}`, messageData);
+            set({ messages: [...messages, response.data.newMessage] });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            set({ isSharingPost: false })
         }
     },
     subscribeToMessages: () => {

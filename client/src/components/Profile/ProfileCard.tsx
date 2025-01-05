@@ -36,7 +36,14 @@ export default function ProfileCard() {
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col items-start gap-4 w-full">
-          <h1 className="text-xl md:text-2xl font-bold">{profile.username}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold">
+              {profile.username}
+            </h1>
+            {profile.isVerifiedAccount && (
+              <img className="h-5 w-5" src="/verified.svg" alt="" />
+            )}
+          </div>
           <div className="flex gap-2">
             <EditProfile profileData={profile} />
             <Button onClick={handleLogout} size="sm" variant="outline">

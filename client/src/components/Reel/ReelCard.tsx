@@ -1,11 +1,11 @@
 import { Reel } from "@/store/ReelsStore/useReelsStore";
 import ReelVideoPlayer from "./ReelVideoPlayer";
-import UserTile from "../userTile";
+import UserTile from "../Tiles/userTile";
 import { getTimeAgo } from "@/lib/getTimeFormat";
 import { Bookmark } from "lucide-react";
 import PostShareDialog from "./PostShareDialog";
-import LikePost from "../LikePost";
-import PostComments from "../PostComments";
+import LikePost from "../Post/LikePost";
+import PostComments from "../Post/PostComments";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 
 export default function ReelCard(reel: Reel) {

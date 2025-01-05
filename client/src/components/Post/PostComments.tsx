@@ -12,8 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
-import CommentTile from "./Tiles/CommentTile";
-import CommentInput from "./Post/CommentInput";
+import CommentTile from "../Tiles/CommentTile";
+import CommentInput from "./CommentInput";
 
 const PostComments = () => {
   const [isOpen, setIsOpen] = useState(false);

@@ -539,6 +539,7 @@ exports.userRouter.get("/profile/:userId/:username", (req, res) => __awaiter(voi
                 avatar: true,
                 bio: true,
                 fullName: true,
+                isVerifiedAccount: true,
                 followers: {
                     include: {
                         user: true
