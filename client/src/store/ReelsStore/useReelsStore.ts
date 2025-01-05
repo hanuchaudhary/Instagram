@@ -14,6 +14,13 @@ export interface Reel {
         bio: string;
         location: string;
     };
+    Post: {
+        id : number;
+        _count: {
+            likes: number;
+            comments: number;
+        };
+    }
 }
 
 interface ReelsStore {

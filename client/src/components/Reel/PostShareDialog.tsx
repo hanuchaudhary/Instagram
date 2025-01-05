@@ -16,7 +16,7 @@ import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
 
 const PostShareDialog = ({ postURL }: { postURL: string }) => {
   const [open, setOpen] = useState(false);
-  const { sendPost } = useSendPostStore();
+  const { sendPost, isSendingPost } = useSendPostStore();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { followers, following } = useFollowDataStore();
   const users = [...following, ...followers].map((user) => ({
@@ -38,14 +38,16 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
   const handleShare = () => {
     console.log(`Sharing with user ids: ${selectedUsers.join(", ")}`);
     sendPost(selectedUsers.join(", "), postURL);
+    setSelectedUsers([]);
+    setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Send className="w-9 h-9" />
+      <DialogTrigger className="cursor-pointer" asChild>
+        <Send className="w-7 h-7"/>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl p-2 md:p-6 border-none bg-secondary">
+      <DialogContent className="sm:max-w-2xl z-[999999] p-2 md:p-6 border-none bg-secondary">
         <DialogHeader>
           <DialogTitle className="text-xl">Share</DialogTitle>
         </DialogHeader>
@@ -64,11 +66,17 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
         {selectedUsers.length > 0 && (
           <>
             <Button className="w-full mt-4" onClick={handleShare}>
-              Share <Send />
+              {isSendingPost ? (
+                "Sending..."
+              ) : (
+                <div className="flex items-center justify-center">
+                  Share <Send />
+                </div>
+              )}
             </Button>
             <Button
               variant="ghost"
-              className="w-full mt-2"
+              className="w-full"
               onClick={() => setSelectedUsers([])}
             >
               Clear Selection

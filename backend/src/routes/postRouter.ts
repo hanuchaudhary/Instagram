@@ -73,11 +73,12 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                 },
             });
 
-            const newReel = await tx.reels.create({
+            const newReel = await tx.reel.create({
                 data: {
                     caption,
                     mediaURL,
-                    userId
+                    userId,
+                    postId: newPost.id,
                 },
                 include: {
                     User: {
@@ -92,13 +93,6 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
                 },
             });
 
-
-            await tx.reelPost.create({
-                data: {
-                    reelId: newReel.id,
-                    postId: newPost.id
-                },
-            });
 
             return { newPost, newReel };
         });

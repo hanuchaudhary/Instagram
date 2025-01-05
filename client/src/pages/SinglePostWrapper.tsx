@@ -1,5 +1,5 @@
 import SinglePostModal from "@/components/Post/SinglePostModal";
-import { ShareReportButton } from "@/components/ShareReportButton";
+import { ReportButton } from "@/components/ReportButton";
 import { X } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,11 +25,10 @@ export default function SinglePostWrapper() {
         >
           <X className="text-primary" />
         </button>
-        <ShareReportButton
+        <ReportButton
           reportTargetTitle=""
           reportType="POST"
           reportedId=""
-          shareType="post"
           targetId=""
           postId={parseInt(postId)}
         />

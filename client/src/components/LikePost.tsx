@@ -12,7 +12,7 @@ const LikePost = ({ postId }: { postId: number }) => {
         <Heart
           className={`${
             isPostLiked(postId.toString()) ? "text-rose-600 fill-rose-600" : ""
-          } h-6 w-6 transition-colors`}
+          } h-7 w-7 transition-colors`}
         />
       </motion.button>
     </div>

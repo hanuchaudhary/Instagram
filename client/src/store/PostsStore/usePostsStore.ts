@@ -72,6 +72,7 @@ export const usePostsStore = create<PostStore>((set, get) => ({
                         return
                     }
                     post._count.likes++;
+
                     post.likes.push({
                         id: Math.random(),
                         userId: authUser.id,
@@ -83,10 +84,12 @@ export const usePostsStore = create<PostStore>((set, get) => ({
                     if (!post._count || !post.likes) {
                         return
                     }
+
                     post._count.likes--;
                     post.likes = post.likes.filter(
                         (like: LikeType) => like.userId !== authUser.id
                     );
+
                 }
             };
 

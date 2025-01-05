@@ -290,21 +290,35 @@ featureRouter.get("/reels", async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 2;
 
     try {
-        const reels = await prisma.post.findMany({
-            where: {
-                mediaType: 'video',
-            },
-            include: {
+        const reels = await prisma.reel.findMany({
+            select: {
+                id: true,
+                mediaURL: true,
+                caption: true,
+                createdAt: true,
                 User: {
                     select: {
-                        username: true,
-                        avatar: true,
                         id: true,
-                    },
+                        bio: true,
+                        fullName: true,
+                        avatar: true,
+                        username: true,
+                    }
                 },
+                Post: {
+                    select: {
+                        id: true,
+                        _count: {
+                            select: {
+                                comments: true,
+                                likes: true,
+                            }
+                        },
+                    }
+                }
             },
-            orderBy: {
-                createdAt: 'desc',
+            orderBy:{
+                createdAt: 'desc'
             },
             take: limit,
             skip: (page - 1) * limit,
@@ -331,7 +345,7 @@ featureRouter.get("/chat-users", authMiddleware, async (req: Request, res: Respo
     try {
         const chatUsers = await prisma.user.findMany({
             where: {
-                AND: [
+                OR: [
                     {
                         OR: [
                             { followers: { some: { userId } } },
@@ -414,7 +428,7 @@ featureRouter.post("/send-post/:toUserIds", authMiddleware, async (req: Request,
             });
             return;
         }
-        
+
         const receiverIds = toUserIds.includes(",") ? toUserIds.split(",") : [toUserIds];
         for (const receiverId of receiverIds) {
             const receiver = await prisma.user.findUnique({

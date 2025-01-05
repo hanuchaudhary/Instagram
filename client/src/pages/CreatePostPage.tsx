@@ -85,7 +85,7 @@ export default function CreateReel() {
                             <img
                               src={imagePreview}
                               alt="Post Preview"
-                              className="w-full aspect-square object-contain"
+                              className="w-full h-96 aspect-[9/16] object-contain"
                             />
                           ) : reelPreview ? (
                             <video

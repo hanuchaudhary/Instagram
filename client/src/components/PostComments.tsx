@@ -15,26 +15,27 @@ import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 import CommentTile from "./Tiles/CommentTile";
 import CommentInput from "./Post/CommentInput";
 
-const PostComments = ({ postId }: { postId: number }) => {
+const PostComments = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const { comments, fetchComments} = usePostCommentsStore();
-
+  const { comments, fetchComments, postId} = usePostCommentsStore();
+  
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && postId) {
       fetchComments();
     }
   }, [isOpen, postId]);
+
+  
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
         <button className="mb-2">
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-7 w-7" />
           <span className="sr-only">Open comments</span>
         </button>
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="z-[9999999]">
         <DrawerHeader className="text-left">
           <DrawerTitle>Comments</DrawerTitle>
           <DrawerDescription>

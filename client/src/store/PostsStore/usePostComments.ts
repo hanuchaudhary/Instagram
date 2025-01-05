@@ -3,21 +3,23 @@ import { comment } from "@/types/PostTypes";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useAuthStore } from "../AuthStore/useAuthStore";
-import { usePostsStore } from "./usePostsStore";
 
 interface CommentStore {
     comments: comment[];
     fetchComments: () => Promise<void>;
     postComment: (postId: number, comment: string) => Promise<void>;
+
+    postId: number | null;
+    setPostId: (postId: number | null) => void;
 }
 
 
 export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     comments: [],
     fetchComments: async () => {
-        const selectedPostId = usePostsStore.getState().selectedPostId;
+        const postId = get().postId;
         try {
-            const response = await api.get(`/feature/comments/${selectedPostId}`);
+            const response = await api.get(`/feature/comments/${postId}`);
             set({ comments: response.data.comments });
         } catch (error) {
             console.error("Error fetching comments:", error);
@@ -26,7 +28,7 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     },
     postComment: async (postId: number, comment: string) => {
         try {
-            const authUser  = useAuthStore.getState().authUser;
+            const authUser = useAuthStore.getState().authUser;
             await api.post(`/feature/comment/${postId}`, { comment: comment, });
             toast.success("Comment posted successfully");
             const updatedComments = [{
@@ -45,4 +47,9 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
             toast.error("Failed to post comment");
         }
     },
+
+    postId: null,
+    setPostId: (postId) => {
+        set({ postId });
+    }
 }));

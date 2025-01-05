@@ -1,12 +1,12 @@
-import { useState } from "react"
-import { MoreVertical, Copy, AlertCircle } from 'lucide-react'
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { MoreVertical, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -14,24 +14,19 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
-import { ToolsStore } from "@/store/ToolsStore/useToolsStore"
-import { ReportType } from "@/types/TypeInterfaces"
-import { useParams } from "react-router-dom"
-import { toast } from "sonner"
-
-type ShareType = "profile" | "post"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
+import { ToolsStore } from "@/store/ToolsStore/useToolsStore";
+import { ReportType } from "@/types/TypeInterfaces";
 
 interface ShareReportButtonProps {
-  shareType: ShareType
-  reportType: ReportType
-  reportTargetTitle: string
-  targetId: string
-  reportedId: string
-  postId?: number
+  reportType: ReportType;
+  reportTargetTitle: string;
+  targetId: string;
+  reportedId: string;
+  postId?: number;
 }
 
 const reportReasons = {
@@ -53,60 +48,39 @@ const reportReasons = {
     { id: "harassment", label: "Harassment" },
     { id: "inappropriate", label: "Inappropriate content" },
   ],
-}
+};
 
-export function ShareReportButton({
-  shareType,
+export function ReportButton({
   reportType,
   reportTargetTitle,
   targetId,
   reportedId,
-  postId,
 }: ShareReportButtonProps) {
-  const [isReportOpen, setIsReportOpen] = useState(false)
-  const [selectedReason, setSelectedReason] = useState<string>("")
-  const [detailReason, setDetailReason] = useState<string>("")
-  const { createReport, isLoading } = ToolsStore()
-  const params = useParams()
-
-  const handleShare = () => {
-    const baseUrl = window.location.origin
-    let shareUrl = ""
-
-    if (shareType === "profile") {
-      shareUrl = `${baseUrl}/user/${params.username}`
-    } else if (shareType === "post") {
-      shareUrl = `${baseUrl}/post/${postId}`
-    }
-
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success("Link copied to clipboard "+ shareUrl)
-    }).catch((err) => {
-      console.error('Failed to copy: ', err)
-      toast.error("Failed to copy link")
-    })
-  }
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string>("");
+  const [detailReason, setDetailReason] = useState<string>("");
+  const { createReport, isLoading } = ToolsStore();
 
   const handleReportClick = () => {
-    setIsReportOpen(true)
-  }
+    setIsReportOpen(true);
+  };
 
   const handleReportSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const finalReason = detailReason
       ? `${selectedReason} | ${detailReason}`
-      : selectedReason
+      : selectedReason;
 
     createReport({
       reason: finalReason,
       targetId: targetId,
       reportedId: reportedId,
       type: reportType,
-    })
+    });
 
-    setIsReportOpen(false)
-  }
+    setIsReportOpen(false);
+  };
 
   return (
     <>
@@ -117,10 +91,6 @@ export function ShareReportButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleShare}>
-            <Copy className="mr-2 h-4 w-4" />
-            Copy Link
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleReportClick}>
             <AlertCircle className="mr-2 h-4 w-4" />
             Report
@@ -146,10 +116,7 @@ export function ShareReportButton({
                 onValueChange={setSelectedReason}
               >
                 {reportReasons[reportType].map((reason) => (
-                  <div
-                    key={reason.id}
-                    className="flex items-center space-x-2"
-                  >
+                  <div key={reason.id} className="flex items-center space-x-2">
                     <RadioGroupItem value={reason.id} id={reason.id} />
                     <Label htmlFor={reason.id}>{reason.label}</Label>
                   </div>
@@ -181,6 +148,5 @@ export function ShareReportButton({
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
-

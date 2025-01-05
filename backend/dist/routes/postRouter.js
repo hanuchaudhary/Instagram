@@ -72,11 +72,12 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                     likes: true,
                 },
             });
-            const newReel = yield tx.reels.create({
+            const newReel = yield tx.reel.create({
                 data: {
                     caption,
                     mediaURL,
-                    userId
+                    userId,
+                    postId: newPost.id,
                 },
                 include: {
                     User: {
@@ -88,12 +89,6 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                             bio: true,
                         }
                     },
-                },
-            });
-            yield tx.reelPost.create({
-                data: {
-                    reelId: newReel.id,
-                    postId: newPost.id
                 },
             });
             return { newPost, newReel };

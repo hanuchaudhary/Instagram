@@ -223,7 +223,7 @@ export default function AppLayout() {
       </main>
 
       {/* Bottom navigation for mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 px-4">
+      <nav className="md:hidden z-[99999999999] fixed bottom-0 left-0 right-0 bg-background border-t flex justify-around items-center h-16 px-4">
         <Link
           to="/"
           className={`p-2 rounded-full ${
@@ -259,7 +259,7 @@ export default function AppLayout() {
         <Link
           to="/reels"
           className={`p-2 rounded-full ${
-            location.pathname === "/search" ? "bg-accent" : ""
+            location.pathname === "/reels" ? "bg-accent" : ""
           }`}
         >
           {/* <Film className="w-7 h-7" /> */}

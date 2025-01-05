@@ -265,21 +265,35 @@ exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     try {
-        const reels = yield PrismaClient_1.prisma.post.findMany({
-            where: {
-                mediaType: 'video',
-            },
-            include: {
+        const reels = yield PrismaClient_1.prisma.reel.findMany({
+            select: {
+                id: true,
+                mediaURL: true,
+                caption: true,
+                createdAt: true,
                 User: {
                     select: {
-                        username: true,
-                        avatar: true,
                         id: true,
-                    },
+                        bio: true,
+                        fullName: true,
+                        avatar: true,
+                        username: true,
+                    }
                 },
+                Post: {
+                    select: {
+                        id: true,
+                        _count: {
+                            select: {
+                                comments: true,
+                                likes: true,
+                            }
+                        },
+                    }
+                }
             },
             orderBy: {
-                createdAt: 'desc',
+                createdAt: 'desc'
             },
             take: limit,
             skip: (page - 1) * limit,
@@ -305,7 +319,7 @@ exports.featureRouter.get("/chat-users", middleware_1.authMiddleware, (req, res)
     try {
         const chatUsers = yield PrismaClient_1.prisma.user.findMany({
             where: {
-                AND: [
+                OR: [
                     {
                         OR: [
                             { followers: { some: { userId } } },
@@ -380,9 +394,7 @@ exports.featureRouter.post("/send-post/:toUserIds", middleware_1.authMiddleware,
             });
             return;
         }
-        console.log("toUserIds", toUserIds);
         const receiverIds = toUserIds.includes(",") ? toUserIds.split(",") : [toUserIds];
-        console.log("receiverIds", receiverIds);
         for (const receiverId of receiverIds) {
             const receiver = yield PrismaClient_1.prisma.user.findUnique({
                 where: {

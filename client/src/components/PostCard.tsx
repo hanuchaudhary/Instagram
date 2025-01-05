@@ -8,9 +8,12 @@ import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { GradientHeartLikeIcon } from "./GradientHeartLikeIcon";
-import { ShareReportButton } from "./ShareReportButton";
-const PostCard = (post: post ) => {
+import { ReportButton } from "./ReportButton";
+import PostShareDialog from "./Reel/PostShareDialog";
+import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
+const PostCard = (post: post) => {
   const { handleLikePost, isPostLiked } = usePostsStore();
+  const { setPostId } = usePostCommentsStore();
   const [showHeart, setShowHeart] = useState(false);
 
   const handleDoubleTap = () => {
@@ -33,23 +36,22 @@ const PostCard = (post: post ) => {
               location={post.location}
             />
           </div>
-          <ShareReportButton
+          <ReportButton
             reportTargetTitle="Report Post"
             reportType="POST"
             reportedId=""
-            shareType="post"
             targetId=""
             postId={post.id}
           />
         </CardHeader>
         <div className="w-full border rounded-md">
-          <CardContent className="p-0 relative cursor-pointer overflow-hidden h-[500px]">
+          <CardContent className="p-0 relative cursor-pointer overflow-hidden">
             <div
-              className="w-full h-full aspect-square overflow-hidden"
+              className="w-full md:h-[600px] h-[500px] overflow-hidden"
               onDoubleClick={handleDoubleTap}
             >
               {post.mediaType === "video" ? (
-                <div className="h-full w-full">
+                <div className="w-full h-full flex items-center justify-center">
                   <ReelVideoPlayer mediaURL={post.mediaURL} />
                 </div>
               ) : (
@@ -94,7 +96,7 @@ const PostCard = (post: post ) => {
                     damping: 10,
                     mass: 1,
                   }}
-                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  className="absolute z-[99999] inset-0 flex items-center justify-center pointer-events-none"
                 >
                   <div className="relative w-44 h-44">
                     <GradientHeartLikeIcon />
@@ -106,9 +108,12 @@ const PostCard = (post: post ) => {
         </div>
         <CardFooter className="flex flex-col gap-1 p-3">
           <div className="flex w-full">
-            <div className="flex gap-2  items-center">
+            <div className="flex gap-3 items-center">
               <LikePost postId={post.id} />
-              <PostComments postId={post.id} />
+              <div onClick={() => setPostId(post.id)}>
+                <PostComments />
+              </div>
+              <PostShareDialog postURL={post.mediaURL} />
             </div>
           </div>
           <div className="flex w-full flex-col gap-1">

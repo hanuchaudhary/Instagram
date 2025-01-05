@@ -163,6 +163,13 @@ export default function ChatContainer() {
                           <source src={msg.message} type="video/mp4" />
                           Your browser does not support the video tag.
                         </video>
+                      ) : msg.message.endsWith(".jpg") ||
+                        msg.message.endsWith(".png") ? (
+                        <img
+                          src={msg.message}
+                          alt="message"
+                          className="w-52 object-cover rounded-lg"
+                        />
                       ) : (
                         <p className="leading-relaxed">{msg.message}</p>
                       )}

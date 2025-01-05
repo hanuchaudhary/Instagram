@@ -6,7 +6,7 @@ import { Grid, ImageIcon, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useOtherUserProfileStore } from "@/store/UserStore/useOtherUserProfileStore";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
-import { ShareReportButton } from "@/components/ShareReportButton";
+import { ReportButton } from "@/components/ReportButton";
 export default function UserProfilePage() {
   const { username } = useParams();
   const { setSelectedPostId, selectedPostId } = usePostsStore();
@@ -37,12 +37,11 @@ export default function UserProfilePage() {
     <div className="container px-4 sm:px-6 max-w-4xl py-6 sm:py-8">
       <Card className="p-6 sm:p-8 relative">
         <div className="absolute flex items-center gap-2 top-2 right-4">
-          <ShareReportButton
+          <ReportButton
             reportTargetTitle="Report user"
             reportType="USER"
             reportedId=""
             targetId=""
-            shareType="profile"
             postId={selectedPostId as number}
           />
         </div>
