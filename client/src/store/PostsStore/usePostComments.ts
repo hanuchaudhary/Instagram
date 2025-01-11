@@ -6,7 +6,7 @@ import { useAuthStore } from "../AuthStore/useAuthStore";
 
 interface CommentStore {
     comments: comment[];
-    fetchComments: () => Promise<void>;
+    fetchComments: (postId : number) => Promise<void>;
     postComment: (postId: number, comment: string) => Promise<void>;
 
     postId: number | null;
@@ -16,10 +16,10 @@ interface CommentStore {
 
 export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     comments: [],
-    fetchComments: async () => {
+    fetchComments: async (paramsPostId) => {
         const postId = get().postId;
         try {
-            const response = await api.get(`/feature/comments/${postId}`);
+            const response = await api.get(`/feature/comments/${paramsPostId || postId}`);
             set({ comments: response.data.comments });
         } catch (error) {
             console.error("Error fetching comments:", error);

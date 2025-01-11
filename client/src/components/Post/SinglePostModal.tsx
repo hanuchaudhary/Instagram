@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { UserCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import CommentTile from "../Tiles/CommentTile";
@@ -7,21 +7,30 @@ import CommentInput from "./CommentInput";
 import LikePost from "./LikePost";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
-import { useEffect } from "react";
-import PostShareDialog from "../Reel/PostShareDialog";
+import { useEffect, useState } from "react";
+import PostShareDialog from "./PostShareDialog";
+import { useParams } from "react-router-dom";
 
 export default function SinglePostModal() {
   const { fetchSinglePost, isSinglePostLoading, singlePost, selectedPostId } =
     usePostsStore();
+  const [copied, setCopied] = useState(false);
   const { comments, fetchComments } = usePostCommentsStore();
 
-  useEffect(() => {
-    fetchComments();
-  }, [selectedPostId, fetchComments]);
+  const { postId } = useParams();
 
   useEffect(() => {
-    if (!selectedPostId) return;
-    fetchSinglePost(selectedPostId);
+    fetchComments(parseInt(postId!));
+  }, [selectedPostId, fetchComments]);
+  
+
+  setTimeout(() => {
+    setCopied(false);
+  }, 1500);
+
+  useEffect(() => {
+    if (!postId) return;
+    fetchSinglePost(parseInt(postId!));
   }, [fetchSinglePost, selectedPostId]);
 
   if (isSinglePostLoading || !singlePost) {
@@ -39,6 +48,18 @@ export default function SinglePostModal() {
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
     >
+     <AnimatePresence>
+        {copied && (
+          <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-0 z-[999999999999] left-0 border-t border-t-neutral-700 flex items-center justify-center bg-secondary w-full text-neutral-400 text-sm p-2">
+            Link copied to clipboard!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex gap-2 flex-col md:flex-row h-[90vh] md:h-[80vh]">
         <div className="flex-1 bg-transparent flex items-center justify-center relative ">
           <div className="absolute inset-0 z-0">
@@ -107,7 +128,16 @@ export default function SinglePostModal() {
                   <LikePost postId={singlePost.id!} />
                 </div>
                 <div>
-                  <PostShareDialog postURL={singlePost.mediaURL as string} />
+                  <PostShareDialog
+                    handleCopy={() => {
+                      navigator.clipboard.writeText(
+                        `${window.location.origin}/post/${singlePost.id}`
+                      );
+                      setCopied(true);
+                    }}
+                    postId={singlePost.id!}
+                    postURL={singlePost.mediaURL as string}
+                  />
                 </div>
               </div>
             </div>

@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Camera } from "lucide-react";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
 
 export default function CreateStory() {
   const [image, setImage] = useState<string | null>(null);
+  const { profile } = useProfileStore();
   const [text, setText] = useState("");
   const [textPosition, setTextPosition] = useState({ x: 50, y: 50 });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,14 +103,11 @@ export default function CreateStory() {
           )}
           <div className="absolute top-4 left-4 flex items-center space-x-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage
-                src="http://res.cloudinary.com/diihvllmt/image/upload/v1736060254/instagram-clone/avatars/wytuchxg8vbqsrali2en.jpg"
-                alt="User"
-              />
+              <AvatarImage src={profile.avatar || "/user.svg"} alt="User" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <span className="text-white font-semibold text-sm">
-              Your Username
+              {profile.username}
             </span>
           </div>
         </div>

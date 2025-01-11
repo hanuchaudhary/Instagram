@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useStoriesStore } from "@/store/StoriesStore/useStoriesStore";
 
 export default function FullViewStory() {
@@ -30,12 +30,13 @@ export default function FullViewStory() {
           // style={{ width: `${progress}%` }}
         />
       </div>
-      <button
-        onClick={() => navigate("/", { replace: true })}
+      <Link
+        to={"/"}
+        replace
         className="absolute top-4 right-4 text-white hover:text-neutral-300"
       >
         <X size={24} />
-      </button>
+      </Link>
       <div className="slider px-40 flex justify-between w-full absolute">
         <button
           disabled={currentStoryId === 0}

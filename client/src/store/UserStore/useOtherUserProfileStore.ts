@@ -16,7 +16,7 @@ export const useOtherUserProfileStore = create<otherUserProfileStore>((set) => (
     fetchProfile: async (username: string) => {
         const { authUser } = useAuthStore.getState();
         try {
-            const response = await api.get(`/user/profile/${authUser?.id}/${username}`);
+            const response = await api.get(`/feature/profile/${authUser?.id}/${username}`);
             set({ profile: response.data.user });
         } catch (error) {
             console.error("Error fetching profile:", error);

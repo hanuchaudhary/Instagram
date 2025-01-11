@@ -15,8 +15,7 @@ const instagram_1 = require("@hanuchaudhary/instagram");
 const PrismaClient_1 = require("../database/PrismaClient");
 const middleware_1 = require("../middleware");
 exports.featureRouter = (0, express_1.Router)();
-exports.featureRouter.use(middleware_1.authMiddleware);
-exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/follow/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const { toUserId } = req.params;
     try {
@@ -64,7 +63,7 @@ exports.featureRouter.post("/follow/:toUserId", (req, res) => __awaiter(void 0, 
         });
     }
 }));
-exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/unfollow/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const { toUserId } = req.params;
     try {
@@ -109,7 +108,7 @@ exports.featureRouter.post("/unfollow/:toUserId", (req, res) => __awaiter(void 0
         });
     }
 }));
-exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/like-post/:postId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const { postId } = req.params;
     try {
@@ -173,7 +172,7 @@ exports.featureRouter.post("/like-post/:postId", (req, res) => __awaiter(void 0,
         });
     }
 }));
-exports.featureRouter.post("/comment/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.post("/comment/:postId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
     const { postId } = req.params;
     const { comment } = req.body;
@@ -229,10 +228,11 @@ exports.featureRouter.get("/comments/:postId", (req, res) => __awaiter(void 0, v
             message: "Post ID is required"
         });
     }
+    console.log("postId", postId);
     try {
         const comments = yield PrismaClient_1.prisma.comment.findMany({
             where: {
-                postId: Number(postId)
+                postId: parseInt(postId)
             },
             include: {
                 user: {
@@ -261,7 +261,7 @@ exports.featureRouter.get("/comments/:postId", (req, res) => __awaiter(void 0, v
         });
     }
 }));
-exports.featureRouter.get("/reels", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.featureRouter.get("/reels", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     try {
@@ -445,5 +445,138 @@ exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) =>
             error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
         return;
+    }
+}));
+exports.featureRouter.get("/profile/:userId/:username", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, userId } = req.params;
+    try {
+        const user = yield PrismaClient_1.prisma.user.findUnique({
+            where: { username },
+            select: {
+                id: true,
+                accountType: true,
+                username: true,
+                avatar: true,
+                bio: true,
+                fullName: true,
+                isVerifiedAccount: true,
+                followers: {
+                    include: {
+                        user: true
+                    }
+                },
+                following: {
+                    include: {
+                        user: true
+                    }
+                },
+                posts: {
+                    include: {
+                        comments: {
+                            include: {
+                                user: true
+                            }
+                        },
+                    }
+                },
+                isCodeVerified: true,
+                like: true,
+                _count: {
+                    select: {
+                        followers: true,
+                        following: true,
+                        posts: true,
+                    }
+                }
+            }
+        });
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
+        const isFollowing = user.following.some((follow) => follow.user.id === userId);
+        const isPrivateAccount = user.accountType === "private";
+        if (!isPrivateAccount && !isFollowing) {
+            return res.status(200).json({
+                success: true,
+                user
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            user: {
+                id: user.id,
+                accountType: user.accountType,
+                username: user.username,
+                avatar: user.avatar,
+                bio: user.bio,
+                fullName: user.fullName,
+                _count: {
+                    followers: user._count.followers,
+                    following: user._count.following,
+                    posts: user._count.posts,
+                }
+            }
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching profile:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching profile",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.featureRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { postId } = req.params;
+    console.log("Unique Post Id", postId);
+    try {
+        const post = yield PrismaClient_1.prisma.post.findUnique({
+            where: {
+                id: parseInt(postId)
+            },
+            include: {
+                comments: {
+                    include: {
+                        user: true
+                    }, orderBy: {
+                        createdAt: "desc"
+                    }
+                },
+                User: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true
+                    }
+                }, _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            }
+        });
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            post
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching post:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching post",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
     }
 }));

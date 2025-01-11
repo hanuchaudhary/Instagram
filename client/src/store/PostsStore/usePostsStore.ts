@@ -120,15 +120,15 @@ export const usePostsStore = create<PostStore>((set, get) => ({
         return post ? post.likes!.some((like) => like.userId === authUser.id) : false;
     },
 
-    selectedPostId: 6,
+    selectedPostId: null,
     setSelectedPostId: (postId) => {
         set({ selectedPostId: postId });
     },
-    fetchSinglePost: async () => {
+    fetchSinglePost: async (postId: number) => {
         const { selectedPostId } = get();
         try {
             set({ isSinglePostLoading: true });
-            const response = await api.get(`/user/post/${selectedPostId}`);
+            const response = await api.get(`/feature/post/${postId || selectedPostId}`);
             set({ singlePost: response.data.post });
         } catch (error) {
             console.error("Error fetching single post:", error);

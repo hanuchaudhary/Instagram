@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Send } from "lucide-react";
+import { Copy, Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +14,17 @@ import clsx from "clsx";
 import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
 import { useChatStore } from "@/store/ChatStore/useChatStore";
+import { motion } from "framer-motion";
 
-const PostShareDialog = ({ postURL }: { postURL: string }) => {
+const PostShareDialog = ({
+  postURL,
+  postId,
+  handleCopy,
+}: {
+  handleCopy: () => void;
+  postURL: string;
+  postId: number;
+}) => {
   const [open, setOpen] = useState(false);
   const [filterUser, setFilterUser] = useState("");
   const { isSharingPost, sharePost, chatUsers, fetchChatUsers } =
@@ -23,7 +32,7 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   useEffect(() => {
-    // if (chatUsers) return;
+    if (chatUsers) return;
     fetchChatUsers();
   }, [fetchChatUsers]);
 
@@ -78,19 +87,29 @@ const PostShareDialog = ({ postURL }: { postURL: string }) => {
           </div>
         </ScrollArea>
         <>
-          <Button
-            disabled={selectedUsers.length <= 0}
-            className="w-full mt-4"
-            onClick={handleShare}
-          >
-            {isSharingPost ? (
-              "Sending..."
-            ) : (
-              <div className="flex items-center justify-center">
-                Share <Send />
-              </div>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={selectedUsers.length <= 0}
+              className="w-full"
+              onClick={handleShare}
+            >
+              {isSharingPost ? (
+                "Sending..."
+              ) : (
+                <div className="flex items-center justify-center">
+                  Share <Send />
+                </div>
+              )}
+            </Button>
+
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              className="py-1.5 px-2 bg-primary rounded-lg text-secondary"
+              onClick={handleCopy}
+            >
+              <Copy className="h-5 w-5" />
+            </motion.button>
+          </div>
           <Button
             disabled={selectedUsers.length <= 0 || isSharingPost}
             variant="ghost"

@@ -7,15 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Camera, MapPin } from "lucide-react";
+import { Camera, Heart, MapPin, MessageCircle, Send } from "lucide-react";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { postSchema } from "@hanuchaudhary/instagram";
 import { useNavigate } from "react-router-dom";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
 
 export default function CreatePost() {
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { profile } = useProfileStore();
   const { createPost, isCreatingPost } = usePostsStore();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +65,10 @@ export default function CreatePost() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="post-image-upload" className="block mb-2">
-                <Button variant={"outline"} onClick={() => inputRef.current?.click()}>
+                <Button
+                  variant={"outline"}
+                  onClick={() => inputRef.current?.click()}
+                >
                   <Camera className="mr-2 h-4 w-4" /> Upload Image or Video
                 </Button>
               </label>
@@ -100,7 +105,7 @@ export default function CreatePost() {
                 <FormItem>
                   <FormControl>
                     <div className="relative">
-                      <MapPin className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+                      <MapPin className="absolute left-2 top-1/2 h-5 w-5 transform -translate-y-1/2 text-neutral-400" />
                       <Input
                         placeholder="Enter Location..."
                         className="pl-8"
@@ -154,15 +159,32 @@ export default function CreatePost() {
             )}
             <div className="absolute top-4 left-4 flex items-center space-x-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src="http://res.cloudinary.com/diihvllmt/image/upload/v1736060254/instagram-clone/avatars/wytuchxg8vbqsrali2en.jpg"
-                  alt="User"
-                />
+                <AvatarImage src={profile.avatar || "/user.svg"} alt="User" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
-              <span className="text-white font-semibold text-sm">
-                Your Username
-              </span>
+              <div className="flex flex-col">
+                <span className="text-white leading-none font-semibold text-sm">
+                  {profile.username}
+                </span>
+                {form.watch("location") && (
+                  <div className="flex items-center text-neutral-300">
+                    <MapPin className="h-3 w-3" />
+                    <span className="leading-none text-sm">
+                      {form.watch("location")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="absolute bottom-4 left-4 w-full">
+              <div className="flex items-center gap-1 w-full">
+                <Heart className="stroke-red-600 fill-red-600" />
+                <MessageCircle />
+                <Send />
+              </div>
+              <p className="text-sm text-neutral-300">
+                {form.watch("caption")}
+              </p>
             </div>
           </div>
         </div>

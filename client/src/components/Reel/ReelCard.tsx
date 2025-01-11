@@ -3,7 +3,7 @@ import ReelVideoPlayer from "./ReelVideoPlayer";
 import UserTile from "../Tiles/userTile";
 import { getTimeAgo } from "@/lib/getTimeFormat";
 import { Bookmark } from "lucide-react";
-import PostShareDialog from "./PostShareDialog";
+import PostShareDialog from "../Post/PostShareDialog";
 import LikePost from "../Post/LikePost";
 import PostComments from "../Post/PostComments";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
@@ -43,7 +43,7 @@ export default function ReelCard(reel: Reel) {
             className="p-2 rounded-full text-foreground"
             aria-label="Share"
           >
-            <PostShareDialog postURL={reel.mediaURL} />
+            <PostShareDialog postId={reel.Post.id} postURL={reel.mediaURL} />
           </button>
 
           <button

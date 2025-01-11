@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { mediaType } from "@/types/TypeInterfaces";
 
 interface StoryProps {
   username: string;

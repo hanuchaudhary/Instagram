@@ -19,7 +19,7 @@ import Menu from "@/components/Menu";
 export default function AppLayout() {
   const location = useLocation();
   const { authUser } = useAuthStore();
-  const { fetchProfile } = useProfileStore();
+  const { fetchProfile, profile } = useProfileStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export default function AppLayout() {
           <Link to="/" className="flex items-center mb-8">
             {isCollapsed ? (
               <img
-                className="w-36 dark:invert"
+                className="dark:invert"
                 src="/instagram-logo.svg"
                 alt="/instagram-logo.svg"
               />
@@ -174,7 +174,7 @@ export default function AppLayout() {
               >
                 <AvatarImage
                   className="object-cover"
-                  src={authUser?.avatar || "/user.svg"}
+                  src={profile.avatar || authUser?.avatar || "/user.svg"}
                   alt="Profile"
                 />
                 <AvatarFallback>{authUser?.username?.charAt(0)}</AvatarFallback>
@@ -295,7 +295,7 @@ export default function AppLayout() {
           <Avatar className="w-7 h-7">
             <AvatarImage
               className="object-cover"
-              src={authUser?.avatar || "/user.svg"}
+              src={profile.avatar || authUser?.avatar || "/user.svg"}
               alt="Profile"
             />
             <AvatarFallback>{authUser?.username?.charAt(0)}</AvatarFallback>
