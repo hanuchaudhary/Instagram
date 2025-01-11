@@ -28,11 +28,11 @@ export const useStoriesStore = create<storiesStore>((set, get) => ({
         set({ currentUserWithStory: username });
     },
 
-    isFetchingStories: false,
+    isFetchingStories: true,
     fetchStories: async (username: string) => {
         set({ isFetchingStories: true });
         try {
-            const response = await api.get(`/feature/story/${username || get().currentUserWithStory}`);
+            const response = await api.get(`/feature/story/${username}`);
             set({ stories: response.data.stories });
         } catch (error) {
             console.log(error);

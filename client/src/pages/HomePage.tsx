@@ -1,51 +1,53 @@
-import { useEffect, useRef } from "react";
-import PostCard from "@/components/Post/PostCard";
-import SuggestedUsers from "@/components/SuggestedUsers";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Loader2, UserPlus } from "lucide-react";
-import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { usePostsStore } from "@/store/PostsStore/usePostsStore";
-import StoryViewer from "@/components/Stories/StoryViewer";
+import { useEffect, useRef } from "react"
+import PostCard from "@/components/Post/PostCard"
+import SuggestedUsers from "@/components/SuggestedUsers"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Skeleton } from "@/components/ui/skeleton"
+import { AlertCircle, Loader2, UserPlus } from 'lucide-react'
+import { useFollowDataStore } from "@/store/UserStore/useFollowStore"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { usePostsStore } from "@/store/PostsStore/usePostsStore"
+import StoryViewer from "@/components/Stories/StoryViewer"
 
 export default function HomePage() {
-  const { fetchFollowData } = useFollowDataStore();
-  useEffect(() => {
-    fetchFollowData();
-  }, [fetchFollowData]);
-  const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore();
-  const observerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+  const { fetchFollowData } = useFollowDataStore()
+  const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore()
+  const observerRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    if (!hasMore || isPostLoading) return;
+    fetchFollowData()
+  }, [fetchFollowData])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
+
+  useEffect(() => {
+    if (!hasMore || isPostLoading) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          fetchPosts();
+          fetchPosts()
         }
       },
       { threshold: 1.0 }
-    );
+    )
 
-    if (observerRef.current) observer.observe(observerRef.current);
+    if (observerRef.current) observer.observe(observerRef.current)
 
     return () => {
-      if (observerRef.current) observer.unobserve(observerRef.current);
-    };
-  }, [fetchPosts, hasMore, isPostLoading]);
+      if (observerRef.current) observer.unobserve(observerRef.current)
+    }
+  }, [fetchPosts, hasMore, isPostLoading])
 
   return (
-    <div className="container mx-auto max-w-5xl py-4 px-2 md:px-4">
-      <div className="grid lg:grid-cols-5 mx-6 gap-4">
+    <div className="mx-auto w-full max-w-7xl py-4 px-2 md:px-4">
+      <div className="md:my-6">
+        <StoryViewer />
+      </div>
+      <div className="grid lg:grid-cols-5 md:mx-6 gap-4">
         <div className="lg:col-span-3">
-          <div className="my-6">
-            <StoryViewer/>
-          </div>
           {isPostLoading && (
             <div className="space-y-4">
               {[...Array(3)].map((_, index) => (
@@ -74,28 +76,26 @@ export default function HomePage() {
               </p>
             </div>
           ) : (
-            <>
-              <ScrollArea className="mx-10 w-full">
-                <div className="space-y-6">
-                  {posts.map((post, idx) => (
-                    <PostCard key={idx} {...post} />
-                  ))}
+            <ScrollArea className="md:mx-10 w-full">
+              <div className="space-y-6">
+                {posts.map((post, idx) => (
+                  <PostCard key={post.id || idx} {...post} />
+                ))}
+              </div>
+              <div ref={observerRef} />
+              {isPostLoading && (
+                <div className="flex justify-center mt-4">
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
-                <div ref={observerRef} />
-                {isPostLoading && (
-                  <div className="flex justify-center mt-4">
-                    <Loader2 className="animate-spin" />
-                  </div>
-                )}
-                {!hasMore && (
-                  <div className="end-message my-4 bg-secondary/30 rounded-xl p-4">
-                    <h1 className="text-center text-sm font-semibold text-muted-foreground">
-                      No more posts to show
-                    </h1>
-                  </div>
-                )}
-              </ScrollArea>
-            </>
+              )}
+              {!hasMore && (
+                <div className="my-4 bg-secondary/30 rounded-xl p-4">
+                  <p className="text-center text-sm font-semibold text-muted-foreground">
+                    No more posts to show
+                  </p>
+                </div>
+              )}
+            </ScrollArea>
           )}
         </div>
         <div className="lg:col-span-2 hidden lg:block">
@@ -104,5 +104,5 @@ export default function HomePage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

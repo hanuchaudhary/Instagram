@@ -159,7 +159,7 @@ export default function CreatePost() {
             )}
             <div className="absolute top-4 left-4 flex items-center space-x-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={profile.avatar || "/user.svg"} alt="User" />
+                <AvatarImage className="object-cover" src={profile.avatar || "/user.svg"} alt="User" />
                 <AvatarFallback>U</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">

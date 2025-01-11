@@ -109,7 +109,7 @@ export default function CreateStory() {
           )}
           <div className="absolute top-4 left-4 flex items-center space-x-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={profile.avatar || "/user.svg"} alt="User" />
+              <AvatarImage className="object-coverhom" src={profile.avatar || "/user.svg"} alt="User" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <span className="text-white font-semibold text-sm">
