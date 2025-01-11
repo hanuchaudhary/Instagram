@@ -1,25 +1,28 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useStoriesStore } from "@/store/StoriesStore/useStoriesStore";
+import { useEffect } from "react";
 
 export default function FullViewStory() {
   const navigate = useNavigate();
-  const { currentStoryId, stories, setCurrentStoryId } = useStoriesStore();
-  console.log(currentStoryId);
+  const { stories, fetchStories, currentUserWithStory } = useStoriesStore();
+  const { username } = useParams();
 
-  const story = stories[currentStoryId];
+  const location = useLocation();
+  const state = location.state;
 
+  useEffect(() => {
+    fetchStories(username as string);
+  }, [fetchStories, currentUserWithStory]);
+
+  const story = stories[0];
   const handleNextStory = () => {
-    if (stories.length === currentStoryId + 1) return;
-    setCurrentStoryId(currentStoryId + 1);
-    navigate(`/story/${currentStoryId}`, { replace: true });
+    console.log("Next Story");
   };
 
   const handlePreviousStory = () => {
-    if (currentStoryId === 0) return;
-    setCurrentStoryId(currentStoryId - 1);
-    navigate(`/story/${currentStoryId}`, { replace: true });
+    console.log("Previous Story");
   };
 
   return (
@@ -39,14 +42,12 @@ export default function FullViewStory() {
       </Link>
       <div className="slider px-40 flex justify-between w-full absolute">
         <button
-          disabled={currentStoryId === 0}
           onClick={handlePreviousStory}
           className="bg-secondary disabled:bg-secondary/50 disabled:text-secondary cursor-pointer h-14 w-14 rounded-full flex items-center justify-center"
         >
           <ArrowLeft className="h-8 w-8" />
         </button>
         <button
-          disabled={stories.length === currentStoryId + 1}
           onClick={handleNextStory}
           className="bg-secondary disabled:bg-secondary/50 disabled:text-secondary cursor-pointer h-14 w-14 rounded-full flex items-center justify-center"
         >
@@ -56,10 +57,16 @@ export default function FullViewStory() {
       <div className="relative bg-secondary h-[600px] w-96">
         <div className="absolute p-2 flex items-center space-x-2">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={story.mediaURL} alt={story.username} />
-            <AvatarFallback>{story.username[0]}</AvatarFallback>
+            <AvatarImage
+              className="object-cover"
+              src={story.User.avatar}
+              alt={story.User.username}
+            />
+            <AvatarFallback>{story.User.username[0]}</AvatarFallback>
           </Avatar>
-          <span className="text-white font-semibold">{story.username}</span>
+          <span className="text-white font-semibold">
+            {story.User.username}
+          </span>
         </div>
         <div className="bg-neutral-700 h-full w-full">
           <img
@@ -68,6 +75,11 @@ export default function FullViewStory() {
             alt=""
           />
         </div>
+        {story.caption && (
+          <h1 className="absolute bottom-6 left-1/2 -translate-x-1/2 p-2 z-10 bg-black/50 rounded-lg  text-white">
+            {story.caption}
+          </h1>
+        )}
       </div>
     </div>
   );

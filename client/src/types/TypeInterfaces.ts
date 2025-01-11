@@ -38,33 +38,33 @@ export interface Post {
     mediaURL: string;
     mediaType: mediaType
     userId: string;
-    createdAt: string; 
+    createdAt: string;
     User: User;
     likes: Like[];
     _count: Count;
-  }
-  
-  interface User {
+}
+
+interface User {
     username: string;
     fullName: string;
     id: string;
     avatar: string;
     bio: string;
-  }
-  
-  interface Like {
+}
+
+interface Like {
     id: number;
     postId: number;
     isLiked: boolean;
     userId: string;
     createdAt: string;
-  }
-  
-  interface Count {
+}
+
+interface Count {
     likes: number;
     comments: number;
-  }
-  
+}
+
 
 export interface MessageType {
     id: number;
@@ -123,4 +123,15 @@ export interface LikeType {
     post?: PostType; // Post object reference
     user?: UserType; // User object reference
     createdAt: Date; // Date object
+}
+
+export interface StoryTypes {
+    id: number
+    userId: string
+    User: UserType
+    mediaURL: string
+    mediaType: mediaType
+    caption: string
+    createdAt: string;
+    expiresAt: string
 }

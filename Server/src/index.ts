@@ -83,8 +83,6 @@ app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Prom
         folder: "instagram/messagesImages",
         quality: "auto:best",
       });
-
-      console.log("Image uploaded to cloudinary: ", response.secure_url);
     }
 
     const newMessage = await prisma.message.create({

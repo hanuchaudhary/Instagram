@@ -154,10 +154,9 @@ model Story {
   userId    String
   User      User      @relation(fields: [userId], references: [id])
   mediaURL  String
-  mediaType mediaType
+  caption   String?
   createdAt DateTime  @default(now())
   expiresAt DateTime
-  duration  Int
 }
 
 model Report {

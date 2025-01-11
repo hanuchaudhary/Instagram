@@ -8,12 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.featureRouter = void 0;
 const express_1 = require("express");
 const instagram_1 = require("@hanuchaudhary/instagram");
 const PrismaClient_1 = require("../database/PrismaClient");
 const middleware_1 = require("../middleware");
+const upload_1 = __importDefault(require("../libs/upload"));
 exports.featureRouter = (0, express_1.Router)();
 exports.featureRouter.post("/follow/:toUserId", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.id;
@@ -577,6 +581,117 @@ exports.featureRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 
             success: false,
             message: "An error occurred while fetching post",
             error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.featureRouter.post("/story", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.id;
+    const { mediaURL, caption } = req.body;
+    try {
+        let response;
+        if (mediaURL) {
+            response = yield upload_1.default.uploader.upload(mediaURL, {
+                folder: "instagram/stories",
+                resource_type: "image",
+                quality: "auto:best"
+            });
+        }
+        const story = yield PrismaClient_1.prisma.story.create({
+            data: {
+                mediaURL: response === null || response === void 0 ? void 0 : response.secure_url,
+                caption,
+                userId,
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            }, include: {
+                User: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true,
+                        fullName: true
+                    }
+                }
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            message: "Story added successfully",
+            story
+        });
+    }
+    catch (error) {
+        console.error("Error while adding story:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while adding story",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+}));
+exports.featureRouter.get("/story/:username", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { username } = req.params;
+        const userStories = yield PrismaClient_1.prisma.story.findMany({
+            where: {
+                User: {
+                    username
+                },
+                expiresAt: {
+                    gte: new Date(),
+                },
+            }, include: {
+                User: {
+                    select: {
+                        id: true,
+                        username: true, avatar: true
+                    }
+                }
+            }
+        });
+        return res.status(200).json({
+            success: true,
+            stories: userStories
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching stories:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching stories",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}));
+exports.featureRouter.get("/user-with-stories", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const users = yield PrismaClient_1.prisma.user.findMany({
+            where: {
+                Story: {
+                    some: {
+                        expiresAt: {
+                            gte: new Date(),
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                username: true,
+                avatar: true,
+                fullName: true,
+            },
+        });
+        return res.status(200).json({
+            success: true,
+            users,
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching user with stories:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching user with stories",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
         });
     }
 }));

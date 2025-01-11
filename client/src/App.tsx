@@ -64,7 +64,7 @@ const App = () => {
         <Route path="/admin/moderation" element={<ContentModeration />} />
         <Route path="/admin/logs" element={<SystemLogs />} />
         <Route path="/post/:postId" element={<SinglePostWrapper />} />
-        <Route path="/story/:storyId" element={<FullViewStory />} />
+        <Route path="/story/:username" element={<FullViewStory />} />
         <Route
           element={
             authUser ? <AppLayout /> : <Navigate to="/auth/signin" replace />

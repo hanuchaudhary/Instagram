@@ -1,26 +1,28 @@
-import React, { useState, ChangeEvent, useRef } from "react";
+import { useState, ChangeEvent, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Camera } from "lucide-react";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
+import { useStoriesStore } from "@/store/StoriesStore/useStoriesStore";
 
 export default function CreateStory() {
   const [image, setImage] = useState<string | null>(null);
   const { profile } = useProfileStore();
   const [text, setText] = useState("");
-  const [textPosition, setTextPosition] = useState({ x: 50, y: 50 });
   const inputRef = useRef<HTMLInputElement>(null);
+  const { createStory, isCreatingStory } = useStoriesStore();
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string);
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        const base64Image = fileReader.result as string;
+        setImage(base64Image);
       };
-      reader.readAsDataURL(file);
+      fileReader.readAsDataURL(file);
     }
   };
 
@@ -28,18 +30,23 @@ export default function CreateStory() {
     setText(e.target.value);
   };
 
-  const handleTextDrag = (e: React.DragEvent<HTMLDivElement>) => {
-    const storyPreview = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - storyPreview.left) / storyPreview.width) * 100;
-    const y = ((e.clientY - storyPreview.top) / storyPreview.height) * 100;
-    setTextPosition({ x, y });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log({
+      image,
+    });
+
+    if (!image) return;
+    createStory({ mediaURL: image, caption: text });
+    setImage(null);
+    setText("");
   };
 
   return (
     <div className="space-y-4  p-4">
       <h2 className="text-2xl font-bold">Create Your Story</h2>
       <div className="grid grid-cols-2 gap-4">
-        <div>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="image-upload" className="block mb-2">
               <Button
@@ -73,7 +80,15 @@ export default function CreateStory() {
           <p className="text-sm text-neutral-500 mb-4">
             Drag the text in the preview to position it on your story.
           </p>
-        </div>
+          <Button
+            type="submit"
+            variant="default"
+            disabled={isCreatingStory}
+            className="w-full"
+          >
+            {isCreatingStory ? "Creating Story" : "Create Story"}
+          </Button>
+        </form>
 
         <div className="relative w-full h-[500px] bg-secondary rounded-lg overflow-hidden">
           {image ? (
@@ -88,18 +103,9 @@ export default function CreateStory() {
             </div>
           )}
           {text && (
-            <div
-              className="absolute p-2 bg-black bg-opacity-50 text-white rounded cursor-move"
-              style={{
-                left: `${textPosition.x}%`,
-                top: `${textPosition.y}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-              draggable
-              onDrag={handleTextDrag}
-            >
+            <h1 className="absolute bottom-6 left-1/2 -translate-x-1/2 p-2 z-10 bg-black/50 rounded-lg  text-white">
               {text}
-            </div>
+            </h1>
           )}
           <div className="absolute top-4 left-4 flex items-center space-x-2">
             <Avatar className="h-8 w-8">

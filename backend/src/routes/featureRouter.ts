@@ -2,6 +2,8 @@ import { Request, Response, Router } from 'express'
 import { reportSchema } from "@hanuchaudhary/instagram"
 import { prisma } from '../database/PrismaClient';
 import { authMiddleware } from '../middleware';
+import { uploadOnCloudinary } from '../libs/uploadCloudinary';
+import cloudinary from '../libs/upload';
 
 
 export const featureRouter = Router();
@@ -250,7 +252,7 @@ featureRouter.get("/comments/:postId", async (req: Request, res: Response): Prom
     }
 
     console.log("postId", postId);
-    
+
 
     try {
         const comments = await prisma.comment.findMany({
@@ -576,8 +578,8 @@ featureRouter.get("/profile/:userId/:username", async (req: Request, res: Respon
 featureRouter.get("/post/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
 
-    console.log("Unique Post Id",postId);
-    
+    console.log("Unique Post Id", postId);
+
     try {
         const post = await prisma.post.findUnique({
             where: {
@@ -627,6 +629,126 @@ featureRouter.get("/post/:postId", async (req: Request, res: Response): Promise<
         });
     }
 })
+
+featureRouter.post("/story", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    const userId = req.user.id;
+    const { mediaURL, caption } = req.body;
+    try {
+
+        let response;
+        if (mediaURL) {
+            response = await cloudinary.uploader.upload(mediaURL, {
+                folder: "instagram/stories",
+                resource_type: "image",
+                quality: "auto:best"
+            })
+        }
+        const story = await prisma.story.create({
+            data: {
+                mediaURL: response?.secure_url as string,
+                caption,
+                userId,
+                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+            }, include: {
+                User: {
+                    select: {
+                        id: true,
+                        username: true,
+                        avatar: true,
+                        fullName: true
+                    }
+                }
+            }
+        })
+
+        return res.status(200).json({
+            success: true,
+            message: "Story added successfully",
+            story
+        });
+
+
+    } catch (error) {
+        console.error("Error while adding story:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while adding story",
+            error: error instanceof Error ? error.message : 'An unexpected error occurred',
+        });
+    }
+})
+
+featureRouter.get("/story/:username", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { username } = req.params;
+        const userStories = await prisma.story.findMany({
+            where: {
+                User: {
+                    username
+                },
+                expiresAt: {
+                    gte: new Date(),
+                },
+            }, include: {
+                User: {
+                    select: {
+                        id: true,
+                        username: true, avatar: true
+                    }
+                }
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            stories: userStories
+        });
+    } catch (error) {
+        console.error("Error while fetching stories:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching stories",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}
+);
+
+featureRouter.get("/user-with-stories", authMiddleware, async (req: Request, res: Response): Promise<any> => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                Story: {
+                    some: {
+                        expiresAt: {
+                            gte: new Date(),
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                username: true,
+                avatar: true,
+                fullName: true,
+            },
+        });
+
+        return res.status(200).json({
+            success: true,
+            users,
+        });
+    }
+    catch (error) {
+        console.error("Error while fetching user with stories:", error);
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred while fetching user with stories",
+            error: error instanceof Error ? error.message : "An unexpected error occurred",
+        });
+    }
+}
+)
 
 
 

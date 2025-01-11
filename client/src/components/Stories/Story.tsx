@@ -1,11 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserType } from "@/types/TypeInterfaces";
 
-interface StoryProps {
-  username: string;
-  mediaURL: string;
-}
-
-export default function Story(story: StoryProps) {
+export default function Story({ user }: { user: UserType }) {
   return (
     <div className="relative w-16 h-16">
       <div className="absolute inset-0 bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 rounded-full">
@@ -14,12 +10,12 @@ export default function Story(story: StoryProps) {
 
       <Avatar className="absolute inset-[4px] w-[calc(100%-8px)] h-[calc(100%-8px)]">
         <AvatarImage
-          src={story.mediaURL}
-          alt={story.username}
+          src={user.avatar}
+          alt={user.username}
           className="object-cover"
         />
         <AvatarFallback className="uppercase">
-          {story.username[0]}
+          {user.username[0]}
         </AvatarFallback>
       </Avatar>
     </div>
