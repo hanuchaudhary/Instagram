@@ -46,7 +46,7 @@ interface AuthStoreProps {
 
     isAuthChecked: boolean;
     checkAuth: () => void;
-    logout: () => void;
+    logout: (navigate: any) => void;
 }
 
 const handleApiError = (error: any, defaultMessage: string) => {
@@ -130,9 +130,11 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
     },
 
 
-    logout: () => {
+    logout: (navigate) => {
         localStorage.removeItem("token");
         set({ authUser: null });
+        set({isAuthChecked: true});
+        navigate("/auth/signin", { replace: true });
         toast.success("Successfully logged out.");
     },
 

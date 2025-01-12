@@ -2,9 +2,7 @@ import { Request, Response, Router } from 'express'
 import { reportSchema } from "@hanuchaudhary/instagram"
 import { prisma } from '../database/PrismaClient';
 import { authMiddleware } from '../middleware';
-import { uploadOnCloudinary } from '../libs/uploadCloudinary';
 import cloudinary from '../libs/upload';
-
 
 export const featureRouter = Router();
 
@@ -578,8 +576,6 @@ featureRouter.get("/profile/:userId/:username", async (req: Request, res: Respon
 featureRouter.get("/post/:postId", async (req: Request, res: Response): Promise<any> => {
     const { postId } = req.params;
 
-    console.log("Unique Post Id", postId);
-
     try {
         const post = await prisma.post.findUnique({
             where: {
@@ -629,7 +625,7 @@ featureRouter.get("/post/:postId", async (req: Request, res: Response): Promise<
         });
     }
 })
-
+    
 featureRouter.post("/story", authMiddleware, async (req: Request, res: Response): Promise<any> => {
     const userId = req.user.id;
     const { mediaURL, caption } = req.body;

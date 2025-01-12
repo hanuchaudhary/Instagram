@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
+import { useProfileStore } from "@/store/UserStore/useProfileStore";
 
 export default function ChatContainer() {
   const {
@@ -21,6 +22,7 @@ export default function ChatContainer() {
     unSubscribeFromMessages,
   } = useChatStore();
   const { authUser } = useAuthStore();
+  const { profile } = useProfileStore();
   const loggedInUserId = authUser?.id;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -181,7 +183,7 @@ export default function ChatContainer() {
                       <Avatar className="w-8 h-8">
                         <AvatarImage
                           className="object-cover"
-                          src={authUser?.avatar}
+                          src={profile.avatar || authUser?.avatar}
                           alt="You"
                         />
                         <AvatarFallback className="uppercase">

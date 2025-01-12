@@ -32,10 +32,6 @@ interface ChatStore {
     socketConnect: () => void;
     socketDisconnect: () => void;
 
-    isUserTyping: boolean;
-    startTyping: () => void;
-    stopTyping: () => void;
-
     sharePost: (messageData: messageData, selectedUserIds: string) => void;
     isSharingPost: boolean;
 
@@ -115,20 +111,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     unSubscribeFromMessages: () => {
         const socket = get().socket;
         socket?.off("newMessage");
-    },
-
-    isUserTyping: false,
-    startTyping: () => {
-        const socket = get().socket;
-        const toUserId = get().selectedUser?.id;
-        socket?.emit("startTyping", toUserId);
-        set({ isUserTyping: true });
-    },
-    stopTyping: () => {
-        const socket = get().socket;
-        const toUserId = get().selectedUser?.id;
-        socket?.emit("stopTyping", toUserId);
-        set({ isUserTyping: false });
     },
 
     onlineUsers: [],

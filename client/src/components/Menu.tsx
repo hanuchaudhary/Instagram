@@ -10,16 +10,12 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Menu as MenuIcon, Moon, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeProvider";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 const Menu = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/auth/signin", { replace: true });
-    window.location.reload();
-  };
+  const { logout } = useAuthStore();
 
   return (
     <div>
@@ -40,7 +36,7 @@ const Menu = () => {
             )}
             {theme === "light" ? "Dark" : "Light"} Mode
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleLogout}>
+          <DropdownMenuItem onClick={() => logout(navigate)}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </DropdownMenuItem>

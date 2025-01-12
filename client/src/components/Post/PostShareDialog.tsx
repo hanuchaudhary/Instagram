@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Copy, Send } from "lucide-react";
+import { Copy, Loader2, Send } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import { motion } from "framer-motion";
 
 const PostShareDialog = ({
   postURL,
-  postId,
+  // postId,
   handleCopy,
 }: {
   handleCopy: () => void;
@@ -27,12 +27,16 @@ const PostShareDialog = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [filterUser, setFilterUser] = useState("");
-  const { isSharingPost, sharePost, chatUsers, fetchChatUsers } =
-    useChatStore();
+  const {
+    isSharingPost,
+    sharePost,
+    chatUsers,
+    fetchChatUsers,
+    isChatUsersLoading,
+  } = useChatStore();
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   useEffect(() => {
-    if (chatUsers) return;
     fetchChatUsers();
   }, [fetchChatUsers]);
 
@@ -71,18 +75,24 @@ const PostShareDialog = ({
         </div>
         <ScrollArea className="mt-4 max-h-[60vh] pr-4">
           <div className="grid lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 grid-cols-3">
-            {chatUsers.map(
-              (user) =>
-                user.id && (
-                  <UserCard
-                    key={user.id}
-                    avatar={user.avatar!}
-                    id={user.id!}
-                    username={user.username!}
-                    isSelected={selectedUsers.includes(user.id)}
-                    onClick={() => handleSelectUsers(user.id!)}
-                  />
-                )
+            {isChatUsersLoading ? (
+              <div className="h-full w-full flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin" />
+              </div>
+            ) : (
+              chatUsers.map(
+                (user) =>
+                  user.id && (
+                    <UserCard
+                      key={user.id}
+                      avatar={user.avatar!}
+                      id={user.id!}
+                      username={user.username!}
+                      isSelected={selectedUsers.includes(user.id)}
+                      onClick={() => handleSelectUsers(user.id!)}
+                    />
+                  )
+              )
             )}
           </div>
         </ScrollArea>

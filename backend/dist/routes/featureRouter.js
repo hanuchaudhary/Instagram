@@ -536,7 +536,6 @@ exports.featureRouter.get("/profile/:userId/:username", (req, res) => __awaiter(
 }));
 exports.featureRouter.get("/post/:postId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { postId } = req.params;
-    console.log("Unique Post Id", postId);
     try {
         const post = yield PrismaClient_1.prisma.post.findUnique({
             where: {

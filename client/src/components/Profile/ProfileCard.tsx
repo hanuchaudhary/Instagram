@@ -8,18 +8,19 @@ import FollowersDrawer from "./FollowersDrawer";
 import { useProfileStore, UserType } from "@/store/UserStore/useProfileStore";
 import { DeactivateAccountDialog } from "../DeactivateAccount";
 import EditProfile from "./EditProfile";
+import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 
 export default function ProfileCard() {
   const navigate = useNavigate();
   const { fetchProfile, profile } = useProfileStore();
+  const { logout } = useAuthStore()
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/auth/signin");
+    logout(navigate);
   };
 
   return (

@@ -99,7 +99,7 @@ export function ReportButton({
       </DropdownMenu>
 
       <Dialog open={isReportOpen} onOpenChange={setIsReportOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[99999]">
           <DialogHeader>
             <DialogTitle>
               Report {reportType.toLowerCase()} "{reportTargetTitle}"

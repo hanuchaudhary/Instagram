@@ -7,11 +7,36 @@ import PostShareDialog from "../Post/PostShareDialog";
 import LikePost from "../Post/LikePost";
 import PostComments from "../Post/PostComments";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
+import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function ReelCard(reel: Reel) {
   const { setPostId } = usePostCommentsStore();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyPost = () => {
+    navigator.clipboard.writeText(
+      `${window.location.origin}/post/${reel.Post.id}`
+    );
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
+  };
   return (
     <div className="relative w-full mx-auto bg-background">
+      <AnimatePresence>
+        {copied && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 z-[999999999999] left-0 border-t border-t-neutral-700 flex items-center justify-center bg-secondary w-full text-neutral-400 text-sm p-2"
+          >
+            Link copied to clipboard!
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="flex flex-row items-end gap-2 backdrop-blur-sm">
         <div className="w-full relative h-[600px] bg-black flex items-center justify-center">
           <ReelVideoPlayer mediaURL={reel.mediaURL} />
@@ -43,7 +68,11 @@ export default function ReelCard(reel: Reel) {
             className="p-2 rounded-full text-foreground"
             aria-label="Share"
           >
-            <PostShareDialog postId={reel.Post.id} postURL={reel.mediaURL} />
+            <PostShareDialog
+              handleCopy={handleCopyPost}
+              postId={reel.Post.id}
+              postURL={reel.mediaURL}
+            />
           </button>
 
           <button

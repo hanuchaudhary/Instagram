@@ -97,7 +97,6 @@ app.post("/message/:userId/:toUserId", async (req: Request, res: Response): Prom
     const recieversSocketId = getRecieversSocketId(toUserId);
     if (recieversSocketId) {
       io.to(recieversSocketId).emit("newMessage", newMessage);
-      console.log("Message sent to user: ", toUserId);
     }
 
     res.status(200).json({

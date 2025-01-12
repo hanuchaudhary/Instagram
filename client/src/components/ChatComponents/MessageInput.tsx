@@ -1,21 +1,17 @@
-import { Image, Send, X } from "lucide-react";
-import { Input } from "../ui/input";
-import React, { useRef, useState } from "react";
+import { useRef, useState} from "react";
 import { toast } from "sonner";
 import { useChatStore } from "@/store/ChatStore/useChatStore";
-import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
-import TypingIndicator from "./TypingIndicator";
-import { useAuthStore } from "@/store/AuthStore/useAuthStore";
+import { Image, Send, X } from "lucide-react";
+import { Input } from "../ui/input";
+import { AnimatePresence, motion } from "framer-motion";
 
 export default function MessageInput() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { sendMessage, isUserTyping, startTyping, stopTyping } = useChatStore();
-
-  const { authUser } = useAuthStore();
-  console.log(authUser?.id);
+  const { sendMessage } =
+    useChatStore();
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,11 +30,9 @@ export default function MessageInput() {
   };
 
   const handleSubmit = (e: React.FormEvent) => {
-    console.log("submitting");
     e.preventDefault();
-    if (!text && !imagePreview) {
-      return;
-    }
+    if (!text && !imagePreview) return;
+
     try {
       sendMessage({
         message: text,
@@ -48,18 +42,7 @@ export default function MessageInput() {
       setImagePreview(null);
     } catch (error) {
       toast.error("Failed to send message");
-      console.log(error);
     }
-  };
-
-  const handleStartTyping = () => {
-    startTyping();
-  };
-
-  const handleStopTyping = () => {
-    // setTimeout(() => {
-    stopTyping();
-    // }, 2000);
   };
 
   return (
@@ -92,7 +75,7 @@ export default function MessageInput() {
           </motion.div>
         )}
       </AnimatePresence>
-
+{/* 
       <div className="absolute -top-7 left-0 right-0">
         {isUserTyping && (
           <motion.div
@@ -104,19 +87,15 @@ export default function MessageInput() {
             <TypingIndicator />
           </motion.div>
         )}
-      </div>
+      </div> */}
 
       <form onSubmit={handleSubmit}>
         <div className="flex gap-2">
           <Input
             type="text"
-            onFocus={handleStartTyping}
-            onBlur={handleStopTyping}
             placeholder="Type a message..."
             value={text}
-            onChange={(e) => {
-              setText(e.target.value);
-            }}
+            onChange={(e) => setText(e.target.value)}
           />
           <input
             type="file"
