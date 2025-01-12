@@ -43,6 +43,8 @@ interface AuthStoreProps {
 
     isSigningIn: boolean;
     signin: (values: any, navigate: any) => void;
+
+    isAuthChecked: boolean;
     checkAuth: () => void;
     logout: () => void;
 }
@@ -98,6 +100,7 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
         }
     },
 
+    isAuthChecked: false,
     checkAuth: async () => {
         const token = localStorage.getItem("token");
         const profile = useProfileStore.getState().profile;
@@ -123,7 +126,9 @@ export const useAuthStore = create<AuthStoreProps>((set) => ({
         } else {
             set({ authUser: null });
         }
+        set({ isAuthChecked: true });
     },
+
 
     logout: () => {
         localStorage.removeItem("token");

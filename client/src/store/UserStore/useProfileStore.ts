@@ -56,6 +56,7 @@ export interface PostType {
 
 interface ProfileStore {
     profile: UserType;
+    isFetchingProfile: boolean;
     fetchProfile: () => void;
 
     deleteProfilePost: (postId: number) => void;
@@ -65,6 +66,7 @@ interface ProfileStore {
 }
 
 export const useProfileStore = create<ProfileStore>((set) => ({
+    isFetchingProfile: true,
     profile: {} as UserType,
     fetchProfile: async () => {
         try {
@@ -72,6 +74,8 @@ export const useProfileStore = create<ProfileStore>((set) => ({
             set({ profile: res.data.user });
         } catch (error) {
             console.error("Error fetching profile:", error);
+        }finally{
+            set({ isFetchingProfile: false });
         }
     },
     deleteProfilePost: async (postId: number) => {

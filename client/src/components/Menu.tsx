@@ -17,7 +17,8 @@ const Menu = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/auth/signin");
+    navigate("/auth/signin", { replace: true });
+    window.location.reload();
   };
 
   return (

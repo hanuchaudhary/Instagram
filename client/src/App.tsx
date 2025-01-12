@@ -20,12 +20,17 @@ import { useEffect } from "react";
 import SinglePostWrapper from "./pages/SinglePostWrapper";
 import FullViewStory from "./components/Stories/FullviewStory";
 import CreatePage from "./pages/CreatePage";
+import PageLoader from "./components/PageLoader";
 
 const App = () => {
-  const { authUser, checkAuth } = useAuthStore();
+  const { authUser, checkAuth, isAuthChecked } = useAuthStore();
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  if (!isAuthChecked) {
+    return <PageLoader/>
+  }
 
   const AdminMiddleware = ({ children }: { children: React.ReactNode }) => {
     const token = localStorage.getItem("token");

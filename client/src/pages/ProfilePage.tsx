@@ -5,15 +5,20 @@ import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
+import PageLoader from "@/components/PageLoader";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { fetchProfile, profile } = useProfileStore();
+  const { fetchProfile, profile, isFetchingProfile } = useProfileStore();
   const setPostId = usePostCommentsStore.getState().setPostId;
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
   const posts = profile.posts;
+
+  if (isFetchingProfile) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="flex relative flex-col h-full ">

@@ -29,10 +29,10 @@ export const usePostsStore = create<PostStore>((set, get) => ({
     page: 1,
     hasMore: true,
     error: false,
-    isPostLoading: false,
+    isPostLoading: true,
     posts: [],
     singlePost: null,
-    isSinglePostLoading: false,
+    isSinglePostLoading: true,
 
     fetchPosts: async () => {
         try {
@@ -127,7 +127,6 @@ export const usePostsStore = create<PostStore>((set, get) => ({
     fetchSinglePost: async (postId: number) => {
         const { selectedPostId } = get();
         try {
-            set({ isSinglePostLoading: true });
             const response = await api.get(`/feature/post/${postId || selectedPostId}`);
             set({ singlePost: response.data.post });
         } catch (error) {
