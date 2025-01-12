@@ -29,6 +29,27 @@ const Sidebar = () => {
     fetchChatUsers();
   }, [fetchChatUsers]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsCollapsed(true);
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.innerWidth <= 768 && selectedUser) {
+      setIsCollapsed(true);
+    }
+  }, [selectedUser]);
+
   if (isChatUsersLoading) return <SidebarSkeleton />;
 
   return (
