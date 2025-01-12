@@ -13,15 +13,11 @@ import { useAuthStore } from "@/store/AuthStore/useAuthStore";
 export default function ProfileCard() {
   const navigate = useNavigate();
   const { fetchProfile, profile } = useProfileStore();
-  const { logout } = useAuthStore()
+  const { logout } = useAuthStore();
 
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
-
-  const handleLogout = () => {
-    logout(navigate);
-  };
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 md:px-40 shadow-md rounded-lg">
@@ -45,9 +41,13 @@ export default function ProfileCard() {
               <img className="h-5 w-5" src="/verified.svg" alt="" />
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <EditProfile profileData={profile} />
-            <Button onClick={handleLogout} size="sm" variant="outline">
+            <Button
+              onClick={() => logout(navigate)}
+              size="sm"
+              variant="outline"
+            >
               Logout
             </Button>
             <DeactivateAccountDialog />

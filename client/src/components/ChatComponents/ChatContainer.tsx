@@ -173,9 +173,9 @@ export default function ChatContainer() {
                           className="w-52 object-cover rounded-lg"
                         />
                       ) : (
-                        <p className="leading-relaxed">{msg.message}</p>
+                        <p className="leading-none md:text-base text-sm font-normal">{msg.message}</p>
                       )}
-                      <p className="text-xs opacity-70 mt-1 text-right">
+                      <p className="md:text-xs text-[10px] opacity-70 md:mt-1 text-right">
                         {format(new Date(msg.createdAt), "h:mm a")}
                       </p>
                     </div>

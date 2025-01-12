@@ -37,8 +37,9 @@ const PostShareDialog = ({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!open) return;
     fetchChatUsers();
-  }, [fetchChatUsers]);
+  }, [fetchChatUsers,open]);
 
   const handleSelectUsers = (userId: string) => {
     setSelectedUsers((prev) =>

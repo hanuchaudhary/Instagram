@@ -58,10 +58,10 @@ export default function CreatePost() {
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 md:p-4 p-2 md:mb-0 mb-14">
       <h2 className="text-2xl font-bold">Create New Post</h2>
       <Form {...form}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label htmlFor="post-image-upload" className="block mb-2">

@@ -43,9 +43,9 @@ export default function CreateStory() {
   };
 
   return (
-    <div className="space-y-4  p-4">
+    <div className="space-y-4  md:p-4 p-2 md:mb-0 mb-14">
       <h2 className="text-2xl font-bold">Create Your Story</h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="image-upload" className="block mb-2">
