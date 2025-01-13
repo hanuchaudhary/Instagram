@@ -10,7 +10,7 @@ import { ReportButton } from "@/components/ReportButton";
 import { usePostCommentsStore } from "@/store/PostsStore/usePostComments";
 export default function UserProfilePage() {
   const { username } = useParams();
-  const { selectedPostId, setSelectedPostId } = usePostsStore();
+  const { setSelectedPostId } = usePostsStore();
   const { setPostId } = usePostCommentsStore();
   const { fetchProfile, isLoading, profile } = useOtherUserProfileStore();
   const navigate = useNavigate();
@@ -40,11 +40,10 @@ export default function UserProfilePage() {
       <Card className="p-6 sm:p-8 relative">
         <div className="absolute flex items-center gap-2 top-2 right-4">
           <ReportButton
-            reportTargetTitle="Report user"
+            reportTargetTitle={profile.username}
             reportType="USER"
-            reportedId=""
-            targetId=""
-            postId={selectedPostId as number}
+            reportedId={profile.id!}
+            postId={0}
           />
         </div>
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">

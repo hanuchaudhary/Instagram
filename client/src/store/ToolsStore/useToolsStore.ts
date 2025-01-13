@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import api from "@/config/axios";
 
 interface createReportProp {
+    targetId?: string,
     reason: string,
     type: ReportType,
-    targetId: string | number,
     reportedId: string,
 }
 

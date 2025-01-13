@@ -59,10 +59,9 @@ const PostCard = (post: Post) => {
             />
           </div>
           <ReportButton
-            reportTargetTitle="Report Post"
+            reportTargetTitle={post.User.username}
             reportType="POST"
-            reportedId=""
-            targetId=""
+            reportedId={post.User.id}
             postId={post.id!}
           />
         </CardHeader>

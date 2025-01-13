@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { MoreVertical, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react"
+import { MoreVertical, AlertCircle } from 'lucide-react'
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -14,19 +14,18 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
-import { ToolsStore } from "@/store/ToolsStore/useToolsStore";
-import { ReportType } from "@/types/TypeInterfaces";
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Textarea } from "@/components/ui/textarea"
+import { ToolsStore } from "@/store/ToolsStore/useToolsStore"
+import { ReportType } from "@/types/TypeInterfaces"
 
-interface ShareReportButtonProps {
-  reportType: ReportType;
-  reportTargetTitle: string;
-  targetId: string;
-  reportedId: string;
-  postId?: number;
+interface ReportButtonProps {
+  reportType: ReportType
+  reportTargetTitle: string
+  reportedId: string
+  postId?: number
 }
 
 const reportReasons = {
@@ -48,39 +47,39 @@ const reportReasons = {
     { id: "harassment", label: "Harassment" },
     { id: "inappropriate", label: "Inappropriate content" },
   ],
-};
+}
 
 export function ReportButton({
   reportType,
   reportTargetTitle,
-  targetId,
   reportedId,
-}: ShareReportButtonProps) {
-  const [isReportOpen, setIsReportOpen] = useState(false);
-  const [selectedReason, setSelectedReason] = useState<string>("");
-  const [detailReason, setDetailReason] = useState<string>("");
-  const { createReport, isLoading } = ToolsStore();
+  postId,
+}: ReportButtonProps) {
+  const [isReportOpen, setIsReportOpen] = useState(false)
+  const [selectedReason, setSelectedReason] = useState<string>("")
+  const [detailReason, setDetailReason] = useState<string>("")
+  const { createReport, isLoading } = ToolsStore()
 
   const handleReportClick = () => {
-    setIsReportOpen(true);
-  };
+    setIsReportOpen(true)
+  }
 
   const handleReportSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
     const finalReason = detailReason
       ? `${selectedReason} | ${detailReason}`
-      : selectedReason;
+      : selectedReason
 
-    createReport({
-      reason: finalReason,
-      targetId: targetId,
+  createReport({
       reportedId: reportedId,
+      targetId: postId?.toString(),
+      reason: finalReason,
       type: reportType,
-    });
+    })
 
-    setIsReportOpen(false);
-  };
+    setIsReportOpen(false)
+  }
 
   return (
     <>
@@ -148,5 +147,6 @@ export function ReportButton({
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
+

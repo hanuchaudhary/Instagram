@@ -249,9 +249,6 @@ featureRouter.get("/comments/:postId", async (req: Request, res: Response): Prom
         });
     }
 
-    console.log("postId", postId);
-
-
     try {
         const comments = await prisma.comment.findMany({
             where: {
@@ -424,7 +421,7 @@ featureRouter.post("/report", authMiddleware, async (req: Request, res: Response
     const { success, error } = reportSchema.safeParse(req.body)
     const { reportedId, reason, type, targetId } = req.body;
 
-    const reporterId = (req as any).userId;
+    const reporterId = req.user.id;
 
     if (!success) {
         res.status(400).json({

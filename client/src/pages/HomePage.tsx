@@ -1,45 +1,45 @@
-import { useEffect, useRef } from "react"
-import PostCard from "@/components/Post/PostCard"
-import SuggestedUsers from "@/components/SuggestedUsers"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle, Loader2, UserPlus } from 'lucide-react'
-import { useFollowDataStore } from "@/store/UserStore/useFollowStore"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { usePostsStore } from "@/store/PostsStore/usePostsStore"
-import StoryViewer from "@/components/Stories/StoryViewer"
+import { useEffect, useRef } from "react";
+import PostCard from "@/components/Post/PostCard";
+import SuggestedUsers from "@/components/SuggestedUsers";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle, Loader2, UserPlus } from "lucide-react";
+import { useFollowDataStore } from "@/store/UserStore/useFollowStore";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { usePostsStore } from "@/store/PostsStore/usePostsStore";
+import StoryViewer from "@/components/Stories/StoryViewer";
 
 export default function HomePage() {
-  const { fetchFollowData } = useFollowDataStore()
-  const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore()
-  const observerRef = useRef<HTMLDivElement | null>(null)
+  const { fetchFollowData } = useFollowDataStore();
+  const { posts, fetchPosts, hasMore, isPostLoading, error } = usePostsStore();
+  const observerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    fetchFollowData()
-  }, [fetchFollowData])
+    fetchFollowData();
+  }, [fetchFollowData]);
 
   useEffect(() => {
-    fetchPosts()
-  }, [fetchPosts])
+    fetchPosts();
+  }, [fetchPosts]);
 
   useEffect(() => {
-    if (!hasMore || isPostLoading) return
+    if (!hasMore || isPostLoading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          fetchPosts()
+          fetchPosts();
         }
       },
       { threshold: 1.0 }
-    )
+    );
 
-    if (observerRef.current) observer.observe(observerRef.current)
+    if (observerRef.current) observer.observe(observerRef.current);
 
     return () => {
-      if (observerRef.current) observer.unobserve(observerRef.current)
-    }
-  }, [fetchPosts, hasMore, isPostLoading])
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [fetchPosts, hasMore, isPostLoading]);
 
   return (
     <div className="mx-auto w-full max-w-7xl py-4 px-2 md:px-4">
@@ -104,5 +104,5 @@ export default function HomePage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

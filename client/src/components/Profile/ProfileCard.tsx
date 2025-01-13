@@ -41,7 +41,7 @@ export default function ProfileCard() {
               <img className="h-5 w-5" src="/verified.svg" alt="" />
             )}
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap md:flex-nowrap">
             <EditProfile profileData={profile} />
             <Button
               onClick={() => logout(navigate)}

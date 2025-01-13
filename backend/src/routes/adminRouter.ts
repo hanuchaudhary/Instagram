@@ -16,6 +16,7 @@ adminRouter.get('/users', async (req, res) => {
                 accountType: true,
                 isVerifiedAccount: true,
                 createdAt: true,
+                role: true,
             },
         });
         res.json(users);
@@ -47,11 +48,35 @@ adminRouter.put('/users/:id/verify', async (req, res) => {
         const updatedUser = await prisma.user.update({
             where: { id },
             data: { isVerifiedAccount: isVerified },
+            select:{
+                id: true,
+                isVerifiedAccount: true
+            }
         });
-        res.json(updatedUser);
+        res.json({
+            message: `User verification status updated successfully for user id: ${id}`,
+            updatedUser
+        });
         return;
     } catch (error) {
         res.status(500).json({ error: 'Failed to update user verification status' });
+    }
+});
+
+adminRouter.put("/users/reset-password/:email", async (req, res) => {
+    const { email } = req.params;
+    try {
+        await prisma.user.update({
+            where: {
+                email
+            }, data: {
+                password: ""
+            }
+        });
+
+        res.json({ message: 'Password reset successfully for email: ' + email });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send password reset link' });
     }
 });
 

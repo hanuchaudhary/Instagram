@@ -18,7 +18,7 @@ interface storiesStore {
     createStory: (story: {
         mediaURL: string;
         caption: string;
-    }) => void;
+    },navigate: any) => void;
 }
 
 export const useStoriesStore = create<storiesStore>((set, get) => ({
@@ -42,12 +42,13 @@ export const useStoriesStore = create<storiesStore>((set, get) => ({
     },
 
     isCreatingStory: false,
-    createStory: async (story) => {
+    createStory: async (story,navigate) => {
         set({ isCreatingStory: true });
         const stories = get().stories;
         try {
             const response = await api.post("/feature/story", story);
             set({ stories: [...stories, response.data.story] });
+            navigate("/");
         } catch (error) {
             console.log(error);
         } finally {

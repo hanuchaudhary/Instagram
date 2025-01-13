@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import api from '@/config/axios'
+import { toast } from 'sonner'
 
 interface User {
   id: string
@@ -7,7 +8,7 @@ interface User {
   email: string
   role: 'admin' | 'user'
   status: 'active' | 'banned'
-  isVerified: boolean
+  isVerifiedAccount: boolean
 }
 
 interface Post {
@@ -22,7 +23,7 @@ interface Report {
   id: string
   reporterId: string
   targetId: string
-  targetType: 'post' | 'comment' | 'user'
+  type: 'post' | 'comment' | 'user'
   reason: string
   status: 'pending' | 'resolved'
 }
@@ -34,10 +35,17 @@ interface AdminStore {
   fetchUsers: () => Promise<void>
   fetchPosts: () => Promise<void>
   fetchReports: () => Promise<void>
+
+  resetPassword: (email: string) => Promise<void>
+
   updateUserRole: (userId: string, role: 'admin' | 'user') => Promise<void>
+
   updateUserStatus: (userId: string, status: 'active' | 'banned') => Promise<void>
-  updateUserVerification: (userId: string, isVerified: boolean) => Promise<void>
+
+  updateUserVerification: (userId: string, isVerifiedAccount: boolean) => Promise<void>
+
   deletePost: (postId: string) => Promise<void>
+
   resolveReport: (reportId: string) => Promise<void>
 }
 
@@ -45,7 +53,7 @@ const useAdminStore = create<AdminStore>((set) => ({
   users: [],
   posts: [],
   reports: [],
-  
+
   fetchUsers: async () => {
     const response = await api.get(`/admin/users`)
     set({ users: response.data })
@@ -70,8 +78,24 @@ const useAdminStore = create<AdminStore>((set) => ({
     }))
   },
 
+  resetPassword: async (email) => {
+    try {
+      const response = await api.put(`/admin/users/reset-password/${email}`)
+      toast.success(response.data.message)
+    } catch (error: any) {
+      toast.error(error.response.data.error)
+    }
+
+
+  },
+
   updateUserStatus: async (userId, status) => {
-    await api.put(`/admin/users/${userId}/status`, { status })
+    try {
+      const response = await api.put(`/admin/users/${userId}/status`, { status })
+      toast.success(response.data.message)
+    } catch (error: any) {
+      toast.error(error.response.data.error)
+    }
     set((state) => ({
       users: state.users.map((user) =>
         user.id === userId ? { ...user, status } : user
@@ -83,10 +107,12 @@ const useAdminStore = create<AdminStore>((set) => ({
     await api.put(`/admin/users/${userId}/verify`, { isVerified })
     set((state) => ({
       users: state.users.map((user) =>
-        user.id === userId ? { ...user, isVerified } : user
+        user.id === userId ? { ...user, isVerifiedAccount: isVerified } : user
       ),
     }))
   },
+
+
 
   deletePost: async (postId) => {
     await api.delete(`/admin/posts/${postId}`)

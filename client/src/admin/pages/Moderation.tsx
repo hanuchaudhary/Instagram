@@ -15,8 +15,8 @@ const ContentModeration: React.FC = () => {
 
   const filteredReports = reports.filter(
     (report) =>
-      report.reporterId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.targetId.toLowerCase().includes(searchTerm.toLowerCase())
+      report.reporterId.includes(searchTerm) ||
+      report.targetId.includes(searchTerm)
   )
 
   return (
@@ -45,7 +45,7 @@ const ContentModeration: React.FC = () => {
           {filteredReports.map((report) => (
             <TableRow key={report.id}>
               <TableCell>{report.reporterId}</TableCell>
-              <TableCell>{report.targetType}</TableCell>
+              <TableCell>{report.type}</TableCell>
               <TableCell>{report.reason}</TableCell>
               <TableCell>{report.status}</TableCell>
               <TableCell>

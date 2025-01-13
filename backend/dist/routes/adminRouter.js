@@ -29,6 +29,7 @@ adminRouter.get('/users', (req, res) => __awaiter(void 0, void 0, void 0, functi
                 accountType: true,
                 isVerifiedAccount: true,
                 createdAt: true,
+                role: true,
             },
         });
         res.json(users);
@@ -60,12 +61,35 @@ adminRouter.put('/users/:id/verify', (req, res) => __awaiter(void 0, void 0, voi
         const updatedUser = yield PrismaClient_1.prisma.user.update({
             where: { id },
             data: { isVerifiedAccount: isVerified },
+            select: {
+                id: true,
+                isVerifiedAccount: true
+            }
         });
-        res.json(updatedUser);
+        res.json({
+            message: `User verification status updated successfully for user id: ${id}`,
+            updatedUser
+        });
         return;
     }
     catch (error) {
         res.status(500).json({ error: 'Failed to update user verification status' });
+    }
+}));
+adminRouter.put("/users/reset-password/:email", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.params;
+    try {
+        yield PrismaClient_1.prisma.user.update({
+            where: {
+                email
+            }, data: {
+                password: ""
+            }
+        });
+        res.json({ message: 'Password reset successfully for email: ' + email });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to send password reset link' });
     }
 }));
 // Content Moderation Routes

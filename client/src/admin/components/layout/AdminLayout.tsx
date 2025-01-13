@@ -7,6 +7,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+
   return (
     <div className="flex h-screen bg-background text-foreground">
       <Sidebar />

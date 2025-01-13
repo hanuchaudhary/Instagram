@@ -231,7 +231,7 @@ exports.postRouter.get("/postLikes/:postId", (req, res) => __awaiter(void 0, voi
         const isLiked = yield PrismaClient_1.prisma.like.findFirst({
             where: {
                 postId: parseInt(postId),
-                userId: req.userId
+                userId: req.user.id
             }
         });
         return res.status(200).json({

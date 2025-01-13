@@ -26,10 +26,9 @@ export default function SinglePostWrapper() {
           <X className="text-primary" />
         </button>
         <ReportButton
-          reportTargetTitle=""
+          reportTargetTitle={postId}
           reportType="POST"
-          reportedId=""
-          targetId=""
+          reportedId={postId}
           postId={parseInt(postId)}
         />
       </div>

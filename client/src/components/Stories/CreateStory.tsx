@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Camera } from "lucide-react";
 import { useProfileStore } from "@/store/UserStore/useProfileStore";
 import { useStoriesStore } from "@/store/StoriesStore/useStoriesStore";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateStory() {
+  const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const { profile } = useProfileStore();
   const [text, setText] = useState("");
@@ -37,7 +39,7 @@ export default function CreateStory() {
     });
 
     if (!image) return;
-    createStory({ mediaURL: image, caption: text });
+    createStory({ mediaURL: image, caption: text }, navigate);
     setImage(null);
     setText("");
   };
@@ -109,7 +111,11 @@ export default function CreateStory() {
           )}
           <div className="absolute top-4 left-4 flex items-center space-x-2">
             <Avatar className="h-8 w-8">
-              <AvatarImage className="object-coverhom" src={profile.avatar || "/user.svg"} alt="User" />
+              <AvatarImage
+                className="object-coverhom"
+                src={profile.avatar || "/user.svg"}
+                alt="User"
+              />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <span className="text-white font-semibold text-sm">

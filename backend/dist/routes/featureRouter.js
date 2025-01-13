@@ -232,7 +232,6 @@ exports.featureRouter.get("/comments/:postId", (req, res) => __awaiter(void 0, v
             message: "Post ID is required"
         });
     }
-    console.log("postId", postId);
     try {
         const comments = yield PrismaClient_1.prisma.comment.findMany({
             where: {
@@ -394,7 +393,7 @@ exports.featureRouter.get("/messages/:toUserId", middleware_1.authMiddleware, (r
 exports.featureRouter.post("/report", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { success, error } = instagram_1.reportSchema.safeParse(req.body);
     const { reportedId, reason, type, targetId } = req.body;
-    const reporterId = req.userId;
+    const reporterId = req.user.id;
     if (!success) {
         res.status(400).json({
             success: false,

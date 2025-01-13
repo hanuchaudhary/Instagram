@@ -21,7 +21,7 @@ const PostComments = () => {
   
   useEffect(() => {
     if (isOpen && postId) {
-      fetchComments();
+      fetchComments(postId);
     }
   }, [isOpen, postId]);
 

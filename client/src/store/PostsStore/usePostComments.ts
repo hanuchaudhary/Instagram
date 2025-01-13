@@ -3,6 +3,7 @@ import { comment } from "@/types/PostTypes";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useAuthStore } from "../AuthStore/useAuthStore";
+import { useProfileStore } from "../UserStore/useProfileStore";
 
 interface CommentStore {
     comments: comment[];
@@ -29,6 +30,7 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
     postComment: async (postId: number, comment: string) => {
         try {
             const authUser = useAuthStore.getState().authUser;
+            const profileAvatar = useProfileStore.getState().profile?.avatar;
             await api.post(`/feature/comment/${postId}`, { comment: comment, });
             toast.success("Comment posted successfully");
             const updatedComments = [{
@@ -38,7 +40,7 @@ export const usePostCommentsStore = create<CommentStore>((set, get) => ({
                 user: {
                     id: authUser?.id!,
                     username: authUser?.username!,
-                    avatar: authUser?.avatar!,
+                    avatar: profileAvatar || authUser?.avatar!,
                 },
             }, ...get().comments];
             set({ comments: updatedComments });

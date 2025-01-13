@@ -152,14 +152,14 @@ export default function FullViewStory() {
                 </span>
               </div>
             </div>
-            <div className="bg-neutral-700 h-full w-full flex items-center justify-center">
+          <div className="h-full w-full rounded-xl flex items-center justify-center">
               <img
-                className="max-h-full z-20 max-w-full object-contain"
+                className="max-h-full rounded-xl z-20 max-w-full object-contain"
                 src={currentStory.mediaURL}
                 alt=""
               />
               <img
-                className="absolute blur-3xl max-h-full max-w-full object-contain"
+                className="absolute rounded-xl blur-3xl max-h-full max-w-full object-contain"
                 src={currentStory.mediaURL}
                 alt=""
               />

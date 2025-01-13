@@ -1,24 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import AdminLayout from '@/admin/components/layout/AdminLayout'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
-import useAdminStore from '@/store/adminStore/useAdminStore'
+import React, { useEffect, useState } from "react";
+import AdminLayout from "@/admin/components/layout/AdminLayout";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import useAdminStore from "@/store/adminStore/useAdminStore";
 
 const UserManagement: React.FC = () => {
-  const { users, fetchUsers, updateUserStatus, updateUserVerification } = useAdminStore()
-  const [searchTerm, setSearchTerm] = useState('')
+  const {
+    users,
+    fetchUsers,
+    updateUserStatus,
+    updateUserVerification,
+    resetPassword,
+  } = useAdminStore();
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchUsers()
-  }, [fetchUsers])
+    fetchUsers();
+  }, [fetchUsers]);
 
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   return (
     <AdminLayout>
@@ -48,25 +61,30 @@ const UserManagement: React.FC = () => {
             <TableRow key={user.id}>
               <TableCell>{user.username}</TableCell>
               <TableCell>{user.email}</TableCell>
-              <TableCell>{user.role}</TableCell>
+              <TableCell className="capitalize">{user.role}</TableCell>
               <TableCell>
                 <Switch
-                  checked={user.status === 'active'}
+                  checked={user.status === "active"}
                   onCheckedChange={(checked) =>
-                    updateUserStatus(user.id, checked ? 'active' : 'banned')
+                    updateUserStatus(user.id, checked ? "active" : "banned")
                   }
                 />
               </TableCell>
               <TableCell>
                 <Switch
-                  checked={user.isVerified}
-                  onCheckedChange={(checked) =>
-                    updateUserVerification(user.id, checked)
-                  }
+                  checked={user.isVerifiedAccount}
+                  onCheckedChange={(checked) => {
+                    console.log(checked);
+                    updateUserVerification(user.id, checked);
+                  }}
                 />
               </TableCell>
               <TableCell>
-                <Button variant="outline" size="sm">
+                <Button
+                  onClick={() => resetPassword(user.email)}
+                  variant="outline"
+                  size="sm"
+                >
                   Reset Password
                 </Button>
               </TableCell>
@@ -75,8 +93,7 @@ const UserManagement: React.FC = () => {
         </TableBody>
       </Table>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default UserManagement
-
+export default UserManagement;
