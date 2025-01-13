@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
+  LayoutDashboard,
 } from "lucide-react";
 import Menu from "@/components/Menu";
 
@@ -159,6 +160,9 @@ export default function AppLayout() {
                 </span>
               </h1>
             </Link>
+            {profile?.role === "admin" && (
+              <NavLink to="/admin" icon={LayoutDashboard} label="Dashboard" />
+            )}
             <Link
               to="/profile"
               className={`flex items-center ${

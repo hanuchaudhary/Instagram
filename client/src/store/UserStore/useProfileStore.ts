@@ -16,6 +16,7 @@ export interface UserType {
     email: string;
     password: string;
     avatar?: string;
+    role: string;
     bio?: string;
     accountType: AccountType;
     isVerifiedAccount: boolean;
