@@ -72,25 +72,28 @@ exports.postRouter.post("/create", multerUpload_1.upload.single("media"), (req, 
                     likes: true,
                 },
             });
-            const newReel = yield tx.reel.create({
-                data: {
-                    caption,
-                    mediaURL,
-                    userId,
-                    postId: newPost.id,
-                },
-                include: {
-                    User: {
-                        select: {
-                            username: true,
-                            fullName: true,
-                            id: true,
-                            avatar: true,
-                            bio: true,
-                        }
+            let newReel = null;
+            if (mediaType === "video") {
+                newReel = yield tx.reel.create({
+                    data: {
+                        caption,
+                        mediaURL,
+                        userId,
+                        postId: newPost.id,
                     },
-                },
-            });
+                    include: {
+                        User: {
+                            select: {
+                                username: true,
+                                fullName: true,
+                                id: true,
+                                avatar: true,
+                                bio: true,
+                            }
+                        },
+                    },
+                });
+            }
             return { newPost, newReel };
         }));
         return res.status(201).json({

@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Camera, Heart, MapPin, MessageCircle, Send } from "lucide-react";
 import { usePostsStore } from "@/store/PostsStore/usePostsStore";
 import { postSchema } from "@hanuchaudhary/instagram";
@@ -94,6 +94,7 @@ export default function CreatePost() {
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage/>
                 </FormItem>
               )}
             />

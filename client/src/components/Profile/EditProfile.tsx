@@ -76,7 +76,7 @@ export default function EditProfile({ profileData }: { profileData: UserType }) 
       return;
     }
     updateProfile(formData);
-    setCloseDialog(true);
+    setCloseDialog(false);
   }
 
   return (

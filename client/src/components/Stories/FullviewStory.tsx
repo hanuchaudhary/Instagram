@@ -30,7 +30,7 @@ export default function FullViewStory() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      if (progress < 100) {
+      if (progress < 10000) {
         setProgress((prevProgress) => prevProgress + 1);
       } else {
         handleNextStory();
@@ -131,7 +131,7 @@ export default function FullViewStory() {
           <ArrowRight className="h-8 w-8" />
         </Button>
       </div>
-      <div className="relative bg-secondary md:h-[700px] h-full max-w-full">
+      <div className="relative bg-neutral-950 md:h-[700px] h-full max-w-full">
         {currentStory && (
           <div className="flex flex-col h-full">
             <div className="absolute z-30 top-0 left-0 p-2 flex items-center space-x-2">
@@ -152,9 +152,9 @@ export default function FullViewStory() {
                 </span>
               </div>
             </div>
-          <div className="h-full w-full rounded-xl flex items-center justify-center">
+          <div className="h-full max-w-lg rounded-xl flex items-center justify-center">
               <img
-                className="max-h-full rounded-xl z-20 max-w-full object-contain"
+                className="max-h-full w-full z-20 object-contain"
                 src={currentStory.mediaURL}
                 alt=""
               />

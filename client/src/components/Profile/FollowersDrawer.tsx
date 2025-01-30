@@ -34,7 +34,7 @@ const FollowersDrawer = () => {
             Followers
           </h1>
         </DialogTrigger>
-        <DialogContent className="p-2 md:p-4">
+        <DialogContent className="p-2 md:p-4 max-w-2xl">
           <DialogHeader className="text-left">
             <DialogTitle className="text-2xl font-bold">
               Followers & Following

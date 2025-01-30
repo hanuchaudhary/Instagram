@@ -48,51 +48,53 @@ postRouter.post("/create", upload.single("media"), async (req: Request, res: Res
             const cloudinaryResult = await uploadOnCloudinary(file.path, "instagram-clone/reels", "video");
             mediaURL = cloudinaryResult?.url as string
         }
-
+        
         const mediaType = file.mimetype.includes("image") ? "image" : "video";
         const result = await prisma.$transaction(async (tx) => {
             const newPost = await tx.post.create({
-                data: {
-                    caption,
-                    location,
-                    mediaURL,
-                    userId,
-                    mediaType
+            data: {
+                caption,
+                location,
+                mediaURL,
+                userId,
+                mediaType
+            },
+            include: {
+                User: {
+                select: {
+                    username: true,
+                    fullName: true,
+                    id: true,
+                    avatar: true,
+                    bio: true,
+                }
                 },
-                include: {
-                    User: {
-                        select: {
-                            username: true,
-                            fullName: true,
-                            id: true,
-                            avatar: true,
-                            bio: true,
-                        }
-                    },
-                    likes: true,
-                },
+                likes: true,
+            },
             });
 
-            const newReel = await tx.reel.create({
+            let newReel = null;
+            if (mediaType === "video") {
+            newReel = await tx.reel.create({
                 data: {
-                    caption,
-                    mediaURL,
-                    userId,
-                    postId: newPost.id,
+                caption,
+                mediaURL,
+                userId,
+                postId: newPost.id,
                 },
                 include: {
-                    User: {
-                        select: {
-                            username: true,
-                            fullName: true,
-                            id: true,
-                            avatar: true,
-                            bio: true,
-                        }
-                    },
+                User: {
+                    select: {
+                    username: true,
+                    fullName: true,
+                    id: true,
+                    avatar: true,
+                    bio: true,
+                    }
+                },
                 },
             });
-
+            }
 
             return { newPost, newReel };
         });

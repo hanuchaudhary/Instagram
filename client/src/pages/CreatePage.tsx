@@ -7,7 +7,7 @@ export default function CreatePage() {
   const [activeTab, setActiveTab] = useState('post')
 
   return (
-    <div className="max-w-3xl md:px-0 px-2 mx-auto py-4">
+    <div className="max-w-3xl px-2 mx-auto py-4">
       <h1 className="text-3xl font-bold mb-8">Create Content</h1>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">

@@ -39,7 +39,7 @@ export default function CreateStory() {
     });
 
     if (!image) return;
-    createStory({ mediaURL: image, caption: text }, navigate);
+    await createStory({ mediaURL: image, caption: text }, navigate);
     setImage(null);
     setText("");
   };
