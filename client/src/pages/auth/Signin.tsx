@@ -47,7 +47,7 @@ const Signin = () => {
             <div className="flex justify-center">
               <img
                 className="w-44 dark:invert-[1]"
-                src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
+                src="/text-logo.svg"
                 alt="Instagram"
               />
             </div>

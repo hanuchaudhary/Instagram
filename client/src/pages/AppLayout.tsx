@@ -114,8 +114,8 @@ export default function AppLayout() {
             ) : (
               <img
                 className="w-36 dark:invert"
-                src="https://pnghq.com/wp-content/uploads/pnghq.com-instagram-logo-splatter-p-7.png"
-                alt="/instagram-logo.svg"
+                src="/text-logo.svg"
+                alt="logo"
               />
             )}
           </Link>
